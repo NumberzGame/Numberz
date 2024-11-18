@@ -2,18 +2,18 @@ import { createTheme } from '@mantine/core';
 
 export const theme = createTheme({
   colors: {
-    beige : [
-      "#fef7e6",
-      "#f7eed6",
-      "#eddaae",
-      "#e2c682",
-      "#d9b55e",
-      "#d4aa46",
-      "#d2a538",
-      "#b9902a",
-      "#a57f21",
-      "#8f6d14"
-    ],
+    greenyblue : [
+      "#e1fffa",
+      "#d0f9f2",
+      "#a7f0e3",
+      "#7ae7d4",
+      "#55dfc6",
+      "#3ddabe",
+      "#2ad8ba",
+      "#14c0a3",
+      "#00ab91",
+      "#00947c"
+    ]
 
   },
 

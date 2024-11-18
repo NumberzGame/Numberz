@@ -9,7 +9,7 @@ export function HomePage() {
     <>
       <Welcome />
       <ColorSchemeToggle  />
-      <Text c="dimmed" ta="center" size="lg" maw={580} mx="auto" mt="xl">
+      <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
         Play the game below!!!
       </Text>
       
