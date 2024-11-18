@@ -1,6 +1,7 @@
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
 import { Text, Button, Group } from '@mantine/core';
+// import { theme } from '../theme';
 
 
 export function HomePage() {
@@ -12,12 +13,12 @@ export function HomePage() {
         Play the game below!!!
       </Text>
       
-    <Group justify="center" mt="xl">
-    <Button >+</Button>
-    <Button >-</Button>
-    <Button >*</Button>
-    <Button >÷</Button>
-    </Group>
+      <Group justify="center" mt="xl">
+        <Button >+</Button>
+        <Button >-</Button>
+        <Button >*</Button>
+        <Button >÷</Button>
+      </Group>
     </>
   );
 }
