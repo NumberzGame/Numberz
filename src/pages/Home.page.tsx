@@ -3,6 +3,7 @@ import { Welcome } from '../components/Welcome/Welcome';
 import { Text, Button, Group } from '@mantine/core';
 // import { theme } from '../theme';
 
+import SYMBOLS from '../data/symbols.json'
 
 export function HomePage() {
   return (
