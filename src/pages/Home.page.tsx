@@ -5,8 +5,17 @@ import { Text, Button, Group, TextInput } from '@mantine/core';
 
 import SYMBOLS from '../data/symbols.json'
 
+const overrideSymbolText = function(s: string): string {
+  if (s === '//') {
+    return '÷'
+  }
+  return s
+}
+
 export function HomePage() {
-  const SymbolsButtons = SYMBOLS.OPS.map((symbol) => (<Button >{symbol}</Button>));
+
+  const SymbolsButtons = SYMBOLS.OPS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
+
   return (
     <>
       <Welcome />
@@ -17,9 +26,9 @@ export function HomePage() {
       mx - margin in-line
       mt - margin top
       */}
-      <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
+      {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
         Play the game below!!!
-      </Text>
+      </Text> */}
       {/* Text Goal */}
       <TextInput
         // label="Input label"
