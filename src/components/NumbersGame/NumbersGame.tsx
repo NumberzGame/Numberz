@@ -17,6 +17,11 @@ const overrideSymbolText = function(s: string): string {
 const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', defaultValue: '' });
 
 // currentGameState currentGame
+// time_stamp_first_played_mins Date.now() / 1000 / 60
+// current game grade
+// current game goal
+// current game form
+// current game index (index all inc forms, and figure out using JSON dict of frequencies?)
 const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
 
 export function NumbersGame() {
