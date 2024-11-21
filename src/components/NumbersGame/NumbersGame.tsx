@@ -1,5 +1,8 @@
 
 
+
+import { useLocalStorage } from '@mantine/hooks';
+
 import { Button, Group, TextInput } from '@mantine/core';
 import SYMBOLS from '../../data/symbols.json';
 
@@ -10,6 +13,11 @@ const overrideSymbolText = function(s: string): string {
   return s
 }
 
+// https://mantine.dev/hooks/use-local-storage/
+const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', defaultValue: '' });
+
+// currentGameState currentGame
+const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
 
 export function NumbersGame() {
 
