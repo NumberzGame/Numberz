@@ -1,20 +1,11 @@
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
-import { Text, Button, Group, TextInput } from '@mantine/core';
+import { NumbersGame } from '../components/NumbersGame/NumbersGame';
 // import { theme } from '../theme';
 
-import SYMBOLS from '../data/symbols.json'
-
-const overrideSymbolText = function(s: string): string {
-  if (s === '//') {
-    return '÷'
-  }
-  return s
-}
 
 export function HomePage() {
 
-  const SymbolsButtons = SYMBOLS.OPS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
 
   return (
     <>
@@ -26,19 +17,7 @@ export function HomePage() {
       mx - margin in-line
       mt - margin top
       */}
-      {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
-        Play the game below!!!
-      </Text> */}
-      {/* Text Goal */}
-      <TextInput
-        // label="Input label"
-        ta="center" size="lg" maw={235} mx="auto" mt="md"
-        // description="Input description"
-        // placeholder="Input placeholder"
-      />
-      <Group justify="center" mt="md">
-        {SymbolsButtons}
-      </Group>
+      <NumbersGame></NumbersGame>
 
     </>
   );
