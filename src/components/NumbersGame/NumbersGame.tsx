@@ -14,7 +14,7 @@ const overrideSymbolText = function(s: string): string {
 }
 
 // https://mantine.dev/hooks/use-local-storage/
-const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', defaultValue: '' });
+// const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', defaultValue: '' });
 
 // currentGameState currentGame
 // time_stamp_first_played_mins Date.now() / 1000 / 60
@@ -22,7 +22,7 @@ const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', def
 // current game goal
 // current game form
 // current game index (index all inc forms, and figure out using JSON dict of frequencies?)
-const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
+// const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
 
 export function NumbersGame() {
 
