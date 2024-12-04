@@ -33,7 +33,9 @@ min: (27B, 5MB limit => 10 per day for 55 years)
       val:
       game u125 18B (9 UTF-16 BMP single code units)    
       Schema index: 2B u15 (1 ) 
-      timestamp: u45 
+      timestamp: u45 - the vast majority of this won't change, so could store the time-stamp of the
+                       user's first visit elsewhere, and change this one into a relative datetime-delta.
+                       But it's only 6 Bytes.
       solved, u1
       seeds*6, u24 (14 seeds in normal game, 10 small (twice) 4 large)
         seed u4
