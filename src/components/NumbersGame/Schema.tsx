@@ -1,6 +1,7 @@
 
 import { GameID, GameData, GameState } from './Classes';
 
+
 // See  /dev/schemas.txt
 // simple: (62B, 5MB limit => 10 per day for 20 years)
 
@@ -26,7 +27,17 @@ import { GameID, GameData, GameState } from './Classes';
 //           Operand u3 (indices 0, 1, ..., 6)
 //           Op u2 (+, -, *, //)
 
+const MAX_U15 = (1 << 15 - 1);  //32767
 
+const fits_in_u15 = function(x: number): boolean {
+    return (0 <= x) && (x <= MAX_U15);
+}
+
+const check_fits_in_u15 = function(x: number) {
+    if (fits_in_u15(x)) {
+        throw new Error(`An internal error occurred. Number must be >= 0 and <= ${MAX_U15}.  Got: ${x}`);
+    }
+}
 
 const KeyReader = function(s: string): GameID {
 
@@ -34,7 +45,9 @@ const KeyReader = function(s: string): GameID {
 
     return id;
 }
-const KeyWriter = function(s: GameID): string {
+const KeyWriter = function(gameID: GameID): string {
+    check_fits_in_u15(gameID.grade);
+    check_fits_in_u15(gameID.goal);
     let key = "";
 
     return key
@@ -46,7 +59,7 @@ const ValReader = function(s: string): GameData {
 
     return game;
 }
-const ValWriter = function(s: GameData): string {
+const ValWriter = function(gameData: GameData): string {
 
     let val = "";
 
