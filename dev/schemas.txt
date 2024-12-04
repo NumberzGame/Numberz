@@ -16,9 +16,9 @@ operand one u5 (min u3 Indices: 0, 1, 2, 3, 4, 5)
 operand two u5 (min u3)
 op u5 (min u2, +, -, //, =)
 
-min: (24B, 5MB limit => 10 per day for 57 years)
+min: (27B, 5MB limit => 10 per day for 55 years)
 
-      key u35 6B (3 UTF-16 BMP single code units)   
+      key u38 6B (3 UTF-16 BMP single code units)   
                 (does storage space for keys matter if they're hashed?....
                   A: It does - localstorge is implemented using levelDB 
                     in Chrome, and sqllite in Firefox.  Both are more than 
@@ -28,7 +28,7 @@ min: (24B, 5MB limit => 10 per day for 57 years)
       grade, 1,...,228 u8
       goal, 100, ..., 999 u10 
       form, 2, 3, ..., (1, (1, (2, 2))), u4
-      index, (0 to 70_000) u17 
+      index, (0 to 70_000) u20 
       
       val:
       game u125 18B (9 UTF-16 BMP single code units)    
@@ -44,13 +44,14 @@ min: (24B, 5MB limit => 10 per day for 57 years)
           Op u2 (+, -, *, //)
 
 
-small: (60B, 5MB limit => 10 per day for 22 years)
+simple: (62B, 5MB limit => 10 per day for 20 years)
 
       key:
-      u60 8B (4 UTF-16 BMP single code units) 
+      u60 10B (5 UTF-16 BMP single code units) 
 
       grade, 1,...,228 u15
       goal, 100, ..., 999 u15 
+      form, 2, 3, ..., (1, (1, (2, 2))), u15
       index, (0 to 70_000) u30 
       
       val:
@@ -67,11 +68,12 @@ small: (60B, 5MB limit => 10 per day for 22 years)
           Operand u3 (indices 0, 1, ..., 6)
           Op u2 (+, -, *, //)
 
-or:  game 136B (5MB limit =>  10 a day for 10 years)
+or:  game 138B (5MB limit =>  10 a day for 10 years)
 
       timestamp: u45 6B (3 UTF-16 BMP single code units)
       grade, 1,...,228 2B (1)
       goal, 100, ..., 999 2B (1)
+      form, 2, 3, ..., (1, (1, (2, 2))), 2B (1)
       index, (0 to 70_000) 4B (2)
       solved, 2B (1)
       seeds*20, 40B (20)

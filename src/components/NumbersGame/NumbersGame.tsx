@@ -6,6 +6,8 @@ import { useLocalStorage } from '@mantine/hooks';
 import { Button, Group, TextInput } from '@mantine/core';
 import SYMBOLS from '../../data/symbols.json';
 
+import { GetReadersAndWriters } from './Schema';
+
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {
     return '÷'
