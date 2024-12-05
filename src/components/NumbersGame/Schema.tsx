@@ -1,5 +1,5 @@
 
-import { GameID, Game, GameState, Forms } from './Classes';
+import { GameID, Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
 
 // See  /dev/schemas.txt
@@ -26,6 +26,7 @@ import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
 //         move u9
 //           Operand u3 (indices 0, 1, ..., 6)
 //           Op u2 (+, -, *, //)
+const SCHEMA_CODE = "S";
 
 const MAX_U15 = (1 << 15 - 1);  //32767, 0b111111111111111 === 0x7fff
                                 // highest number of bits that don't 
@@ -59,7 +60,7 @@ const getGameID = function(key: string): GameID {
     const form = Forms[form_index];
     const index_top_15_bits = key.charCodeAt(3);
     const index_bottom_15_bits = key.charCodeAt(4)
-    const index = (index_top_15_bits << 15) & index_bottom_15_bits;
+    const index = (index_top_15_bits << 15) | index_bottom_15_bits;
 
     return new GameID(grade, goal, form, index);
 }
@@ -91,10 +92,81 @@ const stringifyGameID = function(gameID: GameID): string {
 }
 
 
-const getGame = function(s: string): Game {
+const getGame = function(s: string, id: GameID): Game {
 
-    const state = new GameState(false, []);
-    const game = new Game(getGameID(""), Date.now(), [0, 1, 2, 3, 4, 5], state);
+    if (s[0] !== SCHEMA_CODE) {
+        throw new Error(`Incorrect Schema code.  Must be: ${SCHEMA_CODE}.  Got: ${s[0]}`)
+    }
+
+
+    const ts_top_15_bits = s.charCodeAt(1) << 30;
+    const ts_mid_15_bits = s.charCodeAt(2) << 15;
+    const ts_bottom_15_bits = s.charCodeAt(3);
+    const timeStamp = ts_top_15_bits | ts_mid_15_bits | ts_bottom_15_bits;
+
+    const solved_num = s.charCodeAt(4);
+
+    if (![0, 1].includes(solved_num)) {
+        throw new Error(`Incorrect solved_num value.  Must be 0 or 1.  Got: ${solved_num}`)
+    }
+
+    const solved = solved_num === 1;
+
+    const FIRST_SEED_INDEX = 5;
+
+    const seedIndices = [];
+
+    for (let i = FIRST_SEED_INDEX; i++; i < FIRST_SEED_INDEX + MAX_SEEDS) { 
+        const seedIndex = s.charCodeAt(i);
+        if ((0 <= i) && (i <= SEEDS.length)) {
+            seedIndices.push(seedIndex);
+        } else if(seedIndex === NO_SEED) {
+            continue;
+        } else {
+            throw new Error(`Unrecognised seed index: ${seedIndex}. `
+                           + `Must be between 0 and ${SEEDS.length}, `
+                           +`or ===NO_SEED code ${NO_SEED}`
+            );
+        }
+    }
+
+    const moves = [];
+    
+    const FIRST_MOVE_INDEX = FIRST_SEED_INDEX + MAX_SEEDS;
+
+    for (let j = FIRST_MOVE_INDEX; j+=3; j < FIRST_MOVE_INDEX+MAX_MOVES) {
+        const opIndex = s.charCodeAt(j);
+        if ((0 <= opIndex) && (opIndex <= OPS.length)) {
+            const operandIndices = [];
+            
+            for (let k = j; k++; k < j+MAX_OPERANDS) {
+                const operandIndex = s.charCodeAt(k);
+                if ((0 <= operandIndex) && (operandIndex <= SEEDS.length)) {
+                    operandIndices.push(operandIndex)
+                } else if (operandIndex === NO_OPERAND) {
+                    continue;
+                } else {
+                    throw new Error(`Unrecognised operand index: ${operandIndex}. `
+                                   +`Must be between 0 and ${SEEDS.length}, `
+                                   +`or ===NO_OPERAND code ${NO_OPERAND}`
+                    );
+                }
+            }
+            const move = new Move(opIndex, operandIndices);
+            moves.push(move);
+        } else if (opIndex === NO_OP) {
+            continue;
+        }
+        else {
+            throw new Error(`Unrecognised op index: ${opIndex}. `
+                           + `Must be between 0 and ${OPS.length}, `
+                           +`or ===NO_OP code ${NO_OP}`
+            );
+        }
+    }
+
+    const state = new GameState(solved, moves);
+    const game = new Game(id, timeStamp, seedIndices, state);
 
     return game;
 }
@@ -103,7 +175,7 @@ const getGame = function(s: string): Game {
 const stringifyGame = function(game: Game): string {
 
     // Schema index
-    let val = "S";
+    let val = SCHEMA_CODE;
 
     const datetime_top_15_bits = (game.when_first_seen_ms >> 30) & MAX_U15;
     const datetime_mid_15_bits = (game.when_first_seen_ms >> 15) & MAX_U15;
