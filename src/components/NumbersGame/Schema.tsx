@@ -53,10 +53,15 @@ const checkFitsIn_u15 = function(x: number) {
 }
 
 const getGameID = function(key: string): GameID {
+    const grade = key.charCodeAt(0);
+    const goal = key.charCodeAt(1);
+    const form_index = key.charCodeAt(2);
+    const form = Forms[form_index];
+    const index_top_15_bits = key.charCodeAt(3);
+    const index_bottom_15_bits = key.charCodeAt(4)
+    const index = (index_top_15_bits << 15) & index_bottom_15_bits;
 
-    const id = new GameID(10, 110, Forms[6], 0);
-
-    return id;
+    return new GameID(grade, goal, form, index);
 }
 
 
@@ -104,7 +109,7 @@ const stringifyGame = function(game: Game): string {
     const datetime_mid_15_bits = (game.when_first_seen_ms >> 15) & MAX_U15;
     const datetime_bottom_15_bits = game.when_first_seen_ms & MAX_U15;
     // just checks if positive.  
-    // (x & MAX_U15) above will not exceed MAX_U15.
+    // (x & MAX_U15) above cannot exceed MAX_U15.
     checkFitsIn_u15(datetime_top_15_bits);
     checkFitsIn_u15(datetime_mid_15_bits);
     checkFitsIn_u15(datetime_bottom_15_bits);
