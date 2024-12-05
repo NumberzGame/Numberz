@@ -28,7 +28,7 @@ import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
 //           Op u2 (+, -, *, //)
 const SCHEMA_CODE = "S";
 
-const MAX_U15 = (1 << 15 - 1);  //32767, 0b111111111111111 === 0x7fff
+const MAX_U15 = ((1 << 15) - 1);  //32767, 0b111111111111111 === 0x7fff
                                 // highest number of bits that don't 
                                 // need any bits that indicate a 
                                 // surrogate (0xd800 - 0xdfff).
@@ -42,18 +42,17 @@ const MAX_SEEDS = 6;
 const MAX_MOVES = MAX_SEEDS - 1;
 const MAX_OPERANDS = 2;
 
-
 const fitsIn_u15 = function(x: number): boolean {
     return (0 <= x) && (x <= MAX_U15);
 }
 
 const checkFitsIn_u15 = function(x: number) {
-    if (fitsIn_u15(x)) {
+    if (!fitsIn_u15(x)) {
         throw new Error(`An internal error occurred. Number must be >= 0 and <= ${MAX_U15}.  Got: ${x}`);
     }
 }
 
-const getGameID = function(key: string): GameID {
+export const getGameID = function(key: string): GameID {
     const grade = key.charCodeAt(0);
     const goal = key.charCodeAt(1);
     const form_index = key.charCodeAt(2);
@@ -71,7 +70,7 @@ const stringify = function(array: number[]): string {
 }
 
 
-const stringifyGameID = function(gameID: GameID): string {
+export const stringifyGameID = function(gameID: GameID): string {
 
     checkFitsIn_u15(gameID.grade);
     checkFitsIn_u15(gameID.goal);
@@ -243,6 +242,6 @@ const stringifyGame = function(game: Game): string {
 
 // Ensure importing clients always get corresponding 
 // pairs of getters and stringifiers.
-export function GetReadersAndWriters() {
+export function stringifiersAndGetters() {
     return [getGameID, stringifyGameID, getGame, stringifyGame];
 }

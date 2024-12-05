@@ -6,7 +6,7 @@ import { useLocalStorage } from '@mantine/hooks';
 import { Button, Group, TextInput } from '@mantine/core';
 
 import { OPS } from './Core';
-import { GetReadersAndWriters } from './Schema';
+import { stringifiersAndGetters } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {
