@@ -1,5 +1,5 @@
 Schema index: 2B u15 (1 UTF-16 BMP single code units) 
-currentGameState currentGame
+currentState currentGame
 time_stamp_first_played_mins Date.now() / 1000 / 60 min (u25 8 years from 3rd Dec 2024)
 
 game

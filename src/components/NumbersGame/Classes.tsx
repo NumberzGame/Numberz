@@ -35,13 +35,13 @@ export class GameID{
     }
   }
 
-class Move{
-    Op: string;
-    Operands: number[];
+export class Move{
+    opIndex: number;
+    operandIndices: number[];
 
-    constructor(Op: string, Operands: number[]) {
-        this.Op = Op;
-        this.Operands = Operands;
+    constructor(opIndex: number, operandIndices: number[]) {
+        this.opIndex = opIndex;
+        this.operandIndices = operandIndices;
     }
 }
 
@@ -55,17 +55,19 @@ export class GameState{
       }
     }
 
-export class GameData{
-    readonly timestamp_ms: number;
+export class Game{
+    id: GameID;
+    readonly when_first_seen_ms: number;
 
-    // Indices of seeds in symbols.json["SEEDS"]
-    readonly seeds: number[];
+    // Indices of seeds in deduped symbols.json["SEEDS"]
+    readonly seedIndices: number[];
 
-    readonly state: GameState;
+    state: GameState;
 
-    constructor(timestamp_ms: number, seeds: number[], state: GameState) {
-        this.timestamp_ms = timestamp_ms;
-        this.seeds = seeds;
+    constructor(id: GameID, when_first_seen_ms: number, seedIndices: number[], state: GameState) {
+        this.id = id
+        this.when_first_seen_ms = when_first_seen_ms;
+        this.seedIndices = seedIndices;
         this.state = state;
     }
   }

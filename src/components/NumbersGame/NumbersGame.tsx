@@ -4,8 +4,8 @@
 import { useLocalStorage } from '@mantine/hooks';
 
 import { Button, Group, TextInput } from '@mantine/core';
-import SYMBOLS from '../../data/symbols.json';
 
+import { OPS } from './Core';
 import { GetReadersAndWriters } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
@@ -26,7 +26,7 @@ export function NumbersGame() {
 
     const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
 
-    const SymbolsButtons = SYMBOLS.OPS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
+    const SymbolsButtons = OPS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
 
     
     return <>
