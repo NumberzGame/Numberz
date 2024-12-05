@@ -1,5 +1,5 @@
 
-import { GameID, GameData, GameState } from './Classes';
+import { GameID, GameData, GameState, Forms } from './Classes';
 
 
 // See  /dev/schemas.txt
@@ -27,39 +27,60 @@ import { GameID, GameData, GameState } from './Classes';
 //           Operand u3 (indices 0, 1, ..., 6)
 //           Op u2 (+, -, *, //)
 
-const MAX_U15 = (1 << 15 - 1);  //32767
+const MAX_U15 = (1 << 15 - 1);  //32767, 0b111111111111111
+                                // highest number of bits that don't 
+                                // need any bits that indicate a 
+                                // surrogate (0xd800 - 0xdfff).
 
-const fits_in_u15 = function(x: number): boolean {
+const fitsIn_u15 = function(x: number): boolean {
     return (0 <= x) && (x <= MAX_U15);
 }
 
-const check_fits_in_u15 = function(x: number) {
-    if (fits_in_u15(x)) {
+const checkFitsIn_u15 = function(x: number) {
+    if (fitsIn_u15(x)) {
         throw new Error(`An internal error occurred. Number must be >= 0 and <= ${MAX_U15}.  Got: ${x}`);
     }
 }
 
-const KeyReader = function(s: string): GameID {
+const getGameID = function(key: string): GameID {
 
-    const id = new GameID(10, 110, 6, 0);
+    const id = new GameID(10, 110, Forms[6], 0);
 
     return id;
 }
-const KeyWriter = function(gameID: GameID): string {
-    check_fits_in_u15(gameID.grade);
-    check_fits_in_u15(gameID.goal);
-    let key = "";
 
-    return key
+
+
+const stringifyGameID = function(gameID: GameID): string {
+
+    checkFitsIn_u15(gameID.grade);
+    checkFitsIn_u15(gameID.goal);
+
+    const form_index = Forms.indexOf(gameID.form);
+    checkFitsIn_u15(form_index);
+
+    const index_top_15_bits = (gameID.index >> 15) & MAX_U15;
+    const index_bottom_15_bits = gameID.index & MAX_U15;
+    // just checks if positive.  
+    // (x & MAX_U15) above will not exceed MAX_U15.
+    checkFitsIn_u15(index_top_15_bits);
+    checkFitsIn_u15(index_bottom_15_bits);
+
+    const keyData = [gameID.grade, gameID.goal, form_index, index_top_15_bits, index_bottom_15_bits];
+    const key = keyData.map((x) => String.fromCodePoint(x)).reduce((a, b) => a.concat(b));
+
+    return key;
 }
-const ValReader = function(s: string): GameData {
+
+
+const getGameData = function(s: string): GameData {
 
     const state = new GameState(false, []);
-    const game = new GameData(Date.now(), state);
+    const gameData = new GameData(Date.now(), state);
 
-    return game;
+    return gameData;
 }
-const ValWriter = function(gameData: GameData): string {
+const stringifyGameData = function(gameData: GameData): string {
 
     let val = "";
 
@@ -68,5 +89,5 @@ const ValWriter = function(gameData: GameData): string {
 
 
 export function GetReadersAndWriters() {
-    return [KeyReader, KeyWriter, ValReader, ValWriter];
+    return [getGameID, stringifyGameID, getGameData, stringifyGameData];
 }
