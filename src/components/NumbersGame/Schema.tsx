@@ -19,7 +19,7 @@ import { GameID, GameData, GameState, Forms } from './Classes';
 //       Schema index: 2B u15 (1) 
 //       timestamp: u45       (3)
 //       solved, u15           (1)
-//       seeds*6, u85 (6) (14 seeds in normal game, 10 small (twice) 4 large)
+//       seeds*6, u90 (6) (14 seeds in normal game, 10 small (twice) 4 large)
 //         seed u4
 //       current state of this game
 //       moves*5 u225   (15)
@@ -50,6 +50,10 @@ const getGameID = function(key: string): GameID {
 }
 
 
+const stringify = function(array: number[]): string {
+    return array.map((x) => String.fromCodePoint(x)).reduce((a, b) => a.concat(b));
+}
+
 
 const stringifyGameID = function(gameID: GameID): string {
 
@@ -67,27 +71,65 @@ const stringifyGameID = function(gameID: GameID): string {
     checkFitsIn_u15(index_bottom_15_bits);
 
     const keyData = [gameID.grade, gameID.goal, form_index, index_top_15_bits, index_bottom_15_bits];
-    const key = keyData.map((x) => String.fromCodePoint(x)).reduce((a, b) => a.concat(b));
 
-    return key;
+    return stringify(keyData);
 }
 
 
 const getGameData = function(s: string): GameData {
 
     const state = new GameState(false, []);
-    const gameData = new GameData(Date.now(), state);
+    const gameData = new GameData(Date.now(), [0, 1, 2, 3, 4, 5], state);
 
     return gameData;
 }
+
+
 const stringifyGameData = function(gameData: GameData): string {
 
-    let val = "";
+    // Schema index
+    let val = "S";
 
-    return val
+    const datetime_top_15_bits = (gameData.timestamp_ms >> 30) & MAX_U15;
+    const datetime_mid_15_bits = (gameData.timestamp_ms >> 15) & MAX_U15;
+    const datetime_bottom_15_bits = gameData.timestamp_ms & MAX_U15;
+    // just checks if positive.  
+    // (x & MAX_U15) above will not exceed MAX_U15.
+    checkFitsIn_u15(datetime_top_15_bits);
+    checkFitsIn_u15(datetime_mid_15_bits);
+    checkFitsIn_u15(datetime_bottom_15_bits);
+    const valData = [datetime_top_15_bits, datetime_mid_15_bits, datetime_bottom_15_bits];
+
+    const solved_num = gameData.state.solved === true ? 1 : 0;
+    valData.push(solved_num);
+
+    for (let i = 0; i++; i < 6) { 
+        if (i < gameData.seeds.length) {
+            // Bump indices by 1 to allow 0 to describe games
+            // with less than 6 seeds.
+            const seedIndex = gameData.seeds[i] + 1;
+            checkFitsIn_u15(seedIndex);
+            valData.push(seedIndex);  
+        } else {
+            // Pad these games (with less then 6 seeds) with 0s.
+            valData.push(0);  
+        }
+    }
+
+    for (let j = 0; j++; j < 5) {
+        // If there are less than 5 moves, pad with 0
+        const move = gameData.state.moves?.[j] ?? 0
+        
+        checkFitsIn_u15(move);
+        valData.push(move);  
+    }
+
+
+    return stringify(valData)
 }
 
-
+// Ensure importing clients always get corresponding 
+// pairs of getters and stringifiers.
 export function GetReadersAndWriters() {
     return [getGameID, stringifyGameID, getGameData, stringifyGameData];
 }

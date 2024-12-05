@@ -37,9 +37,9 @@ export class GameID{
 
 class Move{
     Op: string;
-    Operands: [number];
+    Operands: number[];
 
-    constructor(Op: string, Operands: [number]) {
+    constructor(Op: string, Operands: number[]) {
         this.Op = Op;
         this.Operands = Operands;
     }
@@ -57,10 +57,15 @@ export class GameState{
 
 export class GameData{
     readonly timestamp_ms: number;
+
+    // Indices of seeds in symbols.json["SEEDS"]
+    readonly seeds: number[];
+
     readonly state: GameState;
 
-    constructor(timestamp_ms: number, state: GameState) {
+    constructor(timestamp_ms: number, seeds: number[], state: GameState) {
         this.timestamp_ms = timestamp_ms;
+        this.seeds = seeds;
         this.state = state;
     }
   }
