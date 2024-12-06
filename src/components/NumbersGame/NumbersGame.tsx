@@ -52,7 +52,13 @@ export function NumbersGame() {
         // Calculate new_index (Offset of index into solutions) of that goal and grade).
         // Import/Request  `public\grades_goals_solutions_forms\${currentDifficulty}\${goal}\distribution.json`
         // Iterate through distribution.json to find form of solution with that index, grade and goal.
+        // Construct gameID = new GameID(...);
         // Get seeds and ops
+        // Construct gameState = new GameState
+        // Get timestamp
+        // Construct game = new Game
+        // return game
+        
         
     }
 
