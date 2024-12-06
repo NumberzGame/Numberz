@@ -5,9 +5,21 @@ import { OPS,SEEDS,GOAL_MIN, GOAL_MAX } from './Core';
 import { GameID, Forms, Game, Move, GameState } from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, 
          stringifyGame, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES,
-         CHUNK_SIZE, chunkify, deChunkify } from './Schema';
+         CHUNK_SIZE, chunkify, deChunkify,
+         stringifyCodeUnits, destringifyCodeUnits, } from './Schema';
 
 // const [destringifyGameID, stringifyGameID, destringifyGame, stringifyGame] = stringifiersAndGetters();
+
+test('for all arrays of positive 15-bit integers, stringifyCodeUnits should roundtrip with Array.from(destringifyCodeUnits)', () => {
+  fc.assert(
+    fc.property(fc.array(fc.nat({max:32767})),
+                (UTF16codeUnits) => {
+      const stringified = stringifyCodeUnits(UTF16codeUnits);
+      const destringified = Array.from(destringifyCodeUnits(stringified));
+      expect(destringified).toStrictEqual(UTF16codeUnits);
+    }),
+  );
+});
 
 test('for all positiveintegers, chunkify should roundtrip with deChunkify', () => {
   fc.assert(
