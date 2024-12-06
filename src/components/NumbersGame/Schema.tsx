@@ -3,7 +3,7 @@ import { GameID, Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
 
 // See  /dev/schemas.txt
-// simple: (62B, 5MB limit => 10 per day for 20 years)
+// simple: (72B, 5MB limit => 10 per day for 16 years)
 
 //       key:
 //       u60 10B (5 UTF-16 BMP single code units) 
@@ -14,13 +14,14 @@ import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
 //       index, (0 to 70_000) u30 
       
 //       val:
-//       game u... 52B (26 UTF-16 BMP single code units) 
+//       game u... 62B (31 UTF-16 BMP single code units) 
 
 //       Schema index: 2B u15 (1) 
 //       timestamp: u45       (3)
 //       solved, u15           (1)
 //       seeds*6, u90 (6) (14 seeds in normal game, 10 small (twice) 4 large)
 //         seed u4
+//       ops*5    u75 (5) 
 //       current state of this game
 //       moves*5 u225   (15)
 //         move u9
@@ -42,6 +43,8 @@ const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 export const MAX_SEEDS = 6;
 export const MAX_MOVES = MAX_SEEDS - 1;
 export const MAX_OPERANDS = 2;
+export const MIN_GAME_ID_SIZE = 5;
+export const MIN_GAME_SIZE = 26;
 
 
 
@@ -112,8 +115,10 @@ export const destringifyCodeUnits = function*(s: string): IterableIterator<numbe
 export const destringifyGameID = function(key: string): GameID {
 
 
-    if (key.length < 5) {
-        throw new Error(`Need 5 code-units to encode a GameID.  Got: ${key.length}, key=${key}`)   
+    if (key.length < MIN_GAME_ID_SIZE) {
+        throw new Error(`Need ${MIN_GAME_ID_SIZE} code-units to encode a GameID. `
+                        +`Got: ${key.length}, key=${key}`
+        )   
     }
 
     const next = makeNextDestringified(key);
@@ -176,8 +181,10 @@ export const destringifyGame = function(s: string, id: GameID): Game {
         throw new Error(`Incorrect Schema code.  Must be: ${SCHEMA_CODE}.  Got: ${s[0]}`)
     }
 
-    if (s.length < 26) {
-        throw new Error(`Need 26 code-units to encode a Game.  Got: ${s.length}, s=${s}`)   
+    if (s.length < MIN_GAME_SIZE) {
+        throw new Error(`Need ${MIN_GAME_SIZE} code-units to encode a Game. `
+                       +` Got: ${s.length}, s=${s}`
+        )   
     }
 
     const next = makeNextDestringified(s);
@@ -338,10 +345,4 @@ export const stringifyGame = function(game: Game): string {
 
 
     return val.concat(stringifyCodeUnits(Array.from(gameDataCodeUnits(game))));
-}
-
-// Ensure importing clients always get corresponding 
-// pairs of getters and stringifiers.
-export function stringifiersAndGetters() {
-    return [destringifyGameID, stringifyGameID, destringifyGame, stringifyGame];
 }

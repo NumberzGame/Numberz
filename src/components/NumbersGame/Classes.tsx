@@ -62,12 +62,20 @@ export class Game{
     // Indices of seeds in deduped symbols.json["SEEDS"]
     readonly seedIndices: number[];
 
+    readonly ops: number[];
+
     state: GameState;
 
-    constructor(id: GameID, when_first_seen_ms: number, seedIndices: number[], state: GameState) {
+    constructor(id: GameID,
+                when_first_seen_ms: number,
+                seedIndices: number[],
+                state: GameState,
+                ops: number[]
+               ) {
         this.id = id
         this.when_first_seen_ms = when_first_seen_ms;
         this.seedIndices = seedIndices;
         this.state = state;
+        this.ops = ops;
     }
   }

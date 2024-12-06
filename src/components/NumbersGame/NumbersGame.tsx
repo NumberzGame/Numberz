@@ -6,7 +6,8 @@ import { useLocalStorage } from '@mantine/hooks';
 import { Button, Group, TextInput } from '@mantine/core';
 
 import { OPS } from './Core';
-import { stringifiersAndGetters } from './Schema';
+import { Game, GameID, GameState } from './Classes';
+import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, MIN_GAME_ID_SIZE } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {
@@ -15,16 +16,46 @@ const overrideSymbolText = function(s: string): string {
   return s
 }
 
+const STARTING_DIFFICULTY = 25;
+
+const getRandomGameOfDifficulty = function(grade: number): Game{
+    const goal=100;
+    const form="2";
+    const index=0;
+    const gameID = new GameID(grade, goal, form, index);
+    const state = new GameState(false, []);
+    const date = new Date("2024-12-06T10:34:48.793Z");
+    const datetime_ms = date.getTime();
+    const game =  new Game(gameID, datetime_ms, [], state);
+    return game;
+}
 
 export function NumbersGame() {
 
     // https://mantine.dev/hooks/use-local-storage/
-    const [playHistory, setplayHistory] = useLocalStorage({ key: 'play-history', defaultValue: '' });
+    const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
+    const [currentDifficulty,
+           setCurrentDifficulty] = useLocalStorage({ key: 'currentDifficulty',
+                                                     defaultValue: STARTING_DIFFICULTY.toString(),
+                                                   });
 
+    let currentGameID = pastGameIDs.slice(-MIN_GAME_ID_SIZE);
 
+    if (currentGameID.length === 0) {
+        const game = getRandomGameOfDifficulty(parseInt(currentDifficulty));
 
+        // Import/Request  `public\grades_goals_solutions_forms\${currentDifficulty}\distribution.json`.
+        // Sum up all values to get total (number of solutions for each goal).
+        // Generate random number rand from [0,1].
+        // Calculate solution index = Math.floor(rand*total).
+        // Iterate through distribution.json to find goal of solution with that index.
+        // Calculate new_index (Offset of index into solutions) of that goal and grade).
+        // Import/Request  `public\grades_goals_solutions_forms\${currentDifficulty}\${goal}\distribution.json`
+        // Iterate through distribution.json to find form of solution with that index, grade and goal.
+        // Get seeds and ops
+        
+    }
 
-    const [currentGameState, setCurrentGameState] = useLocalStorage({ key: 'current-game-state', defaultValue: '' });
 
     const SymbolsButtons = OPS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
 
