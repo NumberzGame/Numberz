@@ -1,7 +1,6 @@
-
-
-
+import { useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
+import { useFetch } from '@mantine/hooks';
 
 import { Button, Group, TextInput } from '@mantine/core';
 
@@ -26,18 +25,23 @@ const getRandomGameOfDifficulty = function(grade: number): Game{
     const state = new GameState(false, []);
     const date = new Date("2024-12-06T10:34:48.793Z");
     const datetime_ms = date.getTime();
-    const game =  new Game(gameID, datetime_ms, [], state);
+    const game =  new Game(gameID, datetime_ms, [], state, []);
     return game;
 }
 
-export function NumbersGame() {
+
+// Add Game Manager
+
+export function NumbersGame(props: {gameID: string, onWin: () => void, onQuit: () => void}) {
 
     // https://mantine.dev/hooks/use-local-storage/
-    const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
-    const [currentDifficulty,
-           setCurrentDifficulty] = useLocalStorage({ key: 'currentDifficulty',
-                                                     defaultValue: STARTING_DIFFICULTY.toString(),
-                                                   });
+    // const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
+    // const [currentDifficulty,
+    //        setCurrentDifficulty] = useLocalStorage({ key: 'currentDifficulty',
+    //                                                  defaultValue: STARTING_DIFFICULTY.toString(),
+    //                                                });
+
+    const [game, setAndStoreGame] = useLocalStorage({ key: props.gameID, defaultValue: '' });
 
     let currentGameID = pastGameIDs.slice(-MIN_GAME_ID_SIZE);
 
