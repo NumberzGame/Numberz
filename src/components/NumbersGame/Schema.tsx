@@ -316,15 +316,15 @@ export const checkItemsFitAndPadIterable = function*(
 
 export const gameDataCodeUnits = function*(game: Game): IterableIterator<number> {
     
-    // const datetime_top_15_bits = (game.when_first_seen_ms >>> 30) & MAX_U15;
-    // const datetime_mid_15_bits = (game.when_first_seen_ms >>> 15) & MAX_U15;
-    // const datetime_bottom_15_bits = game.when_first_seen_ms & MAX_U15;
+    // const datetime_top_15_bits = (game.timestamp_ms >>> 30) & MAX_U15;
+    // const datetime_mid_15_bits = (game.timestamp_ms >>> 15) & MAX_U15;
+    // const datetime_bottom_15_bits = game.timestamp_ms & MAX_U15;
     // // just checks if positive.  
     // // (x & MAX_U15) above cannot exceed MAX_U15.
     // checkFitsInChunk(datetime_top_15_bits);
     // checkFitsInChunk(datetime_mid_15_bits);
     // checkFitsInChunk(datetime_bottom_15_bits);
-    for (const chunk of chunkify(game.when_first_seen_ms, 3)) {
+    for (const chunk of chunkify(game.timestamp_ms, 3)) {
         yield chunk;
     }
     // [datetime_top_15_bits,
