@@ -18,17 +18,6 @@ const overrideSymbolText = function(s: string): string {
 
 const STARTING_DIFFICULTY = 25;
 
-const getRandomGameOfDifficulty = function(grade: number): Game{
-    const goal=100;
-    const form="2";
-    const index=0;
-    const gameID = new GameID(grade, goal, form, index);
-    const state = new GameState(false, []);
-    const date = new Date("2024-12-06T10:34:48.793Z");
-    const datetime_ms = date.getTime();
-    const game =  new Game(gameID, datetime_ms, [0,0,1,1,10,12], [0], state);
-    return game;
-}
 
 
 function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorage"): boolean {
@@ -49,6 +38,19 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
       storage.length !== 0
     );
   }
+}
+
+let storeGameInLocalStorage: (game: Game) => void;
+
+if (storageAvailable()) {
+
+    storeGameInLocalStorage = function(game: Game) {
+        const key = stringifyGameID(game.id);
+        const val = stringifyGame(game);
+        localStorage.setItem(key, val);
+    }
+} else {
+    storeGameInLocalStorage = (game: Game) => {};
 }
 
 
@@ -74,13 +76,24 @@ export function NumbersGame(props: NumbersGameProps) {
 
     // https://mantine.dev/hooks/use-local-storage/
     const gameID = props.gameID;
-    const key = stringifyGameID(gameID);
 
-    const [gameState, setGameStateUsingImmerProducer] = useImmer(() => new GameState());
+    const gameFactory = function(): Game{
+
+      const state = new GameState();
+      const datetime_ms = Date.now();
+      const game =  new Game(gameID, datetime_ms, [0,0,1,1,10,12], [0], state);
+      return game;
+    }
+    const [game, setGameUsingImmerProducer] = useImmer(gameFactory);
+
+
 
     const doMove = function() {
         const move = new Move(0,[0,1]);
-        setGameStateUsingImmerProducer((draft) => {draft.moves.push(move);});
+        setGameUsingImmerProducer((draft: Game) => {
+            draft.state.moves.push(move);
+            storeGameInLocalStorage(draft);
+        });
     };
 
     // const [current, setAndStoreCurrent] = useLocalStorage({ key: key, defaultValue: stringifyGame(game) });

@@ -28,6 +28,7 @@ export const Forms=Object.freeze([
 
 
 export class GameID{
+    [immerable] = true;
     readonly grade: number;
     readonly goal: number;
     readonly form: string;
@@ -42,6 +43,7 @@ export class GameID{
   }
 
 export class Move{
+    [immerable] = true;
     opIndex: number;
     operandIndices: number[];
 
@@ -63,6 +65,7 @@ export class GameState{
 }
 
 export class Game{
+    [immerable] = true;
     id: GameID;
 
     // Date-time (milli seconds since 1970)
