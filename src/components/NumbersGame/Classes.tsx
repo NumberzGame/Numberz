@@ -1,3 +1,6 @@
+import { SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
+
+
 // All possible keys in all distribution.jsons:
 // '((3_2)_1)', '(((2_2)_1)_1)', '(3_2)', '5', '6', '((2_2)_2)', 
 // '(4_2)', '(2_2)', '2', '((2_2)_1)', '(3_3)', '3', '4'
@@ -62,20 +65,62 @@ export class Game{
     // Indices of seeds in deduped symbols.json["SEEDS"]
     readonly seedIndices: number[];
 
-    readonly ops: number[];
+    // The game's solution
+    readonly opIndices: number[];
 
     state: GameState;
 
     constructor(id: GameID,
                 when_first_seen_ms: number,
                 seedIndices: number[],
+                opIndices: number[],
                 state: GameState,
-                ops: number[]
                ) {
-        this.id = id
+        this.id = id;
         this.when_first_seen_ms = when_first_seen_ms;
         this.seedIndices = seedIndices;
         this.state = state;
-        this.ops = ops;
+        this.opIndices = opIndices;
+    }
+
+
+    // TODO:  COMPLETE!
+    currentOperands(): number[] {
+        const operands = Array.from(this.seedIndices.map(index => SEEDS[index]));
+
+        for (const move of this.state.moves) {
+
+            // Every Move is required to have an opIndex
+            const op_symbol = OP_SYMBOLS[move.opIndex];
+
+            if (move.operandIndices.length === NUM_REQUIRED_OPERANDS[op_symbol]) {
+                const op = OPS[op_symbol];
+                const [i, j] = move.operandIndices;
+                const selected_operands = move.operandIndices.map(index => operands[index]);
+                const [x, y] = selected_operands;
+                const result = op(x, y);
+                if (result === INVALID_ARGS) {
+                    throw new Error(`Invalid operands: ${selected_operands} for op ${op}. Unsupported move: ${move}`);
+                } else {
+                    // replace first operand with result
+                    operands[i] = result;
+                    // delete second operand
+                    operands.splice(j, 1);
+                }
+
+            } else if  (move.operandIndices.length < NUM_REQUIRED_OPERANDS[op_symbol]){
+                break
+            } else {
+                throw new Error(`Too many operands: ${move.operandIndices} in move ${move}`); 
+            }
+
+        }
+
+        return operands;
+    }
+
+    solved(): Boolean {
+        const operands = this.currentOperands();
+        return operands.includes(this.id.goal);
     }
   }

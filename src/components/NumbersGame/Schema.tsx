@@ -1,6 +1,6 @@
 
 import { GameID, Game, GameState, Forms, Move } from './Classes';
-import {ALL_SEEDS, SEEDS, OPS, GOAL_MIN, GOAL_MAX } from './Core';
+import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX } from './Core';
 
 // See  /dev/schemas.txt
 // simple: (72B, 5MB limit => 10 per day for 16 years)
@@ -41,7 +41,8 @@ const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 
 export const MAX_SEEDS = 6;
-export const MAX_MOVES = MAX_SEEDS - 1;
+export const MAX_OPS = MAX_SEEDS - 1;
+export const MAX_MOVES = MAX_OPS
 export const MAX_OPERANDS = 2;
 export const MIN_GAME_ID_SIZE = 5;
 export const MIN_GAME_SIZE = 26;
@@ -121,7 +122,8 @@ export const destringifyGameID = function(key: string): GameID {
         )   
     }
 
-    const next = makeNextDestringified(key);
+    const takeNextN = makeTakeNextNDestringified(key);
+    const next = () => takeNextN(1).next().value;
 
     const grade = next();
     const goal = next();
@@ -138,19 +140,24 @@ export const destringifyGameID = function(key: string): GameID {
 
 
 
-const makeNextDestringified = function(s: string): () => number {
+const makeTakeNextNDestringified = function(s: string): (N: number) => IterableIterator<number> {
     const codeUnitsIterator = destringifyCodeUnits(s);
-    const nextDestringified = function(): number {
-        const result = codeUnitsIterator.next();
-        if (result.done) {
-            throw new Error(`codeUnitsIterator exhausted. `
-                +`s=${s} too short for required number of calls/iterations. `
-            )
+    const takeNextNDestringified = function*(N: number): IterableIterator<number> {
+        // Iterator.prototype.take is not supported on Safari (as of 10 Dec 2024)
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/take
+        // const NResults = codeUnitsIterator.take(N); 
+        for (let i = 0; i < N; i++) {
+            const result = codeUnitsIterator.next();
+            if (result.done) {
+                throw new Error(`codeUnitsIterator exhausted. `
+                    +`s=${s} too short for required number of calls/iterations. `
+                    +`latest N=${N}`
+                );
+            }
+            yield result.value;
         }
-
-        return result.value;
     }
-    return nextDestringified;
+    return takeNextNDestringified;
 }
 
 export const stringifyGameID = function(gameID: GameID): string {
@@ -187,8 +194,8 @@ export const destringifyGame = function(s: string, id: GameID): Game {
         )   
     }
 
-    const next = makeNextDestringified(s);
-
+    const takeNextN = makeTakeNextNDestringified(s);
+    const next = () => takeNextN(1).next().value;
     // Skip schema code
     next();
     
@@ -207,13 +214,9 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     const solved = solved_num === 1;
 
-    const FIRST = 5;
-
     const seedIndices = [];
 
-    for (let i = 0; i < MAX_SEEDS; i++) { 
-        // const seedIndex = s.charCodeAt(i);
-        const seedIndex = next();
+    for (const seedIndex of takeNextN(MAX_SEEDS)) {
         if(seedIndex === NO_SEED) {
             continue
         } else if ((0 <= seedIndex) && (seedIndex <= SEEDS.length)) {
@@ -222,20 +225,31 @@ export const destringifyGame = function(s: string, id: GameID): Game {
             throw new Error(`Unrecognised seed index: ${seedIndex}. `
                            + `Must be between 0 and ${SEEDS.length-1}, `
                            +`or ===NO_SEED code ${NO_SEED}`
-                           +`Check s.charCodeAt(${i+FIRST})`
+            );
+        }
+    }
+
+    const opIndices = [];
+
+    for (const opIndex of takeNextN(MAX_OPS)) { 
+        if(opIndex === NO_OP) {
+            continue
+        } else if ((0 <= opIndex) && (opIndex <= SEEDS.length)) {
+            opIndices.push(opIndex);
+        } else {
+            throw new Error(`Unrecognised seed index: ${opIndex}. `
+                           + `Must be between 0 and ${SEEDS.length-1}, `
+                           +`or ===NO_SEED code ${NO_SEED}`
             );
         }
     }
 
     const moves = [];
     
-    // for (let j = FIRST_MOVE_INDEX; j+=3; j < FIRST_MOVE_INDEX+MAX_MOVES) {
-    //     const opIndex = s.charCodeAt(j);
-    for (let j = 0; j < MAX_MOVES; j++) {
-        const opIndex = next();
+
+    for (const opIndex of takeNextN(MAX_MOVES)) {
         const operandIndices = [];
-        for (let k=0; k< MAX_OPERANDS; k++) {
-            const operandIndex = next();
+        for (const operandIndex of takeNextN(MAX_OPERANDS)) {
             if (operandIndex === NO_OPERAND) {
                 continue
             } else if (0 <= operandIndex && operandIndex < (MAX_SEEDS)) {
@@ -249,21 +263,54 @@ export const destringifyGame = function(s: string, id: GameID): Game {
         }
         if (opIndex === NO_OP) {
             continue;
-        } else if ((0 <= opIndex) && (opIndex < OPS.length)) {
+        } else if ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length)) {
             const move = new Move(opIndex, operandIndices);
             moves.push(move);
         } else {
             throw new Error(`Unrecognised op index: ${opIndex}. `
-                           + `Must be between 0 and ${OPS.length-1} inc, `
+                           + `Must be between 0 and ${OP_SYMBOLS.length-1} inc, `
                            +`or ===NO_OP code ${NO_OP}`
             );
         }
     }
 
     const state = new GameState(solved, moves);
-    const game = new Game(id, timeStamp, seedIndices, state);
+    const game = new Game(id, timeStamp, seedIndices, [], state);
 
     return game;
+}
+
+function* checkAndPadIterable<T>(
+    it: Iterable<T>,
+    paddedLen: number,
+    fillValue: T,
+    checker: ((item: T) => void) | null = null,
+    ): IterableIterator<T> {
+    
+    let i=0;
+
+    for (const item of it) {
+        if (checker) {
+            checker(item);
+        }
+        yield item   
+        i++;
+    }
+    
+    for (;i < paddedLen; i++) {
+        yield fillValue;
+    }
+}
+
+const checkItemsFitAndPadIterable = function*(
+    it: Iterable<number>,
+    paddedLen: number,
+    fillValue: number,
+    ): IterableIterator<number> {
+    const items = checkAndPadIterable(it, paddedLen, fillValue, checkFitsInChunk);
+    for (const item of items) {
+        yield item;
+    }
 }
 
 
@@ -288,52 +335,31 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
     const solved_num = (game.state.solved === true ? 1 : 0);
     yield solved_num;
 
-    for (let i = 0; i < MAX_SEEDS; i++) { 
-        if (i < game.seedIndices.length) {
-            const seedIndex = game.seedIndices[i];
-            checkFitsInChunk(seedIndex);
-            yield seedIndex;  
-        } else {
-            // Pad with NO_SEED.  NO_SEED is too 
-            // high to be a u15, so we needn't pad
-            // with zero for example (which would
-            // require encoding 1 plus each index).
-            yield NO_SEED;  
-        }
+    for (const seedIndex of checkItemsFitAndPadIterable(game.seedIndices, MAX_SEEDS, NO_SEED)) { 
+        yield seedIndex;
     }
 
-    for (let j = 0; j < MAX_MOVES; j++) {
+    for (const opIndex of checkItemsFitAndPadIterable(game.opIndices, MAX_OPS, NO_OP)) { 
+        yield opIndex;
+    }
 
-        if (j < game.state.moves.length) {
-            const move = game.state.moves[j];
+    const NO_MOVE = new Move(NO_OP,Array(MAX_OPERANDS).fill(NO_OPERAND));
 
-            // A Move in .moves must have an opIndex
-            checkFitsInChunk(move.opIndex);
-            yield move.opIndex; 
-
-            for (let k = 0; k < MAX_OPERANDS; k++) {
-
-                let operandIndex;
-
-                if (k < move.operandIndices.length) {
-                    operandIndex = move.operandIndices[k];
-                    checkFitsInChunk(operandIndex);
-                } else {
-                    // Padding
-                    operandIndex = NO_OPERAND;
-                }
-
-                yield operandIndex; 
-            } 
-
-        } else {
-            // Padding.  See yield NO_SEED) above.
-            yield NO_OP;
-            for (let m = 0; m < MAX_OPERANDS; m++) {
-                yield NO_OPERAND; 
+    for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, NO_MOVE )) {
+        yield move.opIndex;
+        const operandIndices = checkAndPadIterable(
+                                    move.operandIndices,
+                                    MAX_OPERANDS,
+                                    NO_OPERAND,
+        );
+        for (const operandIndex of operandIndices) {
+            if (operandIndex != NO_OPERAND) {
+                checkFitsInChunk(operandIndex);
             }
+            yield operandIndex;
         }
     }
+
 }
 
 
