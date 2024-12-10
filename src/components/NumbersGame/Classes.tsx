@@ -1,3 +1,6 @@
+
+import {immerable} from "immer"
+
 import { SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
 
 
@@ -49,14 +52,15 @@ export class Move{
 }
 
 export class GameState{
-      solved: boolean;
-      moves: Move[];
-  
-      constructor(solved: boolean, moves: Move[]) {
-          this.solved = solved;
-          this.moves = moves;
-      }
+    [immerable] = true;
+    solved: boolean;
+    moves: Move[];
+
+    constructor(solved: boolean = false, moves: Move[] = []) {
+        this.solved = solved;
+        this.moves = moves;
     }
+}
 
 export class Game{
     id: GameID;
@@ -68,7 +72,7 @@ export class Game{
     // Indices of seeds in deduped symbols.json["SEEDS"]
     readonly seedIndices: number[];
 
-    // The game's solution
+    // The game's solution, together with the form in the GameID
     readonly opIndices: number[];
 
     state: GameState;

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useImmer } from "use-immer";
+// import { useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
 import { useFetch } from '@mantine/hooks';
 
 import { Button, Group, TextInput } from '@mantine/core';
 
 import { OP_SYMBOLS } from './Core';
-import { Game, GameID, GameState } from './Classes';
+import { Game, GameID, GameState, Move } from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, MIN_GAME_ID_SIZE } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
@@ -25,8 +26,29 @@ const getRandomGameOfDifficulty = function(grade: number): Game{
     const state = new GameState(false, []);
     const date = new Date("2024-12-06T10:34:48.793Z");
     const datetime_ms = date.getTime();
-    const game =  new Game(gameID, datetime_ms, [], [], state);
+    const game =  new Game(gameID, datetime_ms, [0,0,1,1,10,12], [0], state);
     return game;
+}
+
+
+function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorage"): boolean {
+  // https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#testing_for_availability
+  let storage;
+  try {
+    storage = window[type];
+    const x = "__storage_test__";
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (e) {
+    return Boolean(
+      e instanceof DOMException &&
+      e.name === "QuotaExceededError" &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage &&
+      storage.length !== 0
+    );
+  }
 }
 
 
@@ -42,17 +64,25 @@ export function OperandButton(props: {onClick: () => void}) {
 }
 
 interface NumbersGameProps{
-    game: Game
-    onWin: () => void
-    onQuit: () => void
+    gameID: GameID
+    // onWin: () => void
+    // onQuit: () => void
 }
 // Add Game Manager
 
 export function NumbersGame(props: NumbersGameProps) {
 
     // https://mantine.dev/hooks/use-local-storage/
-    const game = props.game;
-    const key = stringifyGameID(game.id);
+    const gameID = props.gameID;
+    const key = stringifyGameID(gameID);
+
+    const [gameState, setGameStateUsingImmerProducer] = useImmer(() => new GameState());
+
+    const doMove = function() {
+        const move = new Move(0,[0,1]);
+        setGameStateUsingImmerProducer((draft) => {draft.moves.push(move);});
+    };
+
     // const [current, setAndStoreCurrent] = useLocalStorage({ key: key, defaultValue: stringifyGame(game) });
     // const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
     // const [currentDifficulty,
@@ -101,6 +131,9 @@ export function NumbersGame(props: NumbersGameProps) {
       />
       <Group justify="center" mt="md">
         {SymbolsButtons}
+      </Group>
+      <Group justify="center" mt="md">
+        <Button onClick={doMove}>=</Button>
       </Group>
     </>
 }

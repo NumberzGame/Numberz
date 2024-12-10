@@ -1,5 +1,14 @@
 
-import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+// import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+
+
+const SYMBOLS = {
+    SEEDS: [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100],
+    OPS : ["+", "*", "-", "//"],
+    GOAL_MIN : 100,
+    GOAL_MAX : 999
+   };
+
 
 export const ALL_SEEDS = SYMBOLS["SEEDS"];
 export const SEEDS = Array.from(new Set(ALL_SEEDS));
