@@ -3,7 +3,8 @@ import { GameID, Forms, Game, Move, GameState } from './Classes';
 import { OPS,SEEDS,GOAL_MIN, GOAL_MAX } from './Core';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          CHUNK_SIZE, chunkify, deChunkify, stringifyCodeUnits, destringifyCodeUnits,
-         MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, checkFitsInChunk, gameDataCodeUnits } from './Schema'
+         MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS, NO_OP, checkFitsInChunk, gameDataCodeUnits,
+         checkItemsFitAndPadIterable } from './Schema'
 const grade=1;
 const goal=100;
 const form="2";
@@ -20,3 +21,6 @@ const stringified = stringifyGame(game);
 console.log(stringified);
 const destringifiedGame = destringifyGame(stringified, gameID);
 console.log(destringifiedGame);
+
+console.log(Array.from(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));
+console.log(stringifyCodeUnits(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));

@@ -37,7 +37,7 @@ const MAX_U15 = ((1 << CHUNK_SIZE) - 1);  //32767, 0b111111111111111 === 0x7fff
 
 const NO_SEED = 0xd7ff;    // 0xd7ff is the max single code unit BMP code 
                            // point (before surrogate range).   
-const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits 
+export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits 
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 
 export const MAX_SEEDS = 6;
@@ -275,7 +275,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
     }
 
     const state = new GameState(solved, moves);
-    const game = new Game(id, timeStamp, seedIndices, [], state);
+    const game = new Game(id, timeStamp, seedIndices, opIndices, state);
 
     return game;
 }
@@ -302,7 +302,7 @@ function* checkAndPadIterable<T>(
     }
 }
 
-const checkItemsFitAndPadIterable = function*(
+export const checkItemsFitAndPadIterable = function*(
     it: Iterable<number>,
     paddedLen: number,
     fillValue: number,

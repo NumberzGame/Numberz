@@ -60,7 +60,10 @@ export class GameState{
 
 export class Game{
     id: GameID;
-    readonly when_first_seen_ms: number;
+
+    // Date-time (milli seconds since 1970)
+    // when this GameID was first shown.
+    readonly timestamp_ms: number;
 
     // Indices of seeds in deduped symbols.json["SEEDS"]
     readonly seedIndices: number[];
@@ -71,13 +74,13 @@ export class Game{
     state: GameState;
 
     constructor(id: GameID,
-                when_first_seen_ms: number,
+                timestamp_ms: number,
                 seedIndices: number[],
                 opIndices: number[],
                 state: GameState,
                ) {
         this.id = id;
-        this.when_first_seen_ms = when_first_seen_ms;
+        this.timestamp_ms = timestamp_ms;
         this.seedIndices = seedIndices;
         this.state = state;
         this.opIndices = opIndices;
