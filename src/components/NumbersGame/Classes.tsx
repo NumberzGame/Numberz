@@ -1,7 +1,8 @@
 
 import {immerable} from "immer"
 
-import { SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
+import { MAX_SEEDS } from "./Schema";
 
 
 // All possible keys in all distribution.jsons:
@@ -64,6 +65,23 @@ export class GameState{
     }
 }
 
+
+function randomIndexInto<Item>(sized: Item[]): number {
+    return Math.floor(Math.random()*sized.length);
+}
+
+
+function* shuffle<T>(arr:T[]) {
+    const itemsToYield = Array.from(arr);
+    while (itemsToYield.length) {
+        const index = randomIndexInto(itemsToYield);
+        yield itemsToYield[index];
+        // Delete the item at index from itemsToYield.
+        itemsToYield.splice(index, 1);
+    }
+}
+
+
 export class Game{
     [immerable] = true;
     id: GameID;
@@ -73,10 +91,16 @@ export class Game{
     readonly timestamp_ms: number;
 
     // Indices of seeds in deduped symbols.json["SEEDS"]
-    readonly seedIndices: number[];
+    readonly seedIndicesSolutionOrder: number[];
 
     // The game's solution, together with the form in the GameID
+    // and the ordered seeds in seedIndicesSolutionOrder
     readonly opIndices: number[];
+
+    // Shuffled, and containing decoys.  Else for forms of 
+    // rank <= 5, the latter seeds will always be unused.
+    // TODO: Make sure decoys don't make the solution easier.
+    readonly seedIndices: number[];
 
     state: GameState;
 
@@ -88,9 +112,29 @@ export class Game{
                ) {
         this.id = id;
         this.timestamp_ms = timestamp_ms;
-        this.seedIndices = seedIndices;
-        this.state = state;
+        this.seedIndicesSolutionOrder = seedIndices;
         this.opIndices = opIndices;
+
+        const unusedSeeds = Array.from(ALL_SEEDS);
+        // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
+        // ALL_SEEDS (which contains duplicates of small numbers).
+        for (const seedIndex of seedIndices) {
+            // Delete first occurence of SEEDS[seedIndex] in unusedSeeds
+            const usedSeedindex = unusedSeeds.indexOf(SEEDS[seedIndex]);
+            unusedSeeds.splice(usedSeedindex, 1);
+        }
+        const redHerrings = [];
+        // If MAX_SEEDS > ALL_SEEDS.length, there are no more seeds to use as red herrings.
+        for (let i = seedIndices.length; i < MAX_SEEDS; i++) {
+            const redHerringIndex = randomIndexInto(unusedSeeds);
+            const redHerring = unusedSeeds[redHerringIndex];
+            redHerrings.push(redHerring);
+            unusedSeeds.splice(redHerringIndex, 1);
+        }
+
+        this.seedIndices = Array.from(shuffle(seedIndices.concat(redHerrings)));
+        this.state = state;
+
     }
 
 
