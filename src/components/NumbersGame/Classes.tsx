@@ -82,6 +82,30 @@ function* shuffle<T>(arr:T[]) {
 }
 
 
+function addRedHerrings(seedIndices: number[]): number[]{
+
+    const unusedSeeds = Array.from(ALL_SEEDS);
+    // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
+    // ALL_SEEDS (which contains duplicates of small numbers).
+    for (const seedIndex of seedIndices) {
+        // Delete first occurence of SEEDS[seedIndex] in unusedSeeds
+        const usedSeedindex = unusedSeeds.indexOf(SEEDS[seedIndex]);
+        unusedSeeds.splice(usedSeedindex, 1);
+    }
+
+    const retval = [...seedIndices];
+    // If MAX_SEEDS > ALL_SEEDS.length, there are no more seeds to use as red herrings.
+    for (let i = seedIndices.length; i < MAX_SEEDS; i++) {
+        const redHerringIndex = randomIndexInto(unusedSeeds);
+        const redHerring = unusedSeeds[redHerringIndex];
+        retval.push(redHerring);
+        unusedSeeds.splice(redHerringIndex, 1);
+    }
+    return retval;
+}
+
+
+
 export class Game{
     [immerable] = true;
     id: GameID;
@@ -115,24 +139,10 @@ export class Game{
         this.seedIndicesSolutionOrder = seedIndices;
         this.opIndices = opIndices;
 
-        const unusedSeeds = Array.from(ALL_SEEDS);
-        // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
-        // ALL_SEEDS (which contains duplicates of small numbers).
-        for (const seedIndex of seedIndices) {
-            // Delete first occurence of SEEDS[seedIndex] in unusedSeeds
-            const usedSeedindex = unusedSeeds.indexOf(SEEDS[seedIndex]);
-            unusedSeeds.splice(usedSeedindex, 1);
-        }
-        const redHerrings = [];
-        // If MAX_SEEDS > ALL_SEEDS.length, there are no more seeds to use as red herrings.
-        for (let i = seedIndices.length; i < MAX_SEEDS; i++) {
-            const redHerringIndex = randomIndexInto(unusedSeeds);
-            const redHerring = unusedSeeds[redHerringIndex];
-            redHerrings.push(redHerring);
-            unusedSeeds.splice(redHerringIndex, 1);
-        }
 
-        this.seedIndices = Array.from(shuffle(seedIndices.concat(redHerrings)));
+        const seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
+
+        this.seedIndices = Array.from(shuffle(seedIndicesAndRedHerrings));
         this.state = state;
 
     }
