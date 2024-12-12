@@ -2,7 +2,8 @@
 import {immerable} from "immer"
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
-import { MAX_SEEDS } from "./Schema";
+import { MAX_SEEDS, MAX_OPS } from "./Core";
+import { solutions, Operand, EXPR_PATTERN } from './solverDFS';
 
 
 // All possible keys in all distribution.jsons:
@@ -106,6 +107,35 @@ function addRedHerrings(seedIndices: number[]): number[]{
 
 
 
+
+
+const calcGrade = function(solution: Operand): number {
+    let grade = 0;
+    let expr = solution.expr;
+
+    for (let i=0; i < MAX_OPS; i++) {
+        const match = expr.match(EXPR_PATTERN);
+        if (!match?.groups) {
+            break;
+        }
+        const seed1 = parseInt(match!.groups['seed1']);
+        const seed2 = parseInt(match!.groups['seed2']);
+        const opSymbol = match!.groups['op'];
+
+        const op = OPS[opSymbol];
+        const val = op(seed1, seed2);
+        expr = expr.replace(match[0], val.toString());
+
+        
+        
+        
+    }
+
+    return grade
+}
+
+
+
 export class Game{
     [immerable] = true;
     id: GameID;
@@ -139,9 +169,23 @@ export class Game{
         this.seedIndicesSolutionOrder = seedIndices;
         this.opIndices = opIndices;
 
-
-        const seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
-
+        let seedIndicesAndRedHerrings;
+        while (true) {
+            seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
+            let redHerringMakesGametooEasy = false;
+            for (const solution of solutions(this.id.goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
+                if (calcGrade(solution) < this.id.grade) {
+                    redHerringMakesGametooEasy = true;
+                    
+                    // break inner for loop
+                    break; 
+                }
+            }
+            if (redHerringMakesGametooEasy) {
+                continue;
+            }
+            break;
+        }
         this.seedIndices = Array.from(shuffle(seedIndicesAndRedHerrings));
         this.state = state;
 

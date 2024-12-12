@@ -31,7 +31,7 @@ const OPS = {
 
 
 
-class Operand {
+export class Operand {
     readonly val: number;
     readonly expr: string;
     
@@ -44,6 +44,10 @@ class Operand {
 function makeSubSolExpr(x: Operand, y: Operand, op: string): string {
     return `(${x.expr} ${op} ${y.expr})`
 }
+
+// TODO: Construct \+|\*|\-|\/ from RegExp.escape and OPS.keys
+export const EXPR_PATTERN = /\((?<seed1>\d+)\ (?<op>\+|\*|\-|\/)\ (?<seed2>\d+)\)/;
+
 
 
 function makeValidSubSolExpr(x: Operand, y: Operand, op: string): string {
@@ -85,13 +89,13 @@ function* allOperandsFrom(operands: Operand[], maxDepth: number = 6): IterableIt
 }
 
 
-const operandsFromSeeds = function(): IterableIterator<Operand[]>  {
+const operandsFromSeeds = function(seeds: number[]): IterableIterator<Operand[]>  {
     return allOperandsFrom(seeds.map((seed) => new Operand(seed, null)));
 }
 
 
-export const solutions = function*(goal: number): IterableIterator<Operand> {
-    for (const operands of operandsFromSeeds()) {
+export const solutions = function*(goal: number, seeds: number[]): IterableIterator<Operand> {
+    for (const operands of operandsFromSeeds(seeds)) {
         // console.log(`operands: ${Array.from(operands.map(op => op.expr))}`);
         // continue;
         for (const operand of operands) {

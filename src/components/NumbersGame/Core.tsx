@@ -1,6 +1,10 @@
 
 // import SYMBOLS from '../../data/symbols.json' with { type: "json" };
 
+export const MAX_SEEDS = 6;
+export const MAX_OPS = MAX_SEEDS - 1;
+export const MAX_MOVES = MAX_OPS;
+export const MAX_OPERANDS = 2;
 
 const SYMBOLS = {
     SEEDS: [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100],

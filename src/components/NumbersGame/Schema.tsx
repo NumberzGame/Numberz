@@ -1,6 +1,7 @@
 
 import { GameID, Game, GameState, Forms, Move } from './Classes';
-import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX } from './Core';
+import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
+        MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
 
 // See  /dev/schemas.txt
 // simple: (72B, 5MB limit => 10 per day for 16 years)
@@ -40,10 +41,6 @@ const NO_SEED = 0xd7ff;    // 0xd7ff is the max single code unit BMP code
 export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits 
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 
-export const MAX_SEEDS = 6;
-export const MAX_OPS = MAX_SEEDS - 1;
-export const MAX_MOVES = MAX_OPS
-export const MAX_OPERANDS = 2;
 export const MIN_GAME_ID_SIZE = 5;
 export const MIN_GAME_SIZE = 26;
 
