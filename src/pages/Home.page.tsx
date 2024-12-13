@@ -9,9 +9,9 @@ import { GameID } from '../components/NumbersGame/Classes';
 export function HomePage() {
 
 
-  const grade = 10;
-  const goal=100;
-  const form="2";
+  const grade = 22;
+  const goal=224;
+  const form="6";
   const index=0;
   const gameID = new GameID(grade, goal, form, index);
 

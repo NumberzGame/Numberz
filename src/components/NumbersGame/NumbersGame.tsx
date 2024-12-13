@@ -1,11 +1,11 @@
 import { useImmer } from "use-immer";
 // import { useState } from 'react';
-import { useLocalStorage } from '@mantine/hooks';
-import { useFetch } from '@mantine/hooks';
+// import { useLocalStorage } from '@mantine/hooks';
+// import { useFetch } from '@mantine/hooks';
 
-import { Button, Group, TextInput } from '@mantine/core';
+import { Button, Group, Image, TextInput } from '@mantine/core';
 
-import { OP_SYMBOLS } from './Core';
+import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
 import { Game, GameID, GameState, Move } from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, MIN_GAME_ID_SIZE } from './Schema';
 
@@ -81,20 +81,22 @@ export function NumbersGame(props: NumbersGameProps) {
 
       const state = new GameState();
       const datetime_ms = Date.now();
-      const game =  new Game(gameID, datetime_ms, [0,0,1,1,10,12], [0], state);
+      const game =  new Game(gameID, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
       return game;
     }
     const [game, setGameUsingImmerProducer] = useImmer(gameFactory);
 
+    if (game.solved()) {
+       return <Image radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
+    }
 
-
-    const doMove = function() {
-        const move = new Move(0,[0,1]);
-        setGameUsingImmerProducer((draft: Game) => {
-            draft.state.moves.push(move);
-            storeGameInLocalStorage(draft);
-        });
-    };
+    // const doMove = function() {
+    //     const move = new Move(0,false, [0,1]);
+    //     setGameUsingImmerProducer((draft: Game) => {
+    //         draft.state.moves.push(move);
+    //         storeGameInLocalStorage(draft);
+    //     });
+    // };
 
     // const [current, setAndStoreCurrent] = useLocalStorage({ key: key, defaultValue: stringifyGame(game) });
     // const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
@@ -104,33 +106,74 @@ export function NumbersGame(props: NumbersGameProps) {
     //                                                });
 
 
-    // let currentGameID = pastGameIDs.slice(-MIN_GAME_ID_SIZE);
 
-    // if (currentGameID.length === 0) {
-    //     const game = getRandomGameOfDifficulty(parseInt(currentDifficulty));
+    const makeOpButtonClickHandler = function(opSymbol: string): () => void {
+      const opButtonClickHandler = function() {
+        setGameUsingImmerProducer((draft: Game) => {
+            const opIndex = OP_SYMBOLS.indexOf(opSymbol);
+            const move = draft.state.moves[-1];
+            move.opIndex = opIndex === move.opIndex ? null : opIndex;
+            storeGameInLocalStorage(draft);
+        });
+      }
+      return opButtonClickHandler;
 
-    //     // Import/Request  `public\grades_goals_solutions_forms\${currentDifficulty}\distribution.json`.
-    //     // Sum up all values to get total (number of solutions for each goal).
-    //     // Generate random number rand from [0,1].
-    //     // Calculate solution index = Math.floor(rand*total).
-    //     // Iterate through distribution.json to find goal of solution with that index.
-    //     // Calculate new_index (Offset of index into solutions) of that goal and grade).
-    //     // Import/Request  `public\grades_goals_solutions_forms\${currentDifficulty}\${goal}\distribution.json`
-    //     // Iterate through distribution.json to find form of solution with that index, grade and goal.
-    //     // Construct gameID = new GameID(...);
-    //     // Get seeds and ops
-    //     // Construct gameState = new GameState
-    //     // Get timestamp
-    //     // Construct game = new Game
-    //     // return game
-        
-        
-    // }
+    }
 
+    const SymbolsButtons = OP_SYMBOLS.map((s: string) => (
+      <Button onClick={makeOpButtonClickHandler(s)}>
+        {overrideSymbolText(s)}
+      </Button>
+      )
+    );
 
-    const SymbolsButtons = OP_SYMBOLS.map((s: string) => (<Button >{overrideSymbolText(s)}</Button>));
+    const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
+      const operandButtonClickHandler = function() {
+        setGameUsingImmerProducer((draft: Game) => {
+            const move = draft.state.moves[-1];
+            const operandIndices = move.operandIndices;
+            if (operandIndices.includes(operandIndex)) {
+              // Unselect already selected operand
+              const indexOfOperandIndex = operandIndices.indexOf(operandIndex); 
+              operandIndices.splice(indexOfOperandIndex, 1);
+            } else if (operandIndices.length < MAX_OPERANDS) {
+              // Select new operand.
+              operandIndices.push(operandIndex);
+            } else if (operandIndices.length === MAX_OPERANDS) {
+              // Replace last selected operand
+              operandIndices[-1] = operandIndex;
+            } else {
+              throw new Error(`Move has too many operand indices: ${operandIndices}. `
+                             +`Cannot have more than MAX_OPERANDS: ${MAX_OPERANDS}. `
+                             +`Move: ${move}`
+              );
+            }
+            storeGameInLocalStorage(draft);
+        });
+      }
+      return operandButtonClickHandler;
+    }
 
+    const OperandsButtons = game.currentOperands().map((val: number, index: number) => (
+      <Button onClick={makeOperandButtonClickHandler(val, index)}>
+        {val}
+      </Button>
+      )
+    );
     
+    const submitButtonHandler = function() {
+      setGameUsingImmerProducer((draft: Game) => {
+          const moves = draft.state.moves;
+          const lastMove = moves[-1];
+          lastMove.submitted = true;
+          if (moves.length < MAX_MOVES) {
+            moves.push(new Move());
+          }
+          storeGameInLocalStorage(draft);
+      });
+    }
+
+
     return <>
       {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
         Play the game below!!!
@@ -143,10 +186,13 @@ export function NumbersGame(props: NumbersGameProps) {
         // placeholder="Input placeholder"
       />
       <Group justify="center" mt="md">
+        {OperandsButtons}
+      </Group>
+      <Group justify="center" mt="md">
         {SymbolsButtons}
       </Group>
       <Group justify="center" mt="md">
-        <Button onClick={doMove}>=</Button>
+        <Button onClick={submitButtonHandler}>=</Button>
       </Group>
     </>
 }

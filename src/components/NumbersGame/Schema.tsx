@@ -245,6 +245,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
     
 
     for (const opIndex of takeNextN(MAX_MOVES)) {
+        const submitted = 1===next();
         const operandIndices = [];
         for (const operandIndex of takeNextN(MAX_OPERANDS)) {
             if (operandIndex === NO_OPERAND) {
@@ -258,17 +259,18 @@ export const destringifyGame = function(s: string, id: GameID): Game {
                 );
             }
         }
+        let move: Move;
         if (opIndex === NO_OP) {
-            continue;
+            move = new Move(null, submitted, operandIndices);
         } else if ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length)) {
-            const move = new Move(opIndex, operandIndices);
-            moves.push(move);
+            move = new Move(opIndex, submitted, operandIndices);
         } else {
             throw new Error(`Unrecognised op index: ${opIndex}. `
                            + `Must be between 0 and ${OP_SYMBOLS.length-1} inc, `
                            +`or ===NO_OP code ${NO_OP}`
             );
         }
+        moves.push(move);
     }
 
     const state = new GameState(solved, moves);
@@ -340,10 +342,11 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
         yield opIndex;
     }
 
-    const NO_MOVE = new Move(NO_OP,Array(MAX_OPERANDS).fill(NO_OPERAND));
+    const NO_MOVE = new Move(NO_OP,false, Array(MAX_OPERANDS).fill(NO_OPERAND));
 
     for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, NO_MOVE )) {
-        yield move.opIndex;
+        yield move.opIndex ?? NO_OP;
+        yield move.submitted ? 1 : 0;
         const operandIndices = checkAndPadIterable(
                                     move.operandIndices,
                                     MAX_OPERANDS,

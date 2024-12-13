@@ -63,11 +63,24 @@ export class GameID{
 
 export class Move{
     [immerable] = true;
-    opIndex: number;
+    opIndex: number | null ;
+    submitted: boolean ;
     operandIndices: number[];
 
-    constructor(opIndex: number, operandIndices: number[]) {
+    constructor(
+        opIndex: number | null = null,
+        submitted: boolean = false,
+        operandIndices: number[] = []) {
+
+        if (opIndex === null && submitted)  {
+            throw new Error('Cannot submit a Move with no Op. '
+                           +`Got: opIndex: ${opIndex}, submitted: ${submitted}, `
+                           +`operandIndices: ${operandIndices}. `
+            );  
+        }
+
         this.opIndex = opIndex;
+        this.submitted = submitted;
         this.operandIndices = operandIndices;
     }
 }
@@ -77,7 +90,7 @@ export class GameState{
     solved: boolean;
     moves: Move[];
 
-    constructor(solved: boolean = false, moves: Move[] = []) {
+    constructor(solved: boolean = false, moves: Move[] = [new Move()]) {
         this.solved = solved;
         this.moves = moves;
     }
@@ -163,6 +176,32 @@ const calcGrade = function(solution: Operand): number {
 }
 
 
+const addRedHerringsWithoutMakingEasier = function(
+    seedIndices: number[],
+    goal: number,
+    grade: number,
+    ): number[] {
+
+    let seedIndicesAndRedHerrings;
+    while (true) {
+        seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
+        let redHerringMakesGametooEasy = false;
+        for (const solution of solutions(goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
+            if (calcGrade(solution) < grade) {
+                redHerringMakesGametooEasy = true;
+                
+                // break inner for loop
+                break; 
+            }
+        }
+        if (redHerringMakesGametooEasy) {
+            continue;
+        }
+        break;
+    }
+    return seedIndicesAndRedHerrings;
+}
+
 
 export class Game{
     [immerable] = true;
@@ -197,24 +236,12 @@ export class Game{
         this.seedIndicesSolutionOrder = seedIndices;
         this.opIndices = opIndices;
 
-        let seedIndicesAndRedHerrings;
-        while (true) {
-            seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
-            let redHerringMakesGametooEasy = false;
-            for (const solution of solutions(this.id.goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
-                if (calcGrade(solution) < this.id.grade) {
-                    redHerringMakesGametooEasy = true;
-                    
-                    // break inner for loop
-                    break; 
-                }
-            }
-            if (redHerringMakesGametooEasy) {
-                continue;
-            }
-            break;
-        }
-        this.seedIndices = Array.from(shuffle(seedIndicesAndRedHerrings));
+        // seedIndices = addRedHerringsWithoutMakingEasier(
+        //     seedIndices,
+        //     this.id.goal,
+        //     this.id.grade);
+
+        this.seedIndices = Array.from(shuffle(seedIndices));
         this.state = state;
 
     }
@@ -226,7 +253,11 @@ export class Game{
 
         for (const move of this.state.moves) {
 
-            // Every Move is required to have an opIndex
+            // Submitted valid moves must be at the start of state.moves
+            if (move.opIndex === null || !move.submitted) {
+                break;
+            }
+
             const op_symbol = OP_SYMBOLS[move.opIndex];
 
             if (move.operandIndices.length === NUM_REQUIRED_OPERANDS[op_symbol]) {
@@ -245,7 +276,7 @@ export class Game{
                 }
 
             } else if  (move.operandIndices.length < NUM_REQUIRED_OPERANDS[op_symbol]){
-                break
+                break;
             } else {
                 throw new Error(`Too many operands: ${move.operandIndices} in move ${move}`); 
             }
