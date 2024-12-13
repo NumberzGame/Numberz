@@ -1,6 +1,9 @@
 
 import {immerable} from "immer"
 
+import { difficultyOfSum, difficultyOfProduct,
+         difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
+
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
 import { MAX_SEEDS, MAX_OPS } from "./Core";
 import { solutions, Operand, EXPR_PATTERN } from './solverDFS';
@@ -27,6 +30,20 @@ export const Forms=Object.freeze([
     "((3_2)_1)",
     "(((2_2)_1)_1)",
 ]);
+
+
+
+type GRADER = (x: number, y: number, r?: number, c?: number) => number;
+
+const GRADERS_LIST: GRADER[] = [
+    difficultyOfSum,
+    difficultyOfProduct,
+    difficultyOfDifference,
+    difficultyOfLongDivision,
+]
+
+
+const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, GRADERS_LIST[i]])));
 
 
 export class GameID{
@@ -106,17 +123,11 @@ function addRedHerrings(seedIndices: number[]): number[]{
 }
 
 
-
-
-
-const calcGrade = function(solution: Operand): number {
-    let grade = 0;
-    let expr = solution.expr;
-
-    for (let i=0; i < MAX_OPS; i++) {
+const getHintsAndGrades = function*(expr: string): IterableIterator<[string,number, number, number,string,number]>{
+    for (const match of expr.matchAll(EXPR_PATTERN)) {
         const match = expr.match(EXPR_PATTERN);
         if (!match?.groups) {
-            break;
+            continue;
         }
         const seed1 = parseInt(match!.groups['seed1']);
         const seed2 = parseInt(match!.groups['seed2']);
@@ -124,11 +135,28 @@ const calcGrade = function(solution: Operand): number {
 
         const op = OPS[opSymbol];
         const val = op(seed1, seed2);
+        if (val === INVALID_ARGS) {
+            continue
+        }
         expr = expr.replace(match[0], val.toString());
 
-        
-        
-        
+        const grade = GRADERS[opSymbol](seed1, seed2);
+
+        yield [match[0], val, seed1, seed2, opSymbol, grade];
+    }
+}
+
+
+const calcGrade = function(solution: Operand): number {
+    let grade = 0;
+    let expr = solution.expr;
+
+    for (let i=0; i < MAX_OPS; i++) {
+        for (const [subExpr, val, seed1, seed2, opSymbol, subGrade] of getHintsAndGrades(expr)) {
+            expr = expr.replace(subExpr, val.toString(10));
+
+            grade += subGrade;
+        }
     }
 
     return grade
