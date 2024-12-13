@@ -1,9 +1,11 @@
-import { useImmer } from "use-immer";
+
 // import { useState } from 'react';
 // import { useLocalStorage } from '@mantine/hooks';
 // import { useFetch } from '@mantine/hooks';
+import { useImmer } from "use-immer";
 
 import { Button, Group, Image, TextInput } from '@mantine/core';
+import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
 import { Game, GameID, GameState, Move } from './Classes';
@@ -121,7 +123,10 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     const SymbolsButtons = OP_SYMBOLS.map((s: string) => (
-      <Button onClick={makeOpButtonClickHandler(s)}>
+      <Button 
+        onClick={makeOpButtonClickHandler(s)}
+        key={nanoid()}
+      >
         {overrideSymbolText(s)}
       </Button>
       )
@@ -155,7 +160,10 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     const OperandsButtons = game.currentOperands().map((val: number, index: number) => (
-      <Button onClick={makeOperandButtonClickHandler(val, index)}>
+      <Button 
+        onClick={makeOperandButtonClickHandler(val, index)}
+        key={nanoid()}
+      >
         {val}
       </Button>
       )
