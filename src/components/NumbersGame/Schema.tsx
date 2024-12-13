@@ -27,6 +27,7 @@ import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX,
 //       moves*5 u225   (15)
 //         move u9
 //           Operand u3 (indices 0, 1, ..., 6)
+//           Submitted u1
 //           Op u2 (+, -, *, //)
 const SCHEMA_CODE = "S";
 export const CHUNK_SIZE = 15;
@@ -251,7 +252,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
             if (operandIndex === NO_OPERAND) {
                 continue
             } else if (0 <= operandIndex && operandIndex < (MAX_SEEDS)) {
-            operandIndices.push(operandIndex);
+                operandIndices.push(operandIndex);
             } else {
                 throw new Error(`Unrecognised operand index: ${operandIndex}. `
                     +`Must be between 0 and ${MAX_SEEDS-1} inc, `

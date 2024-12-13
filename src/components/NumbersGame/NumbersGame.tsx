@@ -9,7 +9,8 @@ import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
 import { Game, GameID, GameState, Move } from './Classes';
-import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, MIN_GAME_ID_SIZE } from './Schema';
+import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
+         MIN_GAME_ID_SIZE, destringifyCodeUnits } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {
@@ -42,17 +43,48 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
   }
 }
 
+
+const gameFactory = function(id: GameID): Game{
+
+  const state = new GameState();
+  const datetime_ms = Date.now();
+  const game = new Game(id, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
+  storeGameInLocalStorage(game);
+  return game;
+}
+
+
 let storeGameInLocalStorage: (game: Game) => void;
+let loadGameFromLocalStorageOrCreateNew: (id: GameID) => Game;
 
 if (storageAvailable()) {
 
-    storeGameInLocalStorage = function(game: Game) {
-        const key = stringifyGameID(game.id);
-        const val = stringifyGame(game);
-        localStorage.setItem(key, val);
-    }
+  storeGameInLocalStorage = function(game: Game) {
+      const key = stringifyGameID(game.id);
+      const val = stringifyGame(game);
+      localStorage.setItem(key, val);
+  }
+
+  loadGameFromLocalStorageOrCreateNew = function(id: GameID) {
+      const key = stringifyGameID(id);
+
+      const val = localStorage.getItem(key);
+
+      if (!val) {
+          const game = gameFactory(id);
+          storeGameInLocalStorage(game);
+          return game;
+      }
+
+      console.log(Array.from(destringifyCodeUnits(val)));
+
+      return destringifyGame(val, id);
+
+  }
+
 } else {
     storeGameInLocalStorage = (game: Game) => {};
+    loadGameFromLocalStorageOrCreateNew = gameFactory;
 }
 
 
@@ -79,35 +111,20 @@ export function NumbersGame(props: NumbersGameProps) {
     // https://mantine.dev/hooks/use-local-storage/
     const gameID = props.gameID;
 
-    const gameFactory = function(): Game{
-
-      const state = new GameState();
-      const datetime_ms = Date.now();
-      const game =  new Game(gameID, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
-      storeGameInLocalStorage(game);
-      return game;
+    const loadOrCreateNewGame = function() {
+        return loadGameFromLocalStorageOrCreateNew(gameID);
     }
-    const [game, setGameUsingImmerProducer] = useImmer(gameFactory);
+
+    const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
 
     if (game.solved()) {
-       return <Image radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
+        // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
+        // Photographer credit: https://stocksnap.io/author/travelphotographer
+        return <Image radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
     }
 
 
-    // const doMove = function() {
-    //     const move = new Move(0,false, [0,1]);
-    //     setGameUsingImmerProducer((draft: Game) => {
-    //         draft.state.moves.push(move);
-    //         storeGameInLocalStorage(draft);
-    //     });
-    // };
 
-    // const [current, setAndStoreCurrent] = useLocalStorage({ key: key, defaultValue: stringifyGame(game) });
-    // const [pastGameIDs, setPastGameIDs] = useLocalStorage({ key: 'pastGameIDs', defaultValue: '' });
-    // const [currentDifficulty,
-    //        setCurrentDifficulty] = useLocalStorage({ key: 'currentDifficulty',
-    //                                                  defaultValue: STARTING_DIFFICULTY.toString(),
-    //                                                });
 
 
 
