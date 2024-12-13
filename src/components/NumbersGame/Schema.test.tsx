@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 import fc from 'fast-check';
 
-import { OPS,OP_SYMBOLS,SEEDS,GOAL_MIN, GOAL_MAX } from './Core';
+import { OPS,OP_SYMBOLS,SEEDS,GOAL_MIN, GOAL_MAX,
+         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
 import { GameID, Forms, Game, Move, GameState } from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, 
-         stringifyGame, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS,
-         CHUNK_SIZE, chunkify, deChunkify,
+         stringifyGame, CHUNK_SIZE, chunkify, deChunkify,
          stringifyCodeUnits, destringifyCodeUnits, } from './Schema';
 
 // const [destringifyGameID, stringifyGameID, destringifyGame, stringifyGame] = stringifiersAndGetters();
@@ -74,7 +74,7 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
       const moves = [];
       for (const move_args of moves_data) {
         const [opIndex, operandIndices] = move_args; 
-        const move = new Move(opIndex, operandIndices);
+        const move = new Move(opIndex, true, operandIndices);
         moves.push(move);
       }
       const state = new GameState(solved, moves);
