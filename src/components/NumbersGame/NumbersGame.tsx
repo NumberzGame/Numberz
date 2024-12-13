@@ -60,7 +60,7 @@ export function OpButton(props: {onClick: () => void}) {
     // All Op Buttons act like radio buttons, but none can be pressed too.
     // onClick => Toggle button clicked on
     // If not clicked on the currently activated one => turn activated one off.
-    // Adds Op clicked on to game.state.Moves[-1]
+    // Adds Op clicked on to game.state.Moves.at(-1)
     return <></>
 }
 export function OperandButton(props: {onClick: () => void}) {
@@ -84,6 +84,7 @@ export function NumbersGame(props: NumbersGameProps) {
       const state = new GameState();
       const datetime_ms = Date.now();
       const game =  new Game(gameID, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
+      storeGameInLocalStorage(game);
       return game;
     }
     const [game, setGameUsingImmerProducer] = useImmer(gameFactory);
@@ -91,6 +92,7 @@ export function NumbersGame(props: NumbersGameProps) {
     if (game.solved()) {
        return <Image radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
     }
+
 
     // const doMove = function() {
     //     const move = new Move(0,false, [0,1]);
@@ -113,7 +115,9 @@ export function NumbersGame(props: NumbersGameProps) {
       const opButtonClickHandler = function() {
         setGameUsingImmerProducer((draft: Game) => {
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
-            const move = draft.state.moves[-1];
+            
+            console.log(game.state.moves);
+            const move = draft.state.lastMove();
             move.opIndex = opIndex === move.opIndex ? null : opIndex;
             storeGameInLocalStorage(draft);
         });
@@ -135,18 +139,19 @@ export function NumbersGame(props: NumbersGameProps) {
     const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
       const operandButtonClickHandler = function() {
         setGameUsingImmerProducer((draft: Game) => {
-            const move = draft.state.moves[-1];
+            const move = draft.state.lastMove();
             const operandIndices = move.operandIndices;
+            const len = operandIndices.length;
             if (operandIndices.includes(operandIndex)) {
               // Unselect already selected operand
               const indexOfOperandIndex = operandIndices.indexOf(operandIndex); 
               operandIndices.splice(indexOfOperandIndex, 1);
-            } else if (operandIndices.length < MAX_OPERANDS) {
+            } else if (len < MAX_OPERANDS) {
               // Select new operand.
               operandIndices.push(operandIndex);
-            } else if (operandIndices.length === MAX_OPERANDS) {
+            } else if (len === MAX_OPERANDS) {
               // Replace last selected operand
-              operandIndices[-1] = operandIndex;
+              operandIndices[len-1] = operandIndex;
             } else {
               throw new Error(`Move has too many operand indices: ${operandIndices}. `
                              +`Cannot have more than MAX_OPERANDS: ${MAX_OPERANDS}. `
@@ -172,7 +177,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const submitButtonHandler = function() {
       setGameUsingImmerProducer((draft: Game) => {
           const moves = draft.state.moves;
-          const lastMove = moves[-1];
+          const lastMove = draft.state.lastMove();
           lastMove.submitted = true;
           if (moves.length < MAX_MOVES) {
             moves.push(new Move());

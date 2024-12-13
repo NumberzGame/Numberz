@@ -90,9 +90,20 @@ export class GameState{
     solved: boolean;
     moves: Move[];
 
-    constructor(solved: boolean = false, moves: Move[] = [new Move()]) {
+    constructor(solved: boolean = false, moves: Move[] = []) {
         this.solved = solved;
         this.moves = moves;
+    }
+
+    lastMove(): Move {
+        const moves = this.moves;
+        const len = moves.length;
+        if (len > 0) {
+            return moves[len-1];
+        }
+        const move = new Move();
+        moves.push(move)
+        return move;
     }
 }
 
