@@ -108,37 +108,40 @@ export class GameState{
 }
 
 
-function randomIndexInto<Item>(sized: Item[]): number {
-    return Math.floor(Math.random()*sized.length);
+const randomPositiveInteger = function(lessThan: number): number {
+    return Math.floor(Math.random()*Math.floor(lessThan));
 }
 
 
-function* shuffle<T>(arr:T[]) {
-    const itemsToYield = Array.from(arr);
-    while (itemsToYield.length) {
-        const index = randomIndexInto(itemsToYield);
-        yield itemsToYield[index];
-        // Delete the item at index from itemsToYield.
-        itemsToYield.splice(index, 1);
+
+const randomlyOrderedIndices = function(num: number): number[] {
+    const indices = Array(num).map((x, i) => i);
+    const retval = [];
+    while (indices.length) {
+        const indexOfIndex = randomPositiveInteger(indices.length);
+        retval.push(indices[indexOfIndex]);
+        indices.splice(indexOfIndex, 1);
     }
+    return retval
 }
 
 
-function addRedHerrings(seedIndices: number[]): number[]{
+
+function getRedHerrings(seedIndices: number[]): number[]{
 
     const unusedSeeds = Array.from(ALL_SEEDS);
     // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
     // ALL_SEEDS (which contains duplicates of small numbers).
     for (const seedIndex of seedIndices) {
-        // Delete first occurence of SEEDS[seedIndex] in unusedSeeds
         const usedSeedindex = unusedSeeds.indexOf(SEEDS[seedIndex]);
+        // Delete first occurence of SEEDS[seedIndex] in unusedSeeds
         unusedSeeds.splice(usedSeedindex, 1);
     }
 
-    const retval = [...seedIndices];
+    const retval = [];
     // If MAX_SEEDS > ALL_SEEDS.length, there are no more seeds to use as red herrings.
     for (let i = seedIndices.length; i < MAX_SEEDS; i++) {
-        const redHerringIndex = randomIndexInto(unusedSeeds);
+        const redHerringIndex = randomPositiveInteger(unusedSeeds.length);
         const redHerring = unusedSeeds[redHerringIndex];
         retval.push(redHerring);
         unusedSeeds.splice(redHerringIndex, 1);
@@ -187,15 +190,16 @@ const calcGrade = function(solution: Operand): number {
 }
 
 
-const addRedHerringsWithoutMakingEasier = function(
+const getRedHerringsWithoutMakingEasier = function(
     seedIndices: number[],
     goal: number,
     grade: number,
     ): number[] {
 
-    let seedIndicesAndRedHerrings;
+    let redHerrings;
     while (true) {
-        seedIndicesAndRedHerrings = addRedHerrings(seedIndices);
+        redHerrings = getRedHerrings(seedIndices);
+        const seedIndicesAndRedHerrings = seedIndices.concat(redHerrings);
         let redHerringMakesGametooEasy = false;
         for (const solution of solutions(goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
             if (calcGrade(solution) < grade) {
@@ -210,7 +214,7 @@ const addRedHerringsWithoutMakingEasier = function(
         }
         break;
     }
-    return seedIndicesAndRedHerrings;
+    return redHerrings;
 }
 
 
@@ -223,16 +227,18 @@ export class Game{
     readonly timestamp_ms: number;
 
     // Indices of seeds in deduped symbols.json["SEEDS"]
-    readonly seedIndicesSolutionOrder: number[];
+    readonly seedIndices: number[];
 
     // The game's solution, together with the form in the GameID
     // and the ordered seeds in seedIndicesSolutionOrder
     readonly opIndices: number[];
 
-    // Shuffled, and containing decoys.  Else for forms of 
-    // rank <= 5, the latter seeds will always be unused.
-    // TODO: Make sure decoys don't make the solution easier.
-    readonly seedIndices: number[];
+    
+    // (MAX_SEEDS - seedIndices.length) number of decoy seed indices
+    readonly redHerrings: number[];
+
+    // E.g. a random permutation of [0, ..., MAX_SEEDS - 1]
+    readonly seedsDisplayOrder: number[];
 
     state: GameState;
 
@@ -241,19 +247,16 @@ export class Game{
                 seedIndices: number[],
                 opIndices: number[],
                 state: GameState,
+                redHerrings: number[] = getRedHerringsWithoutMakingEasier(seedIndices, id.goal, id.grade),
+                seedsDisplayOrder: number[] = randomlyOrderedIndices(MAX_SEEDS),
                ) {
         this.id = id;
         this.timestamp_ms = timestamp_ms;
-        this.seedIndicesSolutionOrder = seedIndices;
+        this.seedIndices = seedIndices;
         this.opIndices = opIndices;
-
-        // seedIndices = addRedHerringsWithoutMakingEasier(
-        //     seedIndices,
-        //     this.id.goal,
-        //     this.id.grade);
-
-        this.seedIndices = Array.from(shuffle(seedIndices));
         this.state = state;
+        this.redHerrings = redHerrings;
+        this.seedsDisplayOrder = seedsDisplayOrder
 
     }
 

@@ -1,26 +1,31 @@
-// deno run --unstable-sloppy-imports Schplakork.tsx 
+// deno run --unstable-sloppy-imports --allow-read --allow-env Schplakork.tsx 
+// or:
+// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=Schplakork.tsx
 import { GameID, Forms, Game, Move, GameState } from './Classes';
-import { OPS,SEEDS,GOAL_MIN, GOAL_MAX } from './Core';
+import { OPS,SEEDS,GOAL_MIN, GOAL_MAX, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS } from './Core';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          CHUNK_SIZE, chunkify, deChunkify, stringifyCodeUnits, destringifyCodeUnits,
-         MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS, NO_OP, checkFitsInChunk, gameDataCodeUnits,
+         NO_OP, checkFitsInChunk, gameDataCodeUnits,
          checkItemsFitAndPadIterable } from './Schema'
-const grade=1;
-const goal=100;
-const form="2";
-const index=0;
-const gameID = new GameID(grade, goal, form, index);
-const state = new GameState(false, []);
-const date = new Date("2024-12-10T18:54:53.328Z");
-const datetime_ms = date.getTime();
-const game =  new Game(gameID, datetime_ms, [], [0],state);
 
-console.log(game);
+const [grade, goal, form, index, date, solved, seedIndices, opIndices, moves_data] = [1,100,"2",0,new Date("2024-12-14T11:17:20.726Z"),false,[1,0],[],[]]
+
+
+const gameID = new GameID(grade, goal, form, index);
+const moves: Move[] = [];
+// for (const move_args of moves_data) {
+//   const move = new Move(...move_args);
+//   moves.push(move);
+// }
+const state = new GameState(solved, moves);
+
+const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
 
 const stringified = stringifyGame(game);
-console.log(stringified);
 const destringifiedGame = destringifyGame(stringified, gameID);
+console.log(game);
+
 console.log(destringifiedGame);
 
-console.log(Array.from(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));
-console.log(stringifyCodeUnits(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));
+// console.log(Array.from(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));
+// console.log(stringifyCodeUnits(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));

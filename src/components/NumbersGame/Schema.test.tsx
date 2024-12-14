@@ -72,6 +72,7 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
                 fc.array(seedIndex(), {maxLength: MAX_SEEDS }),
                 fc.array(opIndex(), {maxLength: MAX_OPS }),
                 fc.array(fc.tuple(fc.nat({max:OP_SYMBOLS.length-1}),
+                                  fc.boolean(),
                                   fc.array(fc.nat({max:MAX_SEEDS-1}),
                                            {maxLength: MAX_OPERANDS})),
                         {maxLength: MAX_MOVES }
@@ -80,8 +81,8 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
       const gameID = new GameID(grade, goal, form, index);
       const moves = [];
       for (const move_args of moves_data) {
-        const [opIndex, operandIndices] = move_args; 
-        const move = new Move(opIndex, true, operandIndices);
+        const [opIndex, submitted, operandIndices] = move_args; 
+        const move = new Move(opIndex, submitted, operandIndices);
         moves.push(move);
       }
       const state = new GameState(solved, moves);
@@ -90,6 +91,17 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
 
       const stringified = stringifyGame(game);
       const destringifiedGame = destringifyGame(stringified, gameID);
+
+      // game.seedIndices is not reproducible - it is randomly shuffled from seedIndices
+      // (the unshuffled values in the order provided to the constructor
+      // are in game.seedIndicesSolutionOrder).
+      const gameSeedIndicesDeduped = new Set(game.seedIndices);
+      const destringifiedGameSeedIndicesDeduped = new Set(destringifiedGame.seedIndices);
+      expect(gameSeedIndicesDeduped.size).toStrictEqual(destringifiedGameSeedIndicesDeduped.size);
+      expect([...gameSeedIndicesDeduped].every((x)=>destringifiedGameSeedIndicesDeduped.has(x))).toBe(true);
+
+      delete game.seedIndices;
+      delete destringifiedGame.seedIndices;
 
       expect(game).toStrictEqual(destringifiedGame);
     }),

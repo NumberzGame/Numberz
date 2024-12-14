@@ -340,11 +340,13 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
     const solved_num = (game.state.solved === true ? 1 : 0);
     yield solved_num;
 
-    for (const seedIndex of checkItemsFitAndPadIterable(game.seedIndices, MAX_SEEDS, NO_SEED)) { 
+    for (const seedIndex of checkItemsFitAndPadIterable(
+                game.seedIndicesSolutionOrder, MAX_SEEDS, NO_SEED)) { 
         yield seedIndex;
     }
 
-    for (const opIndex of checkItemsFitAndPadIterable(game.opIndices, MAX_OPS, NO_OP)) { 
+    for (const opIndex of checkItemsFitAndPadIterable(
+                game.opIndices, MAX_OPS, NO_OP)) { 
         yield opIndex;
     }
 
