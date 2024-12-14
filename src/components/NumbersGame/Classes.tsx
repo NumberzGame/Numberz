@@ -90,21 +90,32 @@ export class GameState{
     solved: boolean;
     moves: Move[];
 
-    constructor(solved: boolean = false, moves: Move[] = []) {
+    constructor(
+        solved: boolean = false,
+        moves: Move[] = [new Move()],
+    ) {
+
+        if (moves.length === 0) {
+            // To ensure simple destringification,
+            // using a no-op move for padding, 
+            // is unambiguous.
+            throw new Error(`moves cannot be empty.  Got: ${moves}`);
+        }
+
         this.solved = solved;
         this.moves = moves;
     }
 
-    lastMove(): Move {
-        const moves = this.moves;
-        const len = moves.length;
-        if (len > 0) {
-            return moves[len-1];
-        }
-        const move = new Move();
-        moves.push(move)
-        return move;
-    }
+    // lastMove(): Move {
+    //     const moves = this.moves;
+    //     const len = moves.length;
+    //     if (len > 0) {
+    //         return moves[len-1];
+    //     }
+    //     const move = new Move();
+    //     moves.push(move)
+    //     return move;
+    // }
 }
 
 
@@ -115,7 +126,7 @@ const randomPositiveInteger = function(lessThan: number): number {
 
 
 const randomlyOrderedIndices = function(num: number): number[] {
-    const indices = Array(num).map((x, i) => i);
+    const indices = Array(num).fill(undefined).map((x, i) => i);
     const retval = [];
     while (indices.length) {
         const indexOfIndex = randomPositiveInteger(indices.length);
@@ -127,7 +138,7 @@ const randomlyOrderedIndices = function(num: number): number[] {
 
 
 
-function getRedHerrings(seedIndices: number[]): number[]{
+function getRedHerringIndices(seedIndices: number[]): number[]{
 
     const unusedSeeds = Array.from(ALL_SEEDS);
     // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
@@ -143,7 +154,10 @@ function getRedHerrings(seedIndices: number[]): number[]{
     for (let i = seedIndices.length; i < MAX_SEEDS; i++) {
         const redHerringIndex = randomPositiveInteger(unusedSeeds.length);
         const redHerring = unusedSeeds[redHerringIndex];
-        retval.push(redHerring);
+        // Don't use same red Herring twice - delete it from unusedSeeds
+        unusedSeeds.splice(redHerringIndex, 1);
+        const index = SEEDS.indexOf(redHerring);
+        retval.push(index);
         unusedSeeds.splice(redHerringIndex, 1);
     }
     return retval;
@@ -190,7 +204,7 @@ const calcGrade = function(solution: Operand): number {
 }
 
 
-const getRedHerringsWithoutMakingEasier = function(
+const getRedHerringIndicesWithoutMakingEasier = function(
     seedIndices: number[],
     goal: number,
     grade: number,
@@ -198,7 +212,7 @@ const getRedHerringsWithoutMakingEasier = function(
 
     let redHerrings;
     while (true) {
-        redHerrings = getRedHerrings(seedIndices);
+        redHerrings = getRedHerringIndices(seedIndices);
         const seedIndicesAndRedHerrings = seedIndices.concat(redHerrings);
         let redHerringMakesGametooEasy = false;
         for (const solution of solutions(goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
@@ -247,7 +261,8 @@ export class Game{
                 seedIndices: number[],
                 opIndices: number[],
                 state: GameState,
-                redHerrings: number[] = getRedHerringsWithoutMakingEasier(seedIndices, id.goal, id.grade),
+                // redHerrings: number[] = getRedHerringIndicesWithoutMakingEasier(seedIndices, id.goal, id.grade),
+                redHerrings: number[] = getRedHerringIndices(seedIndices),
                 seedsDisplayOrder: number[] = randomlyOrderedIndices(MAX_SEEDS),
                ) {
         this.id = id;
@@ -256,6 +271,14 @@ export class Game{
         this.opIndices = opIndices;
         this.state = state;
         this.redHerrings = redHerrings;
+
+        if (seedsDisplayOrder.length !== redHerrings.length + seedIndices.length) {
+            throw new Error(
+                 `Too many or too few indices of seed indices to display: ${seedsDisplayOrder} `
+                +`for seed indices: ${seedIndices} and red herrings: ${redHerrings}. `
+            );
+        }
+
         this.seedsDisplayOrder = seedsDisplayOrder
 
     }

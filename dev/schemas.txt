@@ -1,3 +1,31 @@
+// See  /dev/schemas.txt
+// simple: (72B, 5MB limit => 10 per day for 16 years)
+
+//       key:
+//       u60 10B (5 UTF-16 BMP single code units) 
+
+//       grade, 1,...,228 u15
+//       goal, 100, ..., 999 u15 
+//       form, 2, 3, ..., (1, (1, (2, 2))), u15
+//       index, (0 to 70_000) u30 
+      
+//       val:
+//       game u... 62B (31 UTF-16 BMP single code units) 
+
+//       Schema index: 2B u15 (1) 
+//       timestamp: u45       (3)
+//       solved, u15           (1)
+//       seeds*6, u90 (6) (14 seeds in normal game, 10 small (twice) 4 large)
+//         seed u4
+//       ops*5    u75 (5) 
+//       current state of this game
+//       moves*5 u225   (15)
+//         move u9
+//           Operand u3 (indices 0, 1, ..., 6).  Can be null.
+//           Submitted u1
+//           Op u2 (+, -, *, //)
+
+
 Schema index: 2B u15 (1 UTF-16 BMP single code units) 
 currentState currentGame
 time_stamp_first_played_mins Date.now() / 1000 / 60 min (u25 8 years from 3rd Dec 2024)

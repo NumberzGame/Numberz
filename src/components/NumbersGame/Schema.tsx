@@ -3,32 +3,7 @@ import { GameID, Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
 
-// See  /dev/schemas.txt
-// simple: (72B, 5MB limit => 10 per day for 16 years)
 
-//       key:
-//       u60 10B (5 UTF-16 BMP single code units) 
-
-//       grade, 1,...,228 u15
-//       goal, 100, ..., 999 u15 
-//       form, 2, 3, ..., (1, (1, (2, 2))), u15
-//       index, (0 to 70_000) u30 
-      
-//       val:
-//       game u... 62B (31 UTF-16 BMP single code units) 
-
-//       Schema index: 2B u15 (1) 
-//       timestamp: u45       (3)
-//       solved, u15           (1)
-//       seeds*6, u90 (6) (14 seeds in normal game, 10 small (twice) 4 large)
-//         seed u4
-//       ops*5    u75 (5) 
-//       current state of this game
-//       moves*5 u225   (15)
-//         move u9
-//           Operand u3 (indices 0, 1, ..., 6).  Can be null.
-//           Submitted u1
-//           Op u2 (+, -, *, //)
 const SCHEMA_CODE = "S";
 export const CHUNK_SIZE = 15;
 
@@ -166,13 +141,6 @@ export const stringifyGameID = function(gameID: GameID): string {
     const form_index = Forms.indexOf(gameID.form);
     checkFitsInChunk(form_index);
 
-    // const index_top_15_bits = (gameID.index >>> 15) & MAX_U15;
-    // const index_bottom_15_bits = gameID.index & MAX_U15;
-    // just checks if positive.  
-    // (x & MAX_U15) above will not exceed MAX_U15.
-    // checkFitsInChunk(index_top_15_bits);
-    // checkFitsInChunk(index_bottom_15_bits);
-
     const keyData = [gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
     //index_top_15_bits, index_bottom_15_bits];
 
@@ -194,16 +162,12 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     const takeNextN = makeTakeNextNDestringified(s);
     const next = () => takeNextN(1).next().value;
-    // Skip schema code
+
+    // Skip schema code (e.g. "S")
     next();
-    
-    // const ts_top_15_bits = s.charCodeAt(1) << 30;
-    // const ts_mid_15_bits = s.charCodeAt(2) << 15;
-    // const ts_bottom_15_bits = s.charCodeAt(3);
-    // const timeStamp = deChunkify([s.charCodeAt(1),s.charCodeAt(2), s.charCodeAt(3)]);
+
     const timeStamp = deChunkify([next(), next(), next()]);
 
-    // const solved_num = s.charCodeAt(4);
     const solved_num = next();
 
     if (![0, 1].includes(solved_num)) {
@@ -216,8 +180,8 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     for (const seedIndex of takeNextN(MAX_SEEDS)) {
         if(seedIndex === NO_SEED) {
-            continue
-        } else if ((0 <= seedIndex) && (seedIndex <= SEEDS.length)) {
+            continue;
+        } else if ((0 <= seedIndex) && (seedIndex < SEEDS.length)) {
             seedIndices.push(seedIndex);
         } else {
             throw new Error(`Unrecognised seed index: ${seedIndex}. `
@@ -231,7 +195,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     for (const opIndex of takeNextN(MAX_OPS)) { 
         if(opIndex === NO_OP) {
-            continue
+            continue;
         } else if ((0 <= opIndex) && (opIndex <= SEEDS.length)) {
             opIndices.push(opIndex);
         } else {
@@ -248,7 +212,6 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     for (const opIndex of takeNextN(MAX_MOVES)) {
         const submitted = 1===next();
-        allSubmitted &&= submitted;
         const operandIndices = [];
         for (const operandIndex of takeNextN(MAX_OPERANDS)) {
             if (operandIndex === NO_OPERAND) {
@@ -274,13 +237,55 @@ export const destringifyGame = function(s: string, id: GameID): Game {
             );
         }
         
+        // Save all submitted moves, and the first unsubmitted one.
         if (allSubmitted) {
             moves.push(move);
         }
+        
+        allSubmitted &&= submitted;
     }
 
+    const redHerrings = [];
+    for (const seedIndex of takeNextN(MAX_SEEDS)) {
+        if(seedIndex === NO_SEED) {
+            continue;
+        } else if ((0 <= seedIndex) && (seedIndex < SEEDS.length)) {
+            redHerrings.push(seedIndex);
+        } else {
+            throw new Error(`Unsupported seed index: ${seedIndex}. `
+                           + `Must be between 0 and ${SEEDS.length-1}, `
+                           +`or ===NO_SEED code ${NO_SEED}`
+            );
+        }
+    }
+
+    const seedsDisplayOrder = [];
+    for (const indexOfIndex of takeNextN(MAX_SEEDS)) {
+        if(indexOfIndex === NO_SEED) {
+            continue;
+        } else if ((0 <= indexOfIndex) && (indexOfIndex < MAX_SEEDS)) {
+            seedsDisplayOrder.push(indexOfIndex);
+        } else {
+            throw new Error(`Unsupported index: ${indexOfIndex}. `
+                           + `Must be between 0 and ${MAX_SEEDS-1}, `
+                           +`or ===NO_SEED code ${NO_SEED}`
+            );
+        }
+    }
+
+
+
+
     const state = new GameState(solved, moves);
-    const game = new Game(id, timeStamp, seedIndices, opIndices, state);
+    const game = new Game(
+        id,
+        timeStamp,
+        seedIndices,
+        opIndices,
+        state,
+        redHerrings,
+        seedsDisplayOrder,    
+    );
 
     return game;
 }
@@ -321,27 +326,16 @@ export const checkItemsFitAndPadIterable = function*(
 
 export const gameDataCodeUnits = function*(game: Game): IterableIterator<number> {
     
-    // const datetime_top_15_bits = (game.timestamp_ms >>> 30) & MAX_U15;
-    // const datetime_mid_15_bits = (game.timestamp_ms >>> 15) & MAX_U15;
-    // const datetime_bottom_15_bits = game.timestamp_ms & MAX_U15;
-    // // just checks if positive.  
-    // // (x & MAX_U15) above cannot exceed MAX_U15.
-    // checkFitsInChunk(datetime_top_15_bits);
-    // checkFitsInChunk(datetime_mid_15_bits);
-    // checkFitsInChunk(datetime_bottom_15_bits);
+
     for (const chunk of chunkify(game.timestamp_ms, 3)) {
         yield chunk;
     }
-    // [datetime_top_15_bits,
-    //                  datetime_mid_15_bits,
-                    //  datetime_bottom_15_bits,
-                    // ];
 
     const solved_num = (game.state.solved === true ? 1 : 0);
     yield solved_num;
 
     for (const seedIndex of checkItemsFitAndPadIterable(
-                game.seedIndicesSolutionOrder, MAX_SEEDS, NO_SEED)) { 
+                game.seedIndices, MAX_SEEDS, NO_SEED)) { 
         yield seedIndex;
     }
 
@@ -368,15 +362,25 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
         }
     }
 
+    
+    for (const seedIndex of checkItemsFitAndPadIterable(
+        game.redHerrings, MAX_SEEDS, NO_SEED)) { 
+        yield seedIndex;
+    }
+    
+    for (const seedIndex of checkItemsFitAndPadIterable(
+        game.seedsDisplayOrder, MAX_SEEDS, NO_SEED)) { 
+        yield seedIndex;
+    }
+
+
+
 }
 
 
 export const stringifyGame = function(game: Game): string {
 
-    // Schema index
     const val = SCHEMA_CODE;
-
-
 
     return val.concat(stringifyCodeUnits(Array.from(gameDataCodeUnits(game))));
 }

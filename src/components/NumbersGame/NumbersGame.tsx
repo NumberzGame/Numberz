@@ -134,7 +134,7 @@ export function NumbersGame(props: NumbersGameProps) {
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             
             console.log(game.state.moves);
-            const move = draft.state.lastMove();
+            const move = draft.state.moves.at(-1)!;
             move.opIndex = opIndex === move.opIndex ? null : opIndex;
             storeGameInLocalStorage(draft);
         });
@@ -156,7 +156,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
       const operandButtonClickHandler = function() {
         setGameUsingImmerProducer((draft: Game) => {
-            const move = draft.state.lastMove();
+            const move = draft.state.moves.at(-1)!;
             const operandIndices = move.operandIndices;
             const len = operandIndices.length;
             if (operandIndices.includes(operandIndex)) {
@@ -194,7 +194,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const submitButtonHandler = function() {
       setGameUsingImmerProducer((draft: Game) => {
           const moves = draft.state.moves;
-          const lastMove = draft.state.lastMove();
+          const lastMove = draft.state.moves.at(-1)!;
           lastMove.submitted = true;
           if (moves.length < MAX_MOVES) {
             moves.push(new Move());

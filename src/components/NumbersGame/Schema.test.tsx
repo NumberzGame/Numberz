@@ -75,7 +75,7 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
                                   fc.boolean(),
                                   fc.array(fc.nat({max:MAX_SEEDS-1}),
                                            {maxLength: MAX_OPERANDS})),
-                        {maxLength: MAX_MOVES }
+                        {minLength: 1, maxLength: MAX_MOVES }
                 ),
                 (grade, goal, form, index, date, solved, seedIndices, opIndices, moves_data) => {
       const gameID = new GameID(grade, goal, form, index);
@@ -92,16 +92,7 @@ test('for each Game, stringifyGame should roundtrip with destringifyGame', () =>
       const stringified = stringifyGame(game);
       const destringifiedGame = destringifyGame(stringified, gameID);
 
-      // game.seedIndices is not reproducible - it is randomly shuffled from seedIndices
-      // (the unshuffled values in the order provided to the constructor
-      // are in game.seedIndicesSolutionOrder).
-      const gameSeedIndicesDeduped = new Set(game.seedIndices);
-      const destringifiedGameSeedIndicesDeduped = new Set(destringifiedGame.seedIndices);
-      expect(gameSeedIndicesDeduped.size).toStrictEqual(destringifiedGameSeedIndicesDeduped.size);
-      expect([...gameSeedIndicesDeduped].every((x)=>destringifiedGameSeedIndicesDeduped.has(x))).toBe(true);
 
-      delete game.seedIndices;
-      delete destringifiedGame.seedIndices;
 
       expect(game).toStrictEqual(destringifiedGame);
     }),
