@@ -203,12 +203,15 @@ export function NumbersGame(props: NumbersGameProps) {
         Play the game below!!!
       </Text> */}
       {/* Text Goal */}
+      <Group justify="center" mt="md">
+      <Text> Goal: {}</Text>
       <TextInput
         // label="Input label"
         ta="center" size="lg" maw={235} mx="auto" mt="md"
         // description="Input description"
         // placeholder="Input placeholder"
       />
+      </Group>
       <Group justify="center" mt="md">
         {OperandsButtons}
       </Group>
@@ -221,7 +224,8 @@ export function NumbersGame(props: NumbersGameProps) {
         <Button onClick={}>Hint</Button>
       </Group>
       <Group justify="center" mt="md">
-      <  Button onClick={}>Custom Game</Button>
+        <Button onClick={}>Custom Game</Button>
+        <Button onClick={}>Solve Game</Button>
         <Button onClick={}>Load Game</Button>
         <Button onClick={}>New Game</Button>
         <Slider>Difficulty</Slider>
