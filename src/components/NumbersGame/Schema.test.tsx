@@ -1,3 +1,10 @@
+
+// ## After test failures:
+// ```
+// cd src\components\NumbersGame
+// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=Schema.tsx
+// ```
+
 import { expect, test } from 'vitest'
 import fc from 'fast-check';
 

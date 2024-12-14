@@ -26,7 +26,7 @@ import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX,
 //       current state of this game
 //       moves*5 u225   (15)
 //         move u9
-//           Operand u3 (indices 0, 1, ..., 6)
+//           Operand u3 (indices 0, 1, ..., 6).  Can be null.
 //           Submitted u1
 //           Op u2 (+, -, *, //)
 const SCHEMA_CODE = "S";
@@ -244,9 +244,11 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     const moves = [];
     
+    let allSubmitted = true;
 
     for (const opIndex of takeNextN(MAX_MOVES)) {
         const submitted = 1===next();
+        allSubmitted &&= submitted;
         const operandIndices = [];
         for (const operandIndex of takeNextN(MAX_OPERANDS)) {
             if (operandIndex === NO_OPERAND) {
@@ -271,7 +273,10 @@ export const destringifyGame = function(s: string, id: GameID): Game {
                            +`or ===NO_OP code ${NO_OP}`
             );
         }
-        moves.push(move);
+        
+        if (allSubmitted) {
+            moves.push(move);
+        }
     }
 
     const state = new GameState(solved, moves);
