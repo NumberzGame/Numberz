@@ -16,6 +16,7 @@ const NO_SEED = 0xd7ff;    // 0xd7ff is the max single code unit BMP code
                            // point (before surrogate range).   
 export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits 
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
+const NO_MOVE = 0xd7fc;
 
 export const MIN_GAME_ID_SIZE = 5;
 export const MIN_GAME_SIZE = 26;
@@ -225,11 +226,11 @@ export const destringifyGame = function(s: string, id: GameID): Game {
                 );
             }
         }
-        let move: Move;
-        if (opIndex === NO_OP) {
-            move = new Move(null, submitted, operandIndices);
-        } else if ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length)) {
-            move = new Move(opIndex, submitted, operandIndices);
+        if (opIndex === NO_MOVE) {
+            continue;
+        } else if (opIndex === NO_OP || ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length))) {
+            const move = new Move(opIndex, submitted, operandIndices);
+            moves.push(move);
         } else {
             throw new Error(`Unrecognised op index: ${opIndex}. `
                            + `Must be between 0 and ${OP_SYMBOLS.length-1} inc, `
@@ -237,12 +238,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
             );
         }
         
-        // Save all submitted moves, and the first unsubmitted one.
-        if (allSubmitted) {
-            moves.push(move);
-        }
         
-        allSubmitted &&= submitted;
     }
 
     const redHerrings = [];
@@ -344,9 +340,9 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
         yield opIndex;
     }
 
-    const NO_MOVE = new Move(NO_OP,false, Array(MAX_OPERANDS).fill(NO_OPERAND));
+    const movesPadValue = new Move(NO_MOVE,false, Array(MAX_OPERANDS).fill(NO_OPERAND));
 
-    for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, NO_MOVE )) {
+    for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, movesPadValue )) {
         yield move.opIndex ?? NO_OP;
         yield move.submitted ? 1 : 0;
         const operandIndices = checkAndPadIterable(

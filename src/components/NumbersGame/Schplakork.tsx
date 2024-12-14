@@ -16,7 +16,7 @@ const [grade,
        solved,
        seedIndices,
        opIndices,
-       moves_data] = [1,100,"2",0,new Date("2024-12-14T16:23:37.606Z"),false,[],[],[[0,false,[]]]];
+       moves_data] = [1,100,"2",0,new Date("2024-12-14T16:51:16.779Z"),false,[],[],[[0,false,[]],[0,false,[]]] ];
 
 const gameID = new GameID(grade, goal, form, index);
 const moves: Move[] = [];
