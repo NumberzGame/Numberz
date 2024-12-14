@@ -4,7 +4,7 @@
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from "use-immer";
 
-import { Button, Group, Image, TextInput } from '@mantine/core';
+import { Button, Group, Text, TextInput, BackgroundImage, Slider } from '@mantine/core';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
@@ -14,9 +14,9 @@ import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame,
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {
-    return '÷'
+    return '÷';
   }
-  return s
+  return s;
 }
 
 const STARTING_DIFFICULTY = 25;
@@ -88,17 +88,6 @@ if (storageAvailable()) {
 }
 
 
-export function OpButton(props: {onClick: () => void}) {
-    // All Op Buttons act like radio buttons, but none can be pressed too.
-    // onClick => Toggle button clicked on
-    // If not clicked on the currently activated one => turn activated one off.
-    // Adds Op clicked on to game.state.Moves.at(-1)
-    return <></>
-}
-export function OperandButton(props: {onClick: () => void}) {
-    return <></>
-}
-
 interface NumbersGameProps{
     gameID: GameID
     // onWin: () => void
@@ -120,7 +109,12 @@ export function NumbersGame(props: NumbersGameProps) {
     if (game.solved()) {
         // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
         // Photographer credit: https://stocksnap.io/author/travelphotographer
-        return <Image radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
+        return <>
+          <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
+            Play the game below!!!
+          </Text>
+          <BackgroundImage radius = "sm" src="https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg" />
+        </>
     }
 
 
@@ -223,6 +217,18 @@ export function NumbersGame(props: NumbersGameProps) {
       </Group>
       <Group justify="center" mt="md">
         <Button onClick={submitButtonHandler}>=</Button>
+        <Button onClick={}>Undo</Button>
+        <Button onClick={}>Hint</Button>
+      </Group>
+      <Group justify="center" mt="md">
+      <  Button onClick={}>Custom Game</Button>
+        <Button onClick={}>Load Game</Button>
+        <Button onClick={}>New Game</Button>
+        <Slider>Difficulty</Slider>
+      </Group>
+      <Group justify="center" mt="md">
+        <Button onClick={}>Download Game History Game</Button>
+        <Button onClick={}>Load Game History Game</Button>
       </Group>
     </>
 }
