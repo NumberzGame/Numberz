@@ -1,5 +1,5 @@
 
-// import { useState } from 'react';
+import { useState } from 'react';
 // import { useLocalStorage } from '@mantine/hooks';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from "use-immer";
@@ -86,6 +86,28 @@ if (storageAvailable()) {
     loadGameFromLocalStorageOrCreateNew = gameFactory;
 }
 
+const GOAL_GRADIENT = { from: 'lime', to: 'yellow', deg: 90 };
+
+interface HintButtonProps{
+  hintsShown: boolean
+  handler: () => void
+}
+
+export function HintButton(props: HintButtonProps) {
+  if (props.hintsShown) {
+    return <Button 
+    variant="gradient"
+    gradient={GOAL_GRADIENT}
+    onClick={props.handler}
+    key={nanoid()}
+  >
+    Hide hint.
+  </Button> 
+  } else {
+    return <Button onClick={props.handler}>Show hint</Button>
+  }
+
+}
 
 interface NumbersGameProps{
     gameID: GameID
@@ -93,6 +115,11 @@ interface NumbersGameProps{
     // onQuit: () => void
 }
 // Add Game Manager
+
+
+
+
+
 
 export function NumbersGame(props: NumbersGameProps) {
 
@@ -104,6 +131,7 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
+    const [hintsShown, setHintsShown] = useState(false);
 
     if (game.solved()) {
         // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
@@ -153,15 +181,24 @@ export function NumbersGame(props: NumbersGameProps) {
 
     }
 
-    const SymbolsButtons = OP_SYMBOLS.map((s: string) => (
-      <Button 
+    const SymbolsButtons = OP_SYMBOLS.map((s: string) => {
+      if (hintsShown && true) {
+      return <Button 
+        variant="gradient"
+        gradient={GOAL_GRADIENT}
+        onClick={makeOpButtonClickHandler(s)}
+        key={nanoid()}
+      >
+        {overrideSymbolText(s)}
+      </Button> 
+      } 
+      return <Button 
         onClick={makeOpButtonClickHandler(s)}
         key={nanoid()}
       >
         {overrideSymbolText(s)}
       </Button>
-      )
-    );
+    });
 
     const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
       const operandButtonClickHandler = function() {
@@ -233,6 +270,10 @@ export function NumbersGame(props: NumbersGameProps) {
       });
     }
 
+    const hintButtonHandler = function() {
+        setHintsShown(!hintsShown);
+    }
+
     console.log(game.state.moves);
 
     return <>
@@ -242,7 +283,7 @@ export function NumbersGame(props: NumbersGameProps) {
       {/* Text Goal */}
       <Group justify="center" mt="md">
       <Text> Make: </Text>
-      <Badge variant="gradient" gradient={{ from: 'lime', to: 'yellow', deg: 90 }} size="xl">
+      <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
         {gameID.goal}
       </Badge>
 
@@ -264,7 +305,7 @@ export function NumbersGame(props: NumbersGameProps) {
       <Group justify="center" mt="md">
         <Button onClick={submitButtonHandler}>=</Button>
         <Button onClick={undoButtonHandler}>←</Button>
-        {/* <Button onClick={}>Hint</Button> */}
+        <HintButton handler={hintButtonHandler} hintsShown={hintsShown}></HintButton>
       </Group>
       {/* <Group justify="center" mt="md">
         <Button onClick={}>Custom Game</Button>
