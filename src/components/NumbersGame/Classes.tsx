@@ -284,9 +284,9 @@ export class Game{
     }
 
 
-    // TODO:  COMPLETE!
-    currentOperands(): number[] {
-        const operands = Array.from(this.seedIndices.map(index => SEEDS[index]));
+    currentOperandsDisplayOrder(): number[] {
+        const seedsAndDecoys = this.seedIndices.concat(this.redHerrings)
+        const operands = this.seedsDisplayOrder.map(index => SEEDS[seedsAndDecoys[index]]);
 
         for (const move of this.state.moves) {
 
@@ -324,7 +324,7 @@ export class Game{
     }
 
     solved(): Boolean {
-        const operands = this.currentOperands();
+        const operands = this.currentOperandsDisplayOrder();
         return operands.includes(this.id.goal);
     }
   }

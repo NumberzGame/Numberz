@@ -4,7 +4,8 @@
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from "use-immer";
 
-import { Button, Group, Text, TextInput, Image, Slider, Box,BackgroundImage, Center } from '@mantine/core';
+import { Anchor, Button, Group, Text, TextInput, Image, 
+         Slider, Box, HoverCard, Center } from '@mantine/core';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
@@ -113,14 +114,23 @@ export function NumbersGame(props: NumbersGameProps) {
                   You are the winner!!
                 </Text>
                 </Center>
-      <Group justify="center" mt="md">
-                <Image
-                  h={500}
-                  w="auto"
-                  src="./fireworks-background_CPLJUAMC1T.jpg"
-                  radius="lg"
-                ></Image>
-      </Group>
+                <Group justify="center" mt="md">
+                  <HoverCard shadow="md" openDelay={4000}>
+                    <HoverCard.Target>
+                      <Image
+                      h={500}
+                      w="auto"
+                      src="./fireworks-background_CPLJUAMC1T.jpg"
+                      radius="lg"
+                    ></Image>
+                    </HoverCard.Target>
+                    <HoverCard.Dropdown>
+                      <Anchor href="https://stocksnap.io/author/travelphotographer"
+                              size="sm"
+                              c="violet">Photo credit: "TravelPhotographer"</Anchor>
+                    </HoverCard.Dropdown>
+                  </HoverCard>
+                </Group>
         </>
     }
 
@@ -182,7 +192,7 @@ export function NumbersGame(props: NumbersGameProps) {
       return operandButtonClickHandler;
     }
 
-    const OperandsButtons = game.currentOperands().map((val: number, index: number) => (
+    const OperandsButtons = game.currentOperandsDisplayOrder().map((val: number, index: number) => (
       <Button 
         onClick={makeOperandButtonClickHandler(val, index)}
         key={nanoid()}
