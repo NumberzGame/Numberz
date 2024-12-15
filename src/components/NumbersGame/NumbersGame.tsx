@@ -4,7 +4,7 @@
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from "use-immer";
 
-import { Anchor, Button, Group, Text, TextInput, Image, 
+import { Anchor, Badge, Button, Group, Text, TextInput, Image, 
          Slider, Box, HoverCard, Center } from '@mantine/core';
 import { nanoid } from "nanoid";
 
@@ -221,7 +221,11 @@ export function NumbersGame(props: NumbersGameProps) {
       </Text> */}
       {/* Text Goal */}
       <Group justify="center" mt="md">
-      <Text> Goal: {}</Text>
+      <Text> Make: </Text>
+      <Badge variant="gradient" gradient={{ from: 'lime', to: 'yellow', deg: 90 }} size="xl">
+        {gameID.goal}
+      </Badge>
+
       </Group>
       <Group justify="center" mt="md">
       <TextInput
