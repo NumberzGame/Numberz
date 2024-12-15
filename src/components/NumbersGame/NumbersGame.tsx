@@ -6,7 +6,7 @@ import { useImmer } from "use-immer";
 
 import { Anchor, Badge, Button, Group, Text, TextInput, Image, 
          Slider, Box, HoverCard, Center } from '@mantine/core';
-import { IconArrowBack, IconEqual } from '@tabler/icons-react';
+// import { IconArrowBack, IconEqual } from '@tabler/icons-react';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
@@ -253,8 +253,8 @@ export function NumbersGame(props: NumbersGameProps) {
         {SymbolsButtons}
       </Group>
       <Group justify="center" mt="md">
-        <Button onClick={submitButtonHandler}><IconEqual stroke={2} /></Button>
-        <Button onClick={undoButtonHandler}>{<IconArrowBack stroke={2} />}</Button>
+        <Button onClick={submitButtonHandler}>=</Button>
+        <Button onClick={undoButtonHandler}>Undo</Button>
         {/* <Button onClick={}>Hint</Button> */}
       </Group>
       {/* <Group justify="center" mt="md">
