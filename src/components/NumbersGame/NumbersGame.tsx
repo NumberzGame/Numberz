@@ -6,7 +6,6 @@ import { useImmer } from "use-immer";
 
 import { Anchor, Badge, Button, Group, Text, TextInput, Image, 
          Slider, Box, HoverCard, Center } from '@mantine/core';
-// import { IconArrowBack, IconEqual } from '@tabler/icons-react';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
@@ -203,9 +202,18 @@ export function NumbersGame(props: NumbersGameProps) {
     );
     
     const submitButtonHandler = function() {
+      const lastMove = game.state.moves.at(-1)!;
+      
+      const result = lastMove.result(game.currentOperandsDisplayOrder());
+
+      if (result === null) {
+        return;
+      }
+      
       setGameUsingImmerProducer((draft: Game) => {
           const moves = draft.state.moves;
-          const lastMove = draft.state.moves.at(-1)!;
+          const lastMove = moves.at(-1)!;
+          
           lastMove.submitted = true;
           if (moves.length < MAX_MOVES) {
             moves.push(new Move());
@@ -254,7 +262,7 @@ export function NumbersGame(props: NumbersGameProps) {
       </Group>
       <Group justify="center" mt="md">
         <Button onClick={submitButtonHandler}>=</Button>
-        <Button onClick={undoButtonHandler}>Undo</Button>
+        <Button onClick={undoButtonHandler}>←</Button>
         {/* <Button onClick={}>Hint</Button> */}
       </Group>
       {/* <Group justify="center" mt="md">

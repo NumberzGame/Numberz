@@ -4,8 +4,8 @@ import {immerable} from "immer"
 import { difficultyOfSum, difficultyOfProduct,
          difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
 
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS } from './Core';
-import { MAX_SEEDS, MAX_OPS } from "./Core";
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP } from './Core';
+import { MAX_SEEDS, MAX_OPS, OP_RESULT} from "./Core";
 import { solutions, Operand, EXPR_PATTERN } from './solverDFS';
 
 
@@ -83,6 +83,40 @@ export class Move{
         this.submitted = submitted;
         this.operandIndices = operandIndices;
     }
+
+    opSymbol(): string | null {
+        if (this.opIndex === null) {
+            return null;
+        }
+        return OP_SYMBOLS[this.opIndex];
+    }
+
+    op(): BINARY_OP | null {
+        const opSymbol = this.opSymbol();
+        if (opSymbol === null) {
+            return null;
+        }
+        return OPS[opSymbol];
+    }
+
+    result(operands: number[]): OP_RESULT | null {
+        const op = this.op();
+        if (op === null) {
+            return null;
+        }
+        const selected_operands = this.operandIndices.map(index => operands[index]);
+        const [x, y] = selected_operands;
+        const retval= op(x, y);
+
+        if (retval === INVALID_ARGS) {
+            return null;
+        }
+
+        return retval;
+    }
+
+
+
 }
 
 export class GameState{
@@ -284,28 +318,30 @@ export class Game{
     }
 
 
+
+
     currentOperandsDisplayOrder(): number[] {
+
         const seedsAndDecoys = this.seedIndices.concat(this.redHerrings)
-        const operands = this.seedsDisplayOrder.map(index => SEEDS[seedsAndDecoys[index]]);
+        const operands= this.seedsDisplayOrder.map(index => SEEDS[seedsAndDecoys[index]]);
 
         for (const move of this.state.moves) {
 
+            
+            const op_symbol = move.opSymbol();
+
+            const result = move.result(operands);
             // Submitted valid moves must be at the start of state.moves
-            if (move.opIndex === null || !move.submitted) {
+            if (op_symbol === null || result === null || !move.submitted) {
                 break;
             }
 
-            const op_symbol = OP_SYMBOLS[move.opIndex];
 
             if (move.operandIndices.length === NUM_REQUIRED_OPERANDS[op_symbol]) {
-                const op = OPS[op_symbol];
-                const [i, j] = move.operandIndices;
-                const selected_operands = move.operandIndices.map(index => operands[index]);
-                const [x, y] = selected_operands;
-                const result = op(x, y);
                 if (result === INVALID_ARGS) {
-                    throw new Error(`Invalid operands: ${selected_operands} for op ${op}. Unsupported move: ${move}`);
+                    throw new Error(`Invalid operands: ${operands} for move: ${move}`);
                 } else {
+                    const [i, j] = move.operandIndices;
                     // replace first operand with result
                     operands[i] = result;
                     // delete second operand

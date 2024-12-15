@@ -27,7 +27,9 @@ export const NUM_REQUIRED_OPERANDS = Object.freeze(Object.fromEntries(OP_SYMBOLS
 // Deno 2.0.2 doesn't like the above
 export const INVALID_ARGS = Symbol();
 
-type BINARY_OP = (x: number, y: number) => number | typeof INVALID_ARGS;
+export type OP_RESULT = number | typeof INVALID_ARGS;
+
+export type BINARY_OP = (x: number, y: number) => OP_RESULT;
 
 const OP_FUNCS: BINARY_OP[] = [
     (x, y) => x+y,
