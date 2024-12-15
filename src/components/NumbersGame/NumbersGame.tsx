@@ -287,14 +287,14 @@ export function NumbersGame(props: NumbersGameProps) {
       </Badge>
 
       </Group>
-      <Group justify="center" mt="md">
+      {/* <Group justify="center" mt="md">
       <TextInput
         // label="Input label"
         ta="center" size="lg" maw={235} mx="auto" mt="md"
         // description="Input description"
         // placeholder="Input placeholder"
       />
-      </Group>
+      </Group> */}
       <Group justify="center" mt="md">
         {OperandsButtons}
       </Group>

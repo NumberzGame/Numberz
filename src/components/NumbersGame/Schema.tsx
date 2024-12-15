@@ -240,8 +240,6 @@ export const destringifyGame = function(s: string, id: GameID): Game {
             );
         }
         moves.push(move);
-        
-        
     }
 
     const redHerrings = [];
