@@ -145,7 +145,7 @@ export function NumbersGame(props: NumbersGameProps) {
                 </Text>
                 </Center>
                 <Group justify="center" mt="md">
-                  <HoverCard shadow="md" openDelay={4000}>
+                  <HoverCard shadow="md" openDelay={2000}>
                     <HoverCard.Target>
                       <Image
                       h={500}
