@@ -209,7 +209,7 @@ export function NumbersGame(props: NumbersGameProps) {
       if (result === null) {
         return;
       }
-      
+
       setGameUsingImmerProducer((draft: Game) => {
           const moves = draft.state.moves;
           const lastMove = moves.at(-1)!;
@@ -227,12 +227,13 @@ export function NumbersGame(props: NumbersGameProps) {
           const i=moves.findLastIndex((move) => move.submitted);
           if (i >= 0) {
             // By default a new Move() is unsubmitted.
-            moves[i] = new Move();
+            moves.splice(i, 1);
           }
           storeGameInLocalStorage(draft);
       });
     }
 
+    console.log(game.state.moves);
 
     return <>
       {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
