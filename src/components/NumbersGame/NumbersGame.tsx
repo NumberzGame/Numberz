@@ -6,6 +6,7 @@ import { useImmer } from "use-immer";
 
 import { Anchor, Badge, Button, Group, Text, TextInput, Image, 
          Slider, Box, HoverCard, Center } from '@mantine/core';
+import { IconArrowBack, IconEqual } from '@tabler/icons-react';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
@@ -144,7 +145,6 @@ export function NumbersGame(props: NumbersGameProps) {
         setGameUsingImmerProducer((draft: Game) => {
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             
-            console.log(game.state.moves);
             const move = draft.state.moves.at(-1)!;
             move.opIndex = opIndex === move.opIndex ? null : opIndex;
             storeGameInLocalStorage(draft);
@@ -213,6 +213,17 @@ export function NumbersGame(props: NumbersGameProps) {
           storeGameInLocalStorage(draft);
       });
     }
+    const undoButtonHandler = function() {
+      setGameUsingImmerProducer((draft: Game) => {
+          const moves = draft.state.moves;
+          const i=moves.findLastIndex((move) => move.submitted);
+          if (i >= 0) {
+            // By default a new Move() is unsubmitted.
+            moves[i] = new Move();
+          }
+          storeGameInLocalStorage(draft);
+      });
+    }
 
 
     return <>
@@ -242,9 +253,9 @@ export function NumbersGame(props: NumbersGameProps) {
         {SymbolsButtons}
       </Group>
       <Group justify="center" mt="md">
-        <Button onClick={submitButtonHandler}>=</Button>
-        {/* <Button onClick={}>Undo</Button>
-        <Button onClick={}>Hint</Button> */}
+        <Button onClick={submitButtonHandler}><IconEqual stroke={2} /></Button>
+        <Button onClick={undoButtonHandler}>{<IconArrowBack stroke={2} />}</Button>
+        {/* <Button onClick={}>Hint</Button> */}
       </Group>
       {/* <Group justify="center" mt="md">
         <Button onClick={}>Custom Game</Button>

@@ -1,6 +1,6 @@
-// deno run --unstable-sloppy-imports --allow-read --allow-env Schplakork.tsx 
+// deno run --unstable-sloppy-imports --allow-read --allow-env RoundtripStringifyGame.tsx.tsx 
 // or:
-// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=Schplakork.tsx
+// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=RoundtripStringifyGame.tsx
 import { GameID, Forms, Game, Move, GameState } from './Classes';
 import { OPS,SEEDS,GOAL_MIN, GOAL_MAX, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS } from './Core';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
