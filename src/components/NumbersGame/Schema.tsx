@@ -226,17 +226,20 @@ export const destringifyGame = function(s: string, id: GameID): Game {
                 );
             }
         }
+        let move;
         if (opIndex === NO_MOVE) {
             continue;
-        } else if (opIndex === NO_OP || ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length))) {
-            const move = new Move(opIndex, submitted, operandIndices);
-            moves.push(move);
+        } else if (opIndex === NO_OP) {
+            move = new Move(null, submitted, operandIndices);
+        } else if ((0 <= opIndex) && (opIndex < OP_SYMBOLS.length)) {
+            move = new Move(opIndex, submitted, operandIndices);
         } else {
             throw new Error(`Unrecognised op index: ${opIndex}. `
                            + `Must be between 0 and ${OP_SYMBOLS.length-1} inc, `
                            +`or ===NO_OP code ${NO_OP}`
             );
         }
+        moves.push(move);
         
         
     }

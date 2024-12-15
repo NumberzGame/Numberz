@@ -101,7 +101,7 @@ export function HintButton(props: HintButtonProps) {
     onClick={props.handler}
     key={nanoid()}
   >
-    Hide hint.
+    Hide hint
   </Button> 
   } else {
     return <Button onClick={props.handler}>Show hint</Button>
@@ -126,6 +126,8 @@ export function NumbersGame(props: NumbersGameProps) {
     // https://mantine.dev/hooks/use-local-storage/
     const gameID = props.gameID;
 
+    // A trivial closure.  useImmer will only
+    // call callback-factory functions with no args. 
     const loadOrCreateNewGame = function() {
         return loadGameFromLocalStorageOrCreateNew(gameID);
     }
@@ -133,7 +135,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
     const [hintsShown, setHintsShown] = useState(false);
 
-    if (game.solved()) {
+    if (false && game.solved()) {
         // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
         // Photographer credit: https://stocksnap.io/author/travelphotographer
         return <>
@@ -161,8 +163,6 @@ export function NumbersGame(props: NumbersGameProps) {
                 </Group>
         </>
     }
-
-
 
 
 
@@ -274,7 +274,6 @@ export function NumbersGame(props: NumbersGameProps) {
         setHintsShown(!hintsShown);
     }
 
-    console.log(game.state.moves);
 
     return <>
       {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
