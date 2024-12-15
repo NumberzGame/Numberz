@@ -135,7 +135,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
     const [hintsShown, setHintsShown] = useState(false);
 
-    if (false && game.solved()) {
+    if (game.solved()) {
         // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
         // Photographer credit: https://stocksnap.io/author/travelphotographer
         return <>
