@@ -195,14 +195,14 @@ export function NumbersGame(props: NumbersGameProps) {
           onClick={makeOpButtonClickHandler(s)}
           key={nanoid()}
         >
-          {displayText}
+          <b>{displayText}</b>
         </Button> 
       } 
       return <Button 
         onClick={makeOpButtonClickHandler(s)}
         key={nanoid()}
       >
-        {displayText}
+        <b>{displayText}</b>
       </Button>
     });
 
