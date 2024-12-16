@@ -4,7 +4,6 @@
 // const [goal, ...seeds] = argv.slice(2).map((x) => parseInt(x, 10));
 
 
-const INVALID_ARGS = Symbol();
 
 // console.log(`Goal: ${goal}`);
 // console.log(`Seeds: ${seeds}`);
@@ -17,17 +16,8 @@ function* allPairsFrom<T>(arr: T[]): IterableIterator<[[number,T],[number,T]]> {
     }
 }
 
+import {OPS, INVALID_ARGS} from './Core';
 
-
-
-const OPS = {
-    '+' : (x: number, y: number) => x+y,
-    '*' : (x: number, y: number) => x*y,
-    '-' : (x: number, y: number) => Math.abs(x-y),
-    '/' : (x: number, y: number) => x % y === 0 ? x / y : 
-                      y % x === 0 ? y / x : 
-                        INVALID_ARGS,
-};
 
 
 
@@ -46,7 +36,7 @@ function makeSubSolExpr(x: Operand, y: Operand, op: string): string {
 }
 
 // TODO: Construct \+|\*|\-|\/ from RegExp.escape and OPS.keys
-export const EXPR_PATTERN = /\((?<seed1>\d+)\ (?<op>\+|\*|\-|\/)\ (?<seed2>\d+)\)/g;
+export const EXPR_PATTERN = /\((?<seed1>\d+)\ (?<op>\+|\*|\-|\/\/)\ (?<seed2>\d+)\)/g;
 
 
 

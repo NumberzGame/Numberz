@@ -89,7 +89,6 @@ class MoveData{
 }
 
 export class Move extends MoveData {
-    [immerable] = true;
     submitted: boolean ;
 
     constructor(
@@ -214,8 +213,8 @@ function getRedHerringIndices(seedIndices: number[]): number[]{
 
 
 export const getHintsAndGrades = function*(expr: string): IterableIterator<[string,number, number, number,string,number]>{
-    for (const match of expr.matchAll(EXPR_PATTERN)) {
-        const match = expr.match(EXPR_PATTERN);
+    const matches = expr.matchAll(EXPR_PATTERN);
+    for (const match of matches) {
         if (!match?.groups) {
             continue;
         }
@@ -397,7 +396,7 @@ export class Game{
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
 
-            for (const solution of solutions(this.id.goal, this.seeds())) {
+            for (const solution of solutions(this.id.goal, operands)) {
                 const grade = calcGrade(solution);
                 // We could break here on finding the first valid solution,
                 // and give the user the first hint that works,
@@ -417,7 +416,11 @@ export class Game{
                 // Tell user no solution found.  Prompt to select new game.
             }
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
-            return new MoveData(opSymbol, [operand1, operand2]);
+
+            const opIndex = OP_SYMBOLS.indexOf(opSymbol);
+            const index1 = operands.indexOf(operand1);
+            const index2 = operands.indexOf(operand2);
+            return new MoveData(opIndex, [index1, index2]);
     }
 
   }
