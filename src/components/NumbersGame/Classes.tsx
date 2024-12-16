@@ -61,35 +61,53 @@ export class GameID{
     }
   }
 
-export class Move{
+
+export const HINT_UNDO = Symbol();
+
+class MoveData{
+
     [immerable] = true;
     opIndex: number | null ;
-    submitted: boolean ;
     operandIndices: number[];
 
     constructor(
         opIndex: number | null = null,
-        submitted: boolean = false,
-        operandIndices: number[] = []) {
-
-        if (opIndex === null && submitted)  {
-            throw new Error('Cannot submit a Move with no Op. '
-                           +`Got: opIndex: ${opIndex}, submitted: ${submitted}, `
-                           +`operandIndices: ${operandIndices}. `
-            );  
-        }
+        operandIndices: number[] = [],) {
 
         this.opIndex = opIndex;
-        this.submitted = submitted;
         this.operandIndices = operandIndices;
     }
 
+    
     opSymbol(): string | null {
         if (this.opIndex === null) {
             return null;
         }
         return OP_SYMBOLS[this.opIndex];
     }
+
+}
+
+export class Move extends MoveData {
+    [immerable] = true;
+    submitted: boolean ;
+
+    constructor(
+        opIndex: number | null = null,
+        submitted: boolean = false,
+        operandIndices: number[] = [],
+        ) {
+        
+        if (opIndex === null && submitted)  {
+            throw new Error('Cannot submit a Move with no Op. '
+                           +`Got: opIndex: ${opIndex}, submitted: ${submitted}, `
+                           +`operandIndices: ${operandIndices}. `
+            );  
+        }
+        super(opIndex, operandIndices);
+        this.submitted = submitted;
+    }
+
 
     op(): BINARY_OP | null {
         const opSymbol = this.opSymbol();
@@ -114,9 +132,6 @@ export class Move{
 
         return retval;
     }
-
-
-
 }
 
 export class GameState{
@@ -198,7 +213,7 @@ function getRedHerringIndices(seedIndices: number[]): number[]{
 }
 
 
-const getHintsAndGrades = function*(expr: string): IterableIterator<[string,number, number, number,string,number]>{
+export const getHintsAndGrades = function*(expr: string): IterableIterator<[string,number, number, number,string,number]>{
     for (const match of expr.matchAll(EXPR_PATTERN)) {
         const match = expr.match(EXPR_PATTERN);
         if (!match?.groups) {
@@ -222,7 +237,7 @@ const getHintsAndGrades = function*(expr: string): IterableIterator<[string,numb
 }
 
 
-const calcGrade = function(solution: Operand): number {
+export const calcGrade = function(solution: Operand): number {
     let grade = 0;
     let expr = solution.expr;
 
@@ -236,6 +251,7 @@ const calcGrade = function(solution: Operand): number {
 
     return grade
 }
+
 
 
 const getRedHerringIndicesWithoutMakingEasier = function(
@@ -290,6 +306,7 @@ export class Game{
 
     state: GameState;
 
+
     constructor(id: GameID,
                 timestamp_ms: number,
                 seedIndices: number[],
@@ -318,12 +335,22 @@ export class Game{
     }
 
 
+    seedsAndDecoyIndices(): number[] {
+        return this.seedIndices.concat(this.redHerrings)
+    }
 
+    seeds(): number[] {
+        return this.seedIndices.map((i) => SEEDS[i]);
+    }
+
+    seedsAndDecoys(): number[] {
+        return this.seedsAndDecoyIndices().map((i) => SEEDS[i]);
+    }
 
     currentOperandsDisplayOrder(): number[] {
 
-        const seedsAndDecoys = this.seedIndices.concat(this.redHerrings)
-        const operands= this.seedsDisplayOrder.map(index => SEEDS[seedsAndDecoys[index]]);
+        const seedsAndDecoys = this.seedsAndDecoys();
+        const operands= this.seedsDisplayOrder.map(i => seedsAndDecoys[i]);
 
         for (const move of this.state.moves) {
 
@@ -363,4 +390,34 @@ export class Game{
         const operands = this.currentOperandsDisplayOrder();
         return operands.includes(this.id.goal);
     }
+
+    getHints(): MoveData | typeof HINT_UNDO {
+            let easiestSolution = null;
+            let easiestGrade = Infinity;
+            const operands = this.currentOperandsDisplayOrder();
+            // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
+
+            for (const solution of solutions(this.id.goal, this.seeds())) {
+                const grade = calcGrade(solution);
+                // We could break here on finding the first valid solution,
+                // and give the user the first hint that works,
+                // (not necessarily a hint compatible with the 
+                // easiest method).
+                if (grade < easiestGrade) {
+                    easiestGrade = grade;
+                    easiestSolution = solution;
+                }
+            }
+            if (easiestSolution === null) {
+                // No solution found. 
+                return HINT_UNDO;
+                // if (game.state.moves.length >= 1) {
+                //   Highlight undo button
+                // } else {
+                // Tell user no solution found.  Prompt to select new game.
+            }
+            const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
+            return new MoveData(opSymbol, [operand1, operand2]);
+    }
+
   }

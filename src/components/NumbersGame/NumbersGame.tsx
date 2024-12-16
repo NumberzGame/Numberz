@@ -9,7 +9,7 @@ import { Anchor, Badge, Button, Group, Text, TextInput, Image,
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
-import { Game, GameID, GameState, Move } from './Classes';
+import { Game, GameID, GameState, Move, HINT_UNDO} from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          MIN_GAME_ID_SIZE, destringifyCodeUnits } from './Schema';
 
@@ -181,22 +181,28 @@ export function NumbersGame(props: NumbersGameProps) {
 
     }
 
+    const currentOperands = game.currentOperandsDisplayOrder();
+    const hint = hintsShown ? game.getHints() : null;
+
     const SymbolsButtons = OP_SYMBOLS.map((s: string) => {
-      if (hintsShown && true) {
-      return <Button 
-        variant="gradient"
-        gradient={GOAL_GRADIENT}
-        onClick={makeOpButtonClickHandler(s)}
-        key={nanoid()}
-      >
-        {overrideSymbolText(s)}
-      </Button> 
+
+      const displayText = overrideSymbolText(s);
+
+      if (hint && hint !== HINT_UNDO && hint.opSymbol() === s) {
+        return <Button 
+          variant="gradient"
+          gradient={GOAL_GRADIENT}
+          onClick={makeOpButtonClickHandler(s)}
+          key={nanoid()}
+        >
+          {displayText}
+        </Button> 
       } 
       return <Button 
         onClick={makeOpButtonClickHandler(s)}
         key={nanoid()}
       >
-        {overrideSymbolText(s)}
+        {displayText}
       </Button>
     });
 
@@ -228,14 +234,28 @@ export function NumbersGame(props: NumbersGameProps) {
       return operandButtonClickHandler;
     }
 
-    const OperandsButtons = game.currentOperandsDisplayOrder().map((val: number, index: number) => (
-      <Button 
-        onClick={makeOperandButtonClickHandler(val, index)}
+    const OperandsButtons = currentOperands.map((val: number, index: number) => {
+
+      const clickHandler = makeOperandButtonClickHandler(val, index)
+
+      if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
+        return <Button 
+          variant="gradient"
+          gradient={GOAL_GRADIENT}
+          onClick={clickHandler}
+          key={nanoid()}
+        >
+          {val}
+        </Button> 
+      } 
+
+      return <Button 
+        onClick={clickHandler}
         key={nanoid()}
       >
         {val}
       </Button>
-      )
+      }
     );
     
     const submitButtonHandler = function() {
@@ -270,8 +290,18 @@ export function NumbersGame(props: NumbersGameProps) {
       });
     }
 
+    const undoButton = (hint === HINT_UNDO ?
+      <Button onClick={undoButtonHandler}
+              variant="gradient"
+              gradient={GOAL_GRADIENT}
+      >
+      <b>←</b>
+      </Button> : 
+      <Button onClick={undoButtonHandler}><b>←</b></Button>
+    );
+
     const hintButtonHandler = function() {
-        // Alternatively, Mantine provides useDisclosure to handle
+        // Alternatively, Mantine provides useDisclosure just to handle
         // toggling booleans https://mantine.dev/hooks/use-disclosure/ 
         setHintsShown(!hintsShown);
     }
@@ -305,7 +335,7 @@ export function NumbersGame(props: NumbersGameProps) {
       </Group>
       <Group justify="center" mt="md">
         <Button onClick={submitButtonHandler}>=</Button>
-        <Button onClick={undoButtonHandler}>←</Button>
+        {undoButton}
         <HintButton handler={hintButtonHandler} hintsShown={hintsShown}></HintButton>
       </Group>
       {/* <Group justify="center" mt="md">
