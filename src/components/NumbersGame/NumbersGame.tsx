@@ -271,6 +271,8 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     const hintButtonHandler = function() {
+        // Alternatively, Mantine provides useDisclosure to handle
+        // toggling booleans https://mantine.dev/hooks/use-disclosure/ 
         setHintsShown(!hintsShown);
     }
 
