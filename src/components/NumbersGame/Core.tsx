@@ -14,9 +14,9 @@ const SYMBOLS = {
    };
 
 
-export const ALL_SEEDS = SYMBOLS["SEEDS"];
+export const ALL_SEEDS: number[] = SYMBOLS["SEEDS"];
 export const SEEDS = Array.from(new Set(ALL_SEEDS));
-export const OP_SYMBOLS = SYMBOLS["OPS"];
+export const OP_SYMBOLS: string[] = SYMBOLS["OPS"];
 export const GOAL_MIN = SYMBOLS["GOAL_MIN"];
 export const GOAL_MAX = SYMBOLS["GOAL_MAX"];
 
