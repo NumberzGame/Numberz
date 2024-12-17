@@ -106,8 +106,35 @@ export const evalSolution = function(
 };
 
 
-const form = '(((2_2)_1)_1)';
-const seeds = [10, 10, 1, 50, 100, 5]
-const opSymbols = ['+', '*', '+', '+', '//']
+export const solutionExpr = function(
+    form: string,
+    seeds: Iterable<number>,
+    opSymbols: Iterable<string>,
+    ): string {
 
-console.log(evalSolution(form, seeds, opSymbols));
+    const seedIterator = seeds[Symbol.iterator]();
+    const opSymbolIterator = opSymbols[Symbol.iterator]();
+
+    const nextSeedStr = () => seedIterator.next().value.toString();
+    const nextOpSymbol = () => ` ${opSymbolIterator.next().value} `;
+
+    const opExpr = ' o ';
+    const seedExpr = '1';
+    let retval = form.replaceAll('_', opExpr);
+    for (let i = 6; i > 1; i--) {
+        retval = retval.replaceAll(i.toString(),`(${i-1}${opExpr}${seedExpr})`);
+    }
+
+    retval = retval.replaceAll(opExpr, nextOpSymbol);
+    retval = retval.replaceAll(seedExpr, nextSeedStr);
+    retval = retval.replaceAll('//', '/');
+
+    return retval;
+}
+
+// const form = '(((2_2)_1)_1)';
+// const seeds = [10, 10, 1, 50, 100, 5]
+// const opSymbols = ['+', '*', '+', '+', '//']
+
+// console.log(evalSolution(form, seeds, opSymbols));
+// console.log(solutionExpr(form, seeds, opSymbols));
