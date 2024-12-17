@@ -14,7 +14,7 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS } from './Core';
-import {evalSolution} from './solutionEvaluator';
+import { evalSolution, solutionExpr} from './solutionEvaluator';
 
 const INITIAL_GRADE = 17;
 
@@ -146,7 +146,7 @@ export function GameBoSelector() {
         throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
     }
 
-    sols.push(<Text>Seeds: {seeds.join(', ')}.  Ops: {opSymbols.join(', ')}</Text>)
+    sols.push(<Text>{solutionExpr(form, seeds, opSymbols)}</Text>)
   }
 
   // const texts = [];
