@@ -8,7 +8,13 @@ import { Router } from './Router';
 import { theme } from './theme';
 import { GameBoSelector } from './components/NumbersGame/GameBoSelector';
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+    },
+  },
+});
 
 export default function App() {
   return (
