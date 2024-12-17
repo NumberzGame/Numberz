@@ -19,7 +19,7 @@ const throwIfInvalidArgsOrNull = function(result: number | null | typeof INVALID
 }
 
 
-const evalSolution = function(
+export const evalSolution = function(
     form: string,
     seeds: Iterable<number>,
     opSymbols: Iterable<string>,
@@ -56,7 +56,7 @@ const evalSolution = function(
                     throwIfInvalidArgsOrNull(subsolutionVal);
 
                     const result = op(valSoFar, subsolutionVal as number);
-                    console.log('After bracketed sub-solution, result: ', result);
+                    // console.log('After bracketed sub-solution, result: ', result);
                     throwIfInvalidArgsOrNull(result)
                     valSoFar = result as number;
 
@@ -77,10 +77,10 @@ const evalSolution = function(
                 for (let i=1; i < num; i++) {
                     const op = nextOp();
                     const seed = nextSeed()
-                    console.log('Value so far: ',valSoFar,' Seed: ',seed);
+                    // console.log('Value so far: ',valSoFar,' Seed: ',seed);
                     const result = op(valOfStraight, seed);
                     
-                    console.log('In for loop, result: ',result);
+                    // console.log('In for loop, result: ',result);
                     throwIfInvalidArgsOrNull(result)
                     valOfStraight = result as number;
                 }

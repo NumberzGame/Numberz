@@ -14,7 +14,7 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS } from './Core';
-
+import {evalSolution} from './solutionEvaluator';
 
 const INITIAL_GRADE = 17;
 
@@ -93,12 +93,14 @@ const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecod
 export function GameBoSelector() {
   const gradeObj = useRef(INITIAL_GRADE);
 
+  const goal = 224; //
+  const form = '(((2_2)_1)_1)'; //
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ['repoData'],
     queryFn: async () => {
       const grade = 22; //gradeObj.current;
-      const goal = 224; //
-      const form = '(((2_2)_1)_1)'; //
+      // const goal = 224; //
+      // const form = '(((2_2)_1)_1)'; //
       const response = await fetch(
         `./grades_goals_solutions_forms/${grade}/${goal}/solutions_${goal}_${form}_grade_${grade}.dat`,
       )
@@ -139,6 +141,11 @@ export function GameBoSelector() {
     if (seeds.length < 6 ) { //|| opSymbols.length < 5) {
       break;
     }
+
+    if (evalSolution(form, seeds, opSymbols) !== goal) {
+        throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
+    }
+
     sols.push(<Text>Seeds: {seeds.join(', ')}.  Ops: {opSymbols.join(', ')}</Text>)
   }
 
