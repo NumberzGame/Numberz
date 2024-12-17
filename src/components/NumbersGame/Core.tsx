@@ -1,5 +1,7 @@
 
-// import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+// import * as SYMBOLS from '../../data/symbols.json' assert { type: "json" };
+// 
+// import * as SYMBOLS from '../../data/symbols.json';
 
 export const MAX_SEEDS = 6;
 export const MAX_OPS = MAX_SEEDS - 1;
