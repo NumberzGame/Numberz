@@ -1,6 +1,7 @@
 
+import { useRef } from 'react';
 
-import {Text, Stack } from '@mantine/core';
+import {Text, Stack, Slider } from '@mantine/core';
 
 import {
   QueryClient,
@@ -13,6 +14,9 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS } from './Core';
+
+
+const INITIAL_GRADE = 17;
 
 
 export function JSONSelector() {
@@ -83,19 +87,29 @@ const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS,
 // ] = MakeSubByteEncoderAndDecoder<(string | number)>(valueSets);
 
 // const [bitWidths, encodings, decodings] = getBitWidthsEncodingsAndDecodings<(string | number)>(valueSets)
-const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings<(string | number)>(seedsValueSets)
-const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings<(string | number)>(opsValueSets)
+const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
+const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
 export function GameBoSelector() {
+  const gradeObj = useRef(INITIAL_GRADE);
+
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ['repoData'],
     queryFn: async () => {
+      const grade = 22; //gradeObj.current;
+      const goal = 224; //
+      const form = '(((2_2)_1)_1)'; //
       const response = await fetch(
-        './grades_goals_solutions_forms/22/224/solutions_224_(((2_2)_1)_1)_grade_22.dat',
+        `./grades_goals_solutions_forms/${grade}/${goal}/solutions_${goal}_${form}_grade_${grade}.dat`,
       )
       return await response.bytes()
     },
-  })
+  });
+  
+
+  const gradeSliderHandler = function(val: number) {
+    gradeObj.current = val;
+  }
 
   if (isPending) {
     return 'Loading game...';
@@ -138,7 +152,6 @@ export function GameBoSelector() {
   // const freqs: number[] = Array.from(Object.values(data));
   // const FormTexts = Object.entries(data).map(([k, v]: [string, any]) => (<Text>{k} : {v.toString()}</Text>));
 
-  return (
       // <div>
       //   <h1>{data.full_name}</h1>
       //   <p>{data.description}</p>
@@ -147,10 +160,20 @@ export function GameBoSelector() {
       //   <strong>🍴 {data.forks_count}</strong>
       //   <div>{isFetching ? 'Updating...' : ''}</div>
       // </div>
-      <Stack>
+  
+  return ( <>    <Stack>
         {/* {FormTexts} */}
         {/* {texts} */}
         {sols}
       </Stack>
+      <Slider
+        color="blue"
+        marks={[
+          { value: 20, label: '20%' },
+          { value: 50, label: '50%' },
+          { value: 80, label: '80%' },
+        ]}
+      />
+      </>
   )
 }
