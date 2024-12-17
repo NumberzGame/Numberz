@@ -3,6 +3,7 @@ import { AppShell } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
 import { NumbersGame } from '../components/NumbersGame/NumbersGame';
+import { GameBoSelector } from '../components/NumbersGame/GameBoSelector';
 // import { theme } from '../theme';
 
 import { GameID } from '../components/NumbersGame/Classes';
@@ -26,7 +27,8 @@ export function HomePage() {
   return <>
     <ColorSchemeToggle  />
     <Welcome />
-    <NumbersGame gameID={gameID}></NumbersGame>
+    <GameBoSelector ></GameBoSelector>
+    {/* <NumbersGame gameID={gameID}></NumbersGame> */}
   </>
 
 
