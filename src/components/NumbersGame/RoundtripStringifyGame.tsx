@@ -1,4 +1,4 @@
-// deno run --unstable-sloppy-imports --allow-read --allow-env RoundtripStringifyGame.tsx.tsx 
+// deno run --unstable-sloppy-imports --allow-read --allow-env RoundtripStringifyGame.tsx
 // or:
 // deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=RoundtripStringifyGame.tsx
 import { GameID, Forms, Game, Move, GameState } from './Classes';

@@ -1,19 +1,32 @@
 
-// import * as SYMBOLS from '../../data/symbols.json' assert { type: "json" };
+
+// Works in Deno
+// import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+
+// Works in Vite / ESBuild:
 // 
-// import * as SYMBOLS from '../../data/symbols.json';
+import SYMBOLS from '../../data/symbols.json';
+
+// let SYMBOLS;
+// An import declaration can only be used at the top level of a namespace or module.
+// if ("Deno" in window) {
+//   import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+// } else {
+//   import SYMBOLS from '../../data/symbols.json';
+// }
+
 
 export const MAX_SEEDS = 6;
 export const MAX_OPS = MAX_SEEDS - 1;
 export const MAX_MOVES = MAX_OPS;
 export const MAX_OPERANDS = 2;
 
-const SYMBOLS = {
-    SEEDS: [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100],
-    OPS : ["+", "*", "-", "//"],
-    GOAL_MIN : 100,
-    GOAL_MAX : 999
-   };
+// const SYMBOLS = {
+//     SEEDS: [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100],
+//     OPS : ["+", "*", "-", "//"],
+//     GOAL_MIN : 100,
+//     GOAL_MAX : 999
+//    };
 
 
 export const ALL_SEEDS: number[] = SYMBOLS["SEEDS"];
@@ -44,3 +57,33 @@ const OP_FUNCS: BINARY_OP[] = [
 
 export const OPS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, OP_FUNCS[i]])));
 
+export const FORMS = [
+  "2",
+  "3",
+  "4",
+  "(2, 2)",
+  "5",
+  "(3, 2)",
+  "(1, (2, 2))",
+  "6",
+  "(4, 2)",
+  "(3, 3)",
+  "(2, (2, 2))",
+  "(1, (3, 2))",
+  "(1, (1, (2, 2)))",
+];
+
+export class Operand {
+    readonly val: number;
+    readonly expr: string;
+    
+    constructor(val: number, expr: string | null = null) {
+        this.val = val;
+        this.expr = expr ?? val.toString(10);
+    }
+}
+
+
+export const randomPositiveInteger = function(lessThan: number): number {
+  return Math.floor(Math.random()*Math.floor(lessThan));
+}

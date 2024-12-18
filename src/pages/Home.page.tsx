@@ -11,6 +11,7 @@ import { GameID } from '../components/NumbersGame/Classes';
 
 export function HomePage() {
 
+  const INITIAL_GRADE = 17;
 
   const grade = 22;
   const goal=224;
@@ -27,7 +28,7 @@ export function HomePage() {
   return <>
     <ColorSchemeToggle  />
     <Welcome />
-    <GameBoSelector ></GameBoSelector>
+    <GameBoSelector grade = {INITIAL_GRADE}></GameBoSelector>
     {/* <NumbersGame gameID={gameID}></NumbersGame> */}
   </>
 

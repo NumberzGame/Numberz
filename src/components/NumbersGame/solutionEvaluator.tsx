@@ -2,7 +2,7 @@
 
 
 import { InvalidEvent } from 'react';
-import { OPS, SEEDS, INVALID_ARGS, OP_SYMBOLS } from './Core';
+import { OPS, SEEDS, INVALID_ARGS, OP_SYMBOLS, Operand } from './Core';
 
 
 const throwIfInvalidArgsOrNull = function(result: number | null | typeof INVALID_ARGS) {
@@ -132,12 +132,35 @@ export const solutionExpr = function(
     return retval;
 }
 
-// const form = '(((2_2)_1)_1)';
-// const seeds = [10, 10, 1, 50, 100, 5]
-// const opSymbols = ['+', '*', '+', '+', '//']
 
-// console.log(evalSolution(form, seeds, opSymbols));
-// console.log(solutionExpr(form, seeds, opSymbols));
+export const solutionAsOperand = function(
+    form: string,
+    seeds: Iterable<number>,
+    opSymbols: Iterable<string>,): Operand {
+
+    const val = evalSolution(form, seeds, opSymbols);
+    if (val === null) {
+        throw new Error(`Solution evaluated to null, for: ${form}, ${seeds}, ${opSymbols}`);
+    }
+
+    const expr = solutionExpr(form, seeds, opSymbols);
+
+    return new Operand(val, expr);
+
+    }
+
+// deno run --unstable-sloppy-imports --allow-read --allow-env solutionEvaluator.tsx 
+// or:
+// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=solutionEvaluator.tsx 
+
+
+
+const form = '(((2_2)_1)_1)';
+const seeds = [10, 10, 1, 50, 100, 5]
+const opSymbols = ['+', '*', '+', '+', '//']
+
+console.log(evalSolution(form, seeds, opSymbols));
+console.log(solutionExpr(form, seeds, opSymbols));
 
 // import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json' with { type: "json" };
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json' with { type: "json" };

@@ -16,20 +16,12 @@ function* allPairsFrom<T>(arr: T[]): IterableIterator<[[number,T],[number,T]]> {
     }
 }
 
-import {OPS, INVALID_ARGS} from './Core';
+import {OPS, INVALID_ARGS, Operand} from './Core';
 
 
 
 
-export class Operand {
-    readonly val: number;
-    readonly expr: string;
-    
-    constructor(val: number, expr: string | null = null) {
-        this.val = val;
-        this.expr = expr ?? val.toString(10);
-    }
-}
+
 
 function makeSubSolExpr(x: Operand, y: Operand, op: string): string {
     return `(${x.expr} ${op} ${y.expr})`

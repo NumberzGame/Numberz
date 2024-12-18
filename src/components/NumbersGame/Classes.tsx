@@ -5,8 +5,9 @@ import { difficultyOfSum, difficultyOfProduct,
          difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP } from './Core';
-import { MAX_SEEDS, MAX_OPS, OP_RESULT} from "./Core";
-import { solutions, Operand, EXPR_PATTERN } from './solverDFS';
+import { MAX_SEEDS, MAX_OPS, OP_RESULT, Operand, randomPositiveInteger } from "./Core";
+import { solutions, EXPR_PATTERN } from './solverDFS';
+import { solutionAsOperand } from "./solutionEvaluator";
 
 
 // All possible keys in all distribution.jsons:
@@ -167,9 +168,6 @@ export class GameState{
 }
 
 
-const randomPositiveInteger = function(lessThan: number): number {
-    return Math.floor(Math.random()*Math.floor(lessThan));
-}
 
 
 
@@ -281,6 +279,15 @@ const getRedHerringIndicesWithoutMakingEasier = function(
 }
 
 
+const numSeedsFromForm = function(form: string): number {
+    let total = 0;
+    for (const match of form.matchAll(/\d+/g)) {
+        total += parseInt(match[0]);
+    }
+    return total
+}
+
+
 export class Game{
     [immerable] = true;
     id: GameID;
@@ -293,7 +300,7 @@ export class Game{
     readonly seedIndices: number[];
 
     // The game's solution, together with the form in the GameID
-    // and the ordered seeds in seedIndicesSolutionOrder
+    // and the ordered seeds in seedIndices
     readonly opIndices: number[];
 
     
@@ -395,26 +402,30 @@ export class Game{
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-
-            for (const solution of solutions(this.id.goal, operands)) {
-                const grade = calcGrade(solution);
-                // We could break here on finding the first valid solution,
-                // and give the user the first hint that works,
-                // (not necessarily a hint compatible with the 
-                // easiest method).
-                if (grade < easiestGrade) {
-                    easiestGrade = grade;
-                    easiestSolution = solution;
+            if (operands.length === numSeedsFromForm(this.id.form)) {
+                easiestSolution = solutionAsOperand(this.id.form, this.seeds(), this.opIndices.map((i) => OP_SYMBOLS[i]));
+            } else {
+                for (const solution of solutions(this.id.goal, operands)) {
+                    const grade = calcGrade(solution);
+                    // We could break here on finding the first valid solution,
+                    // and give the user the first hint that works,
+                    // (not necessarily a hint compatible with the 
+                    // easiest method).
+                    if (grade < easiestGrade) {
+                        easiestGrade = grade;
+                        easiestSolution = solution;
+                    }
+                }
+                if (easiestSolution === null) {
+                    // No solution found. 
+                    return HINT_UNDO;
+                    // if (game.state.moves.length >= 1) {
+                    //   Highlight undo button
+                    // } else {
+                    // Tell user no solution found.  Prompt to select new game.
                 }
             }
-            if (easiestSolution === null) {
-                // No solution found. 
-                return HINT_UNDO;
-                // if (game.state.moves.length >= 1) {
-                //   Highlight undo button
-                // } else {
-                // Tell user no solution found.  Prompt to select new game.
-            }
+
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);

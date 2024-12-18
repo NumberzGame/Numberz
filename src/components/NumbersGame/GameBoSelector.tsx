@@ -13,55 +13,65 @@ import { MakeSubByteEncoderAndDecoder,
   getBitWidthsEncodingsAndDecodings, intDecoder
  } from 'sub_byte';
 
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS } from './Core';
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger } from "./Core";
+
 import { evalSolution, solutionExpr} from './solutionEvaluator';
-// import * as NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json' with { type: "json" };
-// import * as NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json' with { type: "json" };
+import { GameID } from './Classes';
+// Wont work in Deno - need to append " with { type: "json" }"
+import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json';
+import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json';
 
-const INITIAL_GRADE = 17;
+type StrNumsMappingT = {
+  [key in string]: number;
+};
 
+function sumValues(obj: StrNumsMappingT): number {
+    return Object.values(obj).reduce((x, y) => x+y);
 
-export function JSONSelector() {
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ['repoData'],
-    queryFn: async () => {
-      const response = await fetch(
-        './grades_goals_solutions_forms/22/distribution.json',
-      )
-      return await response.json()
-    },
-  })
-
-  if (isPending) {
-    return 'Loading game...';
-  }
-
-  if (error) {
-    return 'An error has occurred: ' + error.message;
-  }
-  
-  if (isFetching) {
-    return 'Fetching game... ';
-  }
-
-  const forms: string[] = Array.from(Object.keys(data));
-  const freqs: number[] = Array.from(Object.values(data));
-  const FormTexts = Object.entries(data).map(([k, v]: [string, any]) => (<Text>{k} : {v.toString()}</Text>));
-
-  return (
-      // <div>
-      //   <h1>{data.full_name}</h1>
-      //   <p>{data.description}</p>
-      //   <strong>👀 {data.subscribers_count}</strong>{' '}
-      //   <strong>✨ {data.stargazers_count}</strong>{' '}
-      //   <strong>🍴 {data.forks_count}</strong>
-      //   <div>{isFetching ? 'Updating...' : ''}</div>
-      // </div>
-      <Stack>
-        {FormTexts}
-      </Stack>
-  )
 }
+
+function randomGrade(): number {
+  const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
+  let index = randomPositiveInteger(numSolsAllGrades);
+  let numSols = 0;
+  for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
+      numSols += value;
+      if (index < numSols) {
+        return parseInt(grade); 
+      }
+  }
+  throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
+
+}
+
+function randomForm(grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM): string {
+    // If nullish, shortcut to empty object making the main loop 
+    // have 0 iterations, ending in the "form not found" error
+    const formsObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
+    
+    const numSolsOfGrade = sumValues(formsObj);
+    let index = randomPositiveInteger(numSolsOfGrade);
+    let numSols = 0;
+    for (const form of FORMS) {
+        if (!(form in formsObj)) {
+          continue;
+        }
+        const value = formsObj[form as keyof typeof formsObj];
+        numSols += value;
+        if (index < numSols) {
+          return form; 
+        }
+        
+    }
+    
+    throw new Error(`No form found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+
+}
+
+// These two should be the same:
+// console.log(sumValues(NUM_SOLS_OF_ALL_GRADES));
+// console.log(Object.values(NUM_SOLS_OF_EACH_GRADE_AND_FORM).map(sumValues).reduce((x, y) => x+y));
+
 
 // const [encodeOps,
 //        decodeOps,
@@ -92,20 +102,19 @@ const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS,
 const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
 const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
-export function GameBoSelector() {
-  const gradeObj = useRef(INITIAL_GRADE);
+export function GameBoSelector(props: {grade: number}) {
+  const gradeObj = useRef(props.grade);
 
   const goal = 224; //
   const form = '(((2_2)_1)_1)'; //
+  const grade = 22; //gradeObj.current;
+  const key = `${goal}_${form}_grade_${grade}`;
   const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ['repoData'],
+    queryKey: [ key ],
     queryFn: async () => {
-      const grade = 22; //gradeObj.current;
-      // const goal = 224; //
-      // const form = '(((2_2)_1)_1)'; //
       const response = await fetch(
-        `./grades_goals_solutions_forms/${grade}/${goal}/solutions_${goal}_${form}_grade_${grade}.dat`,
-      )
+        `./grades_goals_solutions_forms/${grade}/${goal}/solutions_${key}.dat`,
+      );
       return await response.bytes()
     },
   });
@@ -176,12 +185,15 @@ export function GameBoSelector() {
         {sols}
       </Stack>
       <Slider
-        color="blue"
+        value = {gradeObj.current}
         marks={[
-          { value: 20, label: '20%' },
-          { value: 50, label: '50%' },
-          { value: 80, label: '80%' },
+          {value: 0, label: '1'},
+          // { value: 20, label: '20%' },
+          // { value: 50, label: '50%' },
+          // { value: 80, label: '80%' },
+          {value: 100, label: '223'},
         ]}
+        mt = {15}
       />
       </>
   )
