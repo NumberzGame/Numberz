@@ -50,25 +50,24 @@ function randomGrade(): number {
 function randomGoal(
     grade: number,// grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
     ): number {
-
-    // If nullish, shortcut to empty object making the main loop 
-    // have 0 iterations, ending in the "form not found" error
-    const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
+    return 224
+    // // If nullish, shortcut to empty object making the main loop 
+    // // have 0 iterations, ending in the "form not found" error
+    // const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
     
-    const numSolsOfGrade = sumValues(gradesObj);
-    let index = randomPositiveInteger(numSolsOfGrade);
+    // const numSolsOfGrade = sumValues(gradesObj);
+    // let index = randomPositiveInteger(numSolsOfGrade);
 
-    let numSolsSoFar = 0;
-    for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
-        const value = formsObj[form as keyof typeof formsObj];
-        numSols += value;
-        if (index < numSols) {
-          return form; 
-        }
+    // let numSolsSoFar = 0;
+    // for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
+    //   numSolsSoFar += numSols;
+    //     if (index < numSols) {
+    //       return goal; 
+    //     }
         
-    }
+    // }
     
-    throw new Error(`No form found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+    // throw new Error(`No goal found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
 }
 
 function randomForm(
@@ -94,7 +93,7 @@ function randomForm(
         
     }
     
-    throw new Error(`No form found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+    throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
 
 }
 
@@ -132,11 +131,13 @@ const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS,
 const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
 const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
-export function GameBoSelector(props: {grade: number}) {
-  const gradeObj = useRef(props.grade);
+const GRADE = 22;
 
-  const grade = 22; //gradeObj.current;
-  const goal = 224; //
+export function GameBoSelector(props: {grade: number}) {
+  const gradeObj = useRef(GRADE); //props.grade);
+
+  const grade = gradeObj.current;
+  const goal = randomGoal(grade); //
   const form = '(((2_2)_1)_1)'; //
   const key = `${goal}_${form}_grade_${grade}`;
   const { isPending, error, data, isFetching } = useQuery({
@@ -216,13 +217,15 @@ export function GameBoSelector(props: {grade: number}) {
       </Stack>
       <Slider
         value = {gradeObj.current}
-        marks={[
-          {value: 0, label: '1'},
-          // { value: 20, label: '20%' },
-          // { value: 50, label: '50%' },
-          // { value: 80, label: '80%' },
-          {value: 100, label: '223'},
-        ]}
+        min={GRADE}
+        max = {GRADE}
+        // marks={[
+        //   {value: 0, label: '1'},
+        //   // { value: 20, label: '20%' },
+        //   // { value: 50, label: '50%' },
+        //   // { value: 80, label: '80%' },
+        //   {value: 100, label: '223'},
+        // ]}
         mt = {15}
       />
       </>
