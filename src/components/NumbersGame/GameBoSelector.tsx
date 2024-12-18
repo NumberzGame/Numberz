@@ -20,6 +20,7 @@ import { GameID } from './Classes';
 // Wont work in Deno - need to append " with { type: "json" }"
 import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json';
+// import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_goal.json';
 
 type StrNumsMappingT = {
   [key in string]: number;
@@ -31,8 +32,10 @@ function sumValues(obj: StrNumsMappingT): number {
 }
 
 function randomGrade(): number {
+
   const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
   let index = randomPositiveInteger(numSolsAllGrades);
+
   let numSols = 0;
   for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
       numSols += value;
@@ -44,7 +47,34 @@ function randomGrade(): number {
 
 }
 
-function randomForm(grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM): string {
+function randomGoal(
+    grade: number,// grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
+    ): number {
+
+    // If nullish, shortcut to empty object making the main loop 
+    // have 0 iterations, ending in the "form not found" error
+    const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
+    
+    const numSolsOfGrade = sumValues(gradesObj);
+    let index = randomPositiveInteger(numSolsOfGrade);
+
+    let numSolsSoFar = 0;
+    for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
+        const value = formsObj[form as keyof typeof formsObj];
+        numSols += value;
+        if (index < numSols) {
+          return form; 
+        }
+        
+    }
+    
+    throw new Error(`No form found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+}
+
+function randomForm(
+    grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
+    // goal: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
+    ): string {
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
     const formsObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
@@ -105,9 +135,9 @@ const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecod
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(props.grade);
 
+  const grade = 22; //gradeObj.current;
   const goal = 224; //
   const form = '(((2_2)_1)_1)'; //
-  const grade = 22; //gradeObj.current;
   const key = `${goal}_${form}_grade_${grade}`;
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: [ key ],
