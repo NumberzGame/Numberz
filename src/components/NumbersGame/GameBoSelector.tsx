@@ -13,10 +13,11 @@ import { MakeSubByteEncoderAndDecoder,
   getBitWidthsEncodingsAndDecodings, intDecoder
  } from 'sub_byte';
 
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger } from "./Core";
-import { NumbersGame, NumbersGameProps } from './NumbersGame';
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
+         MAX_OPS, MAX_SEEDS, } from "./Core";
+import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
-import { GameID, Game } from './Classes';
+import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
 // Wont work in Deno - need to append " with { type: "json" }"
 import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json';
@@ -71,29 +72,35 @@ function randomGoal(
 }
 
 function randomForm(
-    grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
+    grade: number,
+    goal: number,
+    // grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
     // goal: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): string {
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
-    const formsObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
+
+    return '(((2_2)_1)_1)';
+
+
+    // const formsObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
     
-    const numSolsOfGrade = sumValues(formsObj);
-    let index = randomPositiveInteger(numSolsOfGrade);
-    let numSols = 0;
-    for (const form of FORMS) {
-        if (!(form in formsObj)) {
-          continue;
-        }
-        const value = formsObj[form as keyof typeof formsObj];
-        numSols += value;
-        if (index < numSols) {
-          return form; 
-        }
+    // const numSolsOfGrade = sumValues(formsObj);
+    // let index = randomPositiveInteger(numSolsOfGrade);
+    // let numSols = 0;
+    // for (const form of FORMS) {
+    //     if (!(form in formsObj)) {
+    //       continue;
+    //     }
+    //     const value = formsObj[form as keyof typeof formsObj];
+    //     numSols += value;
+    //     if (index < numSols) {
+    //       return form; 
+    //     }
         
-    }
+    // }
     
-    throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
+    // throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
 
 }
 
@@ -134,20 +141,65 @@ const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecod
 const GRADE = 22;
 
 export function GameBoSelector(props: {grade: number}) {
-  const gradeObj = useRef(GRADE); //props.grade);
+  const gradeObj = useRef(GRADE); //useRef(props.grade);
+
+  // load gameID/key from localstorage; null if storage unavailable.
   const [currentGame, setCurrentGame] = useState<GameID | null>(null);
 
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = val;
   }
-  
+  let gameComponent;
   if (currentGame === null) {
-    return <NewGradedGameWithNewID grade = {gradeObj.current}></NewGradedGameWithNewID>
-  }     
-  return <NumbersGame 
-          gameID = {currentGame}
-         ></NumbersGame>;
-  
+      gameComponent = (
+        <NewGradedGameWithNewID 
+         grade = {gradeObj.current}
+        ></NewGradedGameWithNewID>
+      )
+  } else {
+
+    let game = loadGameFromLocalStorage(currentGame);
+    if (game === null) {
+        if (currentGame instanceof CustomGameID) {
+          
+            const state = new GameState();
+            const datetime_ms = Date.now();
+            const seedIndices = currentGame.seedIndices;
+            const opIndices = null;
+            game = new Game(currentGame, datetime_ms, seedIndices, opIndices, state);
+        } else if (currentGame instanceof GradedGameID) {
+            throw new Error(`GradedGameID: ${currentGame} came from game history, but could not be found`
+                           +` in localstorage.  If the browser's localstorage was not after `
+                           +`the game ID was retrieved from localstorage, there may be a bug in the game. `
+            );
+        } else {
+            throw new Error(`Unsupported game ID class: ${currentGame}. `);
+        }
+    }
+    gameComponent = (
+        <NumbersGame 
+          game = {game}
+        ></NumbersGame>
+    )
+  }
+  return <>
+    {gameComponent}
+    
+    <Slider
+        value = {gradeObj.current}
+        min={GRADE}
+        max = {GRADE}
+        // marks={[
+        //   {value: 0, label: '1'},
+        //   // { value: 20, label: '20%' },
+        //   // { value: 50, label: '50%' },
+        //   // { value: 80, label: '80%' },
+        //   {value: 100, label: '223'},
+        // ]}
+        mt = {15}
+        onChangeEnd = {gradeSliderHandler}
+      />
+  </>
 }
 
 
@@ -157,9 +209,10 @@ interface NewGradedGameNewIDProps {
 
 
 function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
+
   const grade = props.grade;
   const goal = randomGoal(grade); //
-  const form = '(((2_2)_1)_1)'; //
+  const form = randomForm(grade, goal); //
   const key = `${goal}_${form}_grade_${grade}`;
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: [ key ],
@@ -190,13 +243,16 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   const dataIterator = dataNums[Symbol.iterator]() as IterableIterator<number>;
 
   const sols = [];
+  const seedIndicesAndOpIndices = [];
   while (true) {
     // num seeds (6) and num ops (5) are 
     // determined by the form above (((2_2)_1)_1)
     // const seeds = Array.from(decoder(dataIterator, 6));
     // const opSymbols = Array.from(decoder(dataIterator, 5));
-    const seeds = Array.from(intDecoder(dataIterator, 6, seedsBitWidths)).map(x => SEEDS[x]);
-    const opSymbols = Array.from(intDecoder(dataIterator, 5, opsBitWidths)).map(x => OP_SYMBOLS[x]);
+    const seedIndices = Array.from(intDecoder(dataIterator, MAX_SEEDS, seedsBitWidths));
+    const opIndices = Array.from(intDecoder(dataIterator, MAX_OPS, opsBitWidths));
+    const seeds = seedIndices.map(x => SEEDS[x]);
+    const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
     // const opSymbols = Array.from(decoder(dataIterator, 5));
     if (seeds.length < 6 ) { //|| opSymbols.length < 5) {
       break;
@@ -205,9 +261,20 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     if (evalSolution(form, seeds, opSymbols) !== goal) {
         throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
     }
-
+    seedIndicesAndOpIndices.push([seedIndices, opIndices]);
     sols.push(<Text>{solutionExpr(form, seeds, opSymbols)}</Text>)
   }
+
+  const index = randomPositiveInteger(sols.length);
+  const sol = sols[index];
+  const id = new GradedGameID(grade, goal, form, index);
+
+  
+  const [seedIndices, opIndices] = seedIndicesAndOpIndices[index];
+ 
+  const state = new GameState();
+  const datetime_ms = Date.now();
+  const game = new Game(id, datetime_ms, seedIndices, opIndices, state);
 
   // const texts = [];
   // for (const x of dataNums) {
@@ -228,11 +295,8 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
       //   <div>{isFetching ? 'Updating...' : ''}</div>
       // </div>
   
-  return ( <>    <Stack>
-        {/* {FormTexts} */}
-        {/* {texts} */}
-        {sols}
-      </Stack>
-      </>
-  )
+  return <NumbersGame
+          game={game}
+          >
+         </NumbersGame>
 }

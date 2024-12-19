@@ -9,7 +9,7 @@ import { Anchor, Badge, Button, Group, Text, TextInput, Image,
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
-import { Game, GameID, GameState, Move, HINT_UNDO} from './Classes';
+import { Game, GameID, GameState, Move, HINT_UNDO, CustomGameID, GradedGameID} from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          destringifyCodeUnits } from './Schema';
 
@@ -47,7 +47,7 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 
 
 let storeGameInLocalStorage: (game: Game) => void;
-let loadGameFromLocalStorage: (id: GameID) => Game | null;
+export let loadGameFromLocalStorage: (id: GameID) => Game | null;
 
 if (storageAvailable()) {
 
@@ -80,7 +80,18 @@ const gameFactory = function(id: GameID): Game {
   
   const state = new GameState();
   const datetime_ms = Date.now();
-  const game = new Game(id, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
+  let seedIndices, opIndices;
+  if (id instanceof CustomGameID) {
+      seedIndices = id.seedIndices;
+      opIndices = null;
+  } else if (id instanceof GradedGameID){
+    seedIndices = [9, 11, 1, 12, 0, 0];
+    opIndices = [3, 2, 1, 3, 2];
+  } else {
+    throw new Error(`Unsupported GameID class: ${id}`);
+  }
+
+  const game = new Game(id, datetime_ms, seedIndices, opIndices, state);
   
   // stored as a side effect.
   storeGameInLocalStorage(game);
@@ -118,7 +129,7 @@ export function HintButton(props: HintButtonProps) {
 }
 
 export interface NumbersGameProps{
-    gameID: GameID
+    game: Game
     // onWin: () => void
     // onQuit: () => void
 }
@@ -131,16 +142,7 @@ export interface NumbersGameProps{
 
 export function NumbersGame(props: NumbersGameProps) {
 
-    // https://mantine.dev/hooks/use-local-storage/
-    const gameID = props.gameID;
-
-    // A trivial closure.  useImmer will only
-    // call callback-factory functions with no args. 
-    const loadOrCreateNewGame = function(): Game {
-        return loadGameFromLocalStorageOrCreateNew(gameID);
-    }
-
-    const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
+    const [game, setGameUsingImmerProducer] = useImmer(props.game);
     const [hintsShown, setHintsShown] = useState(false);
 
 
@@ -331,7 +333,7 @@ export function NumbersGame(props: NumbersGameProps) {
       <Group justify="center" mt="md">
       <Text> Make: </Text>
       <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
-        {gameID.goal}
+        {game.id.goal}
       </Badge>
 
       </Group>

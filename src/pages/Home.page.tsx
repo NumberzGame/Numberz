@@ -1,5 +1,3 @@
-import { AppShell } from '@mantine/core';
-
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
 import { NumbersGame } from '../components/NumbersGame/NumbersGame';
