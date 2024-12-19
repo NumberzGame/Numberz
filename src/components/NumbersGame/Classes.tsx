@@ -69,7 +69,6 @@ export class GameIDBase{
 export class CustomGameID extends GameIDBase{
     [immerable] = true;
     readonly seedIndices: number[];
-    static readonly MIN_SIZE = 8;
     static readonly GAME_ID_TYPE_CODE = "C";
 
     constructor(goal: number, seedIndices: number[]) {
@@ -84,7 +83,6 @@ export class GradedGameID extends GameIDBase{
     readonly grade: number;
     // readonly form: string;
     readonly index: number;
-    static readonly MIN_SIZE = 6;
     static readonly GAME_ID_TYPE_CODE = "G";
 
     constructor(grade: number, goal: number, form: string, index: number) {

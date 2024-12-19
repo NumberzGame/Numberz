@@ -19,7 +19,10 @@ const NO_SEED = 0xd7ff;    // 0xd7ff is the max single code unit BMP code
 export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bits 
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 const NO_MOVE = 0xd7fc;
+const GRADED_GAME_ID_PADDING = 0xd7fb;
 
+const GRADED_GAME_ID_MIN_SIZE = 8;
+const CUSTOM_GAME_ID_MIN_SIZE = 8;
 export const MIN_GAME_SIZE = 26;
 
 
@@ -130,8 +133,8 @@ const seedsFromDestringified = function*(destringified: Iterable<number>): Itera
 const destringifyGradedGameID = function(key: string): GradedGameID {
 
 
-    if (key.length < GradedGameID.MIN_SIZE) {
-        throw new Error(`Need ${GradedGameID.MIN_SIZE} code-units to stringify a GradedGameID. `
+    if (key.length < GRADED_GAME_ID_MIN_SIZE) {
+        throw new Error(`Need ${GRADED_GAME_ID_MIN_SIZE} code-units to stringify a GradedGameID. `
                         +`Got: ${key.length}, key=${key}`
         )   
     }
@@ -153,6 +156,16 @@ const destringifyGradedGameID = function(key: string): GradedGameID {
     // Less than 32-bits total so this works using JS native operators
     const index = deChunkify([next(), next()]);
 
+    // Make sure two badding code-units present
+    for (const codeUnit of takeNextN(2)) {
+        if (codeUnit !== GRADED_GAME_ID_PADDING) {
+            throw new Error(
+                `Invalid padding code-unit.  `
+                +`Expected:  ${takeNextN(MAX_SEEDS)}.  Got ${codeUnit}`
+            );
+        }
+    }
+
     return new GradedGameID(grade, goal, form, index);
 }
 
@@ -160,8 +173,8 @@ const destringifyGradedGameID = function(key: string): GradedGameID {
 const destringifyCustomGameID = function(key: string): CustomGameID {
     // ["C".charCodeAt(0), gameID.goal, ...gameID.seedIndices]
 
-    if (key.length < CustomGameID.MIN_SIZE) {
-        throw new Error(`Need ${CustomGameID.MIN_SIZE} code-units to stringify a CustomGameID. `
+    if (key.length < CUSTOM_GAME_ID_MIN_SIZE) {
+        throw new Error(`Need ${CUSTOM_GAME_ID_MIN_SIZE} code-units to stringify a CustomGameID. `
                         +`Got: ${key.length}, key=${key}`
         )   
     }
@@ -186,8 +199,8 @@ export const getStringifiedGameIDClass = function(
     ): typeof GradedGameID | typeof CustomGameID {
 
     switch (stringified[0]) {
-        case "G" : return GradedGameID;
-        case "C" : return CustomGameID;
+        case GradedGameID.GAME_ID_TYPE_CODE : return GradedGameID;
+        case CustomGameID.GAME_ID_TYPE_CODE : return CustomGameID;
         default: throw new Error(`Could not find GameID for: ${stringified}`);
     }
 }
@@ -219,7 +232,15 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
         const form_index = Forms.indexOf(gameID.form() as string);
         checkFitsInChunk(form_index);
 
-        keyData = ["G".charCodeAt(0), gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
+        keyData = [
+            GradedGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
+            gameID.grade,
+            gameID.goal,
+            form_index,
+            ...chunkify(gameID.index, 2),
+            GRADED_GAME_ID_PADDING,
+            GRADED_GAME_ID_PADDING,
+        ];
         //index_top_15_bits, index_bottom_15_bits];
 
     } else if (gameID instanceof CustomGameID) {
@@ -233,7 +254,11 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
                                                 NO_SEED,
                                             )
 
-        keyData = ["C".charCodeAt(0), gameID.goal, ...checkedPaddedSeedIndices];
+        keyData = [
+            CustomGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
+            gameID.goal,
+            ...checkedPaddedSeedIndices,
+        ];
     } else {
         throw new Error(`Unsupported gameID type: ${gameID}`);
     }

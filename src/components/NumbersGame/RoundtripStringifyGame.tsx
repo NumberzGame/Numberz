@@ -1,7 +1,7 @@
 // deno run --unstable-sloppy-imports --allow-read --allow-env RoundtripStringifyGame.tsx
 // or:
 // deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=RoundtripStringifyGame.tsx
-import { GameID, Forms, Game, Move, GameState } from './Classes';
+import { GradedGameID, Forms, Game, Move, GameState } from './Classes';
 import { OPS,SEEDS,GOAL_MIN, GOAL_MAX, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS } from './Core';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          CHUNK_SIZE, chunkify, deChunkify, stringifyCodeUnits, destringifyCodeUnits,
@@ -18,7 +18,7 @@ const [grade,
        opIndices,
        moves_data] = [1,100,"2",0,new Date("2024-12-14T16:51:16.779Z"),false,[],[],[[0,false,[]],[0,false,[]]] ];
 
-const gameID = new GameID(grade, goal, form, index);
+const gameID = new GradedGameID(grade, goal, form, index);
 const moves: Move[] = [];
 for (const move_args of moves_data) {
     const opIndex: number = move_args[0] as number;
