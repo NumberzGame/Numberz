@@ -160,6 +160,8 @@ export function GameBoSelector(props: {grade: number}) {
 
     let game = loadGameFromLocalStorage(currentGame);
     if (game === null) {
+        // game not found in localStorage, or localStorage unavailable
+        // Either way, we have nothing to destringify into a Game.
         if (currentGame instanceof CustomGameID) {
           
             const state = new GameState();
@@ -245,24 +247,24 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   const sols = [];
   const seedIndicesAndOpIndices = [];
   while (true) {
-    // num seeds (6) and num ops (5) are 
-    // determined by the form above (((2_2)_1)_1)
-    // const seeds = Array.from(decoder(dataIterator, 6));
-    // const opSymbols = Array.from(decoder(dataIterator, 5));
-    const seedIndices = Array.from(intDecoder(dataIterator, MAX_SEEDS, seedsBitWidths));
-    const opIndices = Array.from(intDecoder(dataIterator, MAX_OPS, opsBitWidths));
-    const seeds = seedIndices.map(x => SEEDS[x]);
-    const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
-    // const opSymbols = Array.from(decoder(dataIterator, 5));
-    if (seeds.length < 6 ) { //|| opSymbols.length < 5) {
-      break;
-    }
+      // num seeds (6) and num ops (5) are 
+      // determined by the form above (((2_2)_1)_1)
+      // const seeds = Array.from(decoder(dataIterator, 6));
+      // const opSymbols = Array.from(decoder(dataIterator, 5));
+      const seedIndices = Array.from(intDecoder(dataIterator, MAX_SEEDS, seedsBitWidths));
+      const opIndices = Array.from(intDecoder(dataIterator, MAX_OPS, opsBitWidths));
+      const seeds = seedIndices.map(x => SEEDS[x]);
+      const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
+      // const opSymbols = Array.from(decoder(dataIterator, 5));
+      if (seeds.length < 6 ) { //|| opSymbols.length < 5) {
+        break;
+      }
 
-    if (evalSolution(form, seeds, opSymbols) !== goal) {
-        throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
-    }
-    seedIndicesAndOpIndices.push([seedIndices, opIndices]);
-    sols.push(<Text>{solutionExpr(form, seeds, opSymbols)}</Text>)
+      if (evalSolution(form, seeds, opSymbols) !== goal) {
+          throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
+      }
+      seedIndicesAndOpIndices.push([seedIndices, opIndices]);
+      sols.push(<Text>{solutionExpr(form, seeds, opSymbols)}</Text>);
   }
 
   const index = randomPositiveInteger(sols.length);
