@@ -227,7 +227,13 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
         checkFitsInChunk(gameID.goal);
         gameID.seedIndices.forEach(checkFitsInChunk);
 
-        keyData = ["C".charCodeAt(0), gameID.goal, ...gameID.seedIndices];
+        const checkedPaddedSeedIndices = checkItemsFitAndPadIterable(
+                                                gameID.seedIndices,
+                                                MAX_SEEDS,
+                                                NO_SEED,
+                                            )
+
+        keyData = ["C".charCodeAt(0), gameID.goal, ...checkedPaddedSeedIndices];
     } else {
         throw new Error(`Unsupported gameID type: ${gameID}`);
     }

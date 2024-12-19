@@ -155,12 +155,12 @@ export const solutionAsOperand = function(
 
 
 
-const form = '(((2_2)_1)_1)';
-const seeds = [10, 10, 1, 50, 100, 5]
-const opSymbols = ['+', '*', '+', '+', '//']
+// const form = '(((2_2)_1)_1)';
+// const seeds = [10, 10, 1, 50, 100, 5]
+// const opSymbols = ['+', '*', '+', '+', '//']
 
-console.log(evalSolution(form, seeds, opSymbols));
-console.log(solutionExpr(form, seeds, opSymbols));
+// console.log(evalSolution(form, seeds, opSymbols));
+// console.log(solutionExpr(form, seeds, opSymbols));
 
 // import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json' with { type: "json" };
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json' with { type: "json" };
