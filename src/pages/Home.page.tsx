@@ -6,7 +6,7 @@ import { NumbersGame } from '../components/NumbersGame/NumbersGame';
 import { GameBoSelector } from '../components/NumbersGame/GameBoSelector';
 // import { theme } from '../theme';
 
-import { GameID } from '../components/NumbersGame/Classes';
+import { GameID, GradedGameID } from '../components/NumbersGame/Classes';
 
 
 export function HomePage() {
@@ -17,7 +17,7 @@ export function HomePage() {
   const goal=224;
   const form="6";
   const index=0;
-  const gameID = new GameID(grade, goal, form, index);
+  const gameID = new GradedGameID(grade, goal, form, index);
 
   // https://mantine.dev/styles/style-props/ 
   // ta - text align

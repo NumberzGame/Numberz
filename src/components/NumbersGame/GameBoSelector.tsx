@@ -1,5 +1,5 @@
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import {Text, Stack, Slider } from '@mantine/core';
 
@@ -14,9 +14,9 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger } from "./Core";
-
+import { NumbersGame, NumbersGameProps } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
-import { GameID } from './Classes';
+import { GameID, Game } from './Classes';
 // Wont work in Deno - need to append " with { type: "json" }"
 import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json';
@@ -135,8 +135,29 @@ const GRADE = 22;
 
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(GRADE); //props.grade);
+  const [currentGame, setCurrentGame] = useState<GameID | null>(null);
 
-  const grade = gradeObj.current;
+  const gradeSliderHandler = function(val: number) {
+    gradeObj.current = val;
+  }
+  
+  if (currentGame === null) {
+    return <NewGradedGameWithNewID grade = {gradeObj.current}></NewGradedGameWithNewID>
+  }     
+  return <NumbersGame 
+          gameID = {currentGame}
+         ></NumbersGame>;
+  
+}
+
+
+interface NewGradedGameNewIDProps {
+  grade: number
+}
+
+
+function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
+  const grade = props.grade;
   const goal = randomGoal(grade); //
   const form = '(((2_2)_1)_1)'; //
   const key = `${goal}_${form}_grade_${grade}`;
@@ -151,9 +172,6 @@ export function GameBoSelector(props: {grade: number}) {
   });
   
 
-  const gradeSliderHandler = function(val: number) {
-    gradeObj.current = val;
-  }
 
   if (isPending) {
     return 'Loading game...';
@@ -215,19 +233,6 @@ export function GameBoSelector(props: {grade: number}) {
         {/* {texts} */}
         {sols}
       </Stack>
-      <Slider
-        value = {gradeObj.current}
-        min={GRADE}
-        max = {GRADE}
-        // marks={[
-        //   {value: 0, label: '1'},
-        //   // { value: 20, label: '20%' },
-        //   // { value: 50, label: '50%' },
-        //   // { value: 80, label: '80%' },
-        //   {value: 100, label: '223'},
-        // ]}
-        mt = {15}
-      />
       </>
   )
 }

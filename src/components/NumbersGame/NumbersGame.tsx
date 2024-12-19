@@ -45,18 +45,9 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 }
 
 
-const gameFactory = function(id:  GameID): Game{
-
-  const state = new GameState();
-  const datetime_ms = Date.now();
-  const game = new Game(id, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
-  storeGameInLocalStorage(game);
-  return game;
-}
-
 
 let storeGameInLocalStorage: (game: Game) => void;
-let loadGameFromLocalStorageOrCreateNew: (id: GameID) => Game;
+let loadGameFromLocalStorage: (id: GameID) => Game | null;
 
 if (storageAvailable()) {
 
@@ -66,15 +57,13 @@ if (storageAvailable()) {
       localStorage.setItem(key, val);
   }
 
-  loadGameFromLocalStorageOrCreateNew = function(id: GameID) {
+  loadGameFromLocalStorage = function(id: GameID) {
       const key = stringifyGameID(id);
 
       const val = localStorage.getItem(key);
 
-      if (!val) {
-          const game = gameFactory(id);
-          storeGameInLocalStorage(game);
-          return game;
+      if (val === null) {
+          return null;
       }
 
       return destringifyGame(val, id);
@@ -83,8 +72,27 @@ if (storageAvailable()) {
 
 } else {
     storeGameInLocalStorage = (game: Game) => {};
-    loadGameFromLocalStorageOrCreateNew = gameFactory;
+    loadGameFromLocalStorage = (id: GameID) => null;
 }
+
+
+const gameFactory = function(id: GameID): Game {
+  
+  const state = new GameState();
+  const datetime_ms = Date.now();
+  const game = new Game(id, datetime_ms, [9, 11, 1, 12, 0, 0], [3, 2, 1, 3, 2], state);
+  
+  // stored as a side effect.
+  storeGameInLocalStorage(game);
+  
+  return game;
+  
+}
+
+const loadGameFromLocalStorageOrCreateNew = function(id:  GameID): Game{
+  return loadGameFromLocalStorage(id) ?? gameFactory(id);
+} 
+
 
 const GOAL_GRADIENT = { from: 'lime', to: 'yellow', deg: 90 };
 
@@ -109,7 +117,7 @@ export function HintButton(props: HintButtonProps) {
 
 }
 
-interface NumbersGameProps{
+export interface NumbersGameProps{
     gameID: GameID
     // onWin: () => void
     // onQuit: () => void
