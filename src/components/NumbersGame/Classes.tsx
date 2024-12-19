@@ -68,7 +68,10 @@ export class GameIDBase{
 
 export class CustomGameID extends GameIDBase{
     [immerable] = true;
-    seedIndices: number[];
+    readonly seedIndices: number[];
+    static readonly MIN_SIZE = 8;
+    static readonly GAME_ID_TYPE_CODE = "C";
+
     constructor(goal: number, seedIndices: number[]) {
         super(goal);
         this.seedIndices = seedIndices
@@ -81,6 +84,8 @@ export class GradedGameID extends GameIDBase{
     readonly grade: number;
     // readonly form: string;
     readonly index: number;
+    static readonly MIN_SIZE = 6;
+    static readonly GAME_ID_TYPE_CODE = "G";
 
     constructor(grade: number, goal: number, form: string, index: number) {
         super(goal);
@@ -331,7 +336,7 @@ export class Game{
 
     // The game's solution, together with the form in the GameID
     // and the ordered seeds in seedIndices
-    readonly opIndices: number[];
+    readonly opIndices: number[] | null;
 
     
     // (MAX_SEEDS - seedIndices.length) number of decoy seed indices
@@ -346,7 +351,7 @@ export class Game{
     constructor(id: GameID,
                 timestamp_ms: number,
                 seedIndices: number[],
-                opIndices: number[],
+                opIndices: number[] | null,
                 state: GameState,
                 // redHerrings: number[] = getRedHerringIndicesWithoutMakingEasier(seedIndices, id.goal, id.grade),
                 redHerrings: number[] = getRedHerringIndices(seedIndices),
@@ -433,8 +438,8 @@ export class Game{
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-            if ((this.id.form() !== null) && operands.length === numSeedsFromForm(this.id.form() as string)) {
-                easiestSolution = solutionAsOperand(this.id.form() as string, this.seeds(), this.opIndices.map((i) => OP_SYMBOLS[i]));
+            if (this.opIndices && this.id.form() !== null && operands.length === numSeedsFromForm(this.id.form()!)) {
+                easiestSolution = solutionAsOperand(this.id.form() as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
             } else {
                 for (const solution of solutions(this.id.goal, operands)) {
                     const grade = calcGrade(solution);

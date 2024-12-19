@@ -2,8 +2,9 @@
 // simple: (72B, 5MB limit => 10 per day for 16 years)
 
 //       key:
-//       u60 10B (5 UTF-16 BMP single code units) 
+//       u60 12B (6 UTF-16 BMP single code units) 
 
+//       key type flag ("C"ustom or "G"raded), u15
 //       grade, 1,...,228 u15
 //       goal, 100, ..., 999 u15 
 //       form, 2, 3, ..., (1, (1, (2, 2))), u15

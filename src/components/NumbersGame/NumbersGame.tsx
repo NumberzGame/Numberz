@@ -11,7 +11,7 @@ import { nanoid } from "nanoid";
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
 import { Game, GameID, GameState, Move, HINT_UNDO} from './Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
-         MIN_GAME_ID_SIZE, destringifyCodeUnits } from './Schema';
+         destringifyCodeUnits } from './Schema';
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {

@@ -1,6 +1,6 @@
 
 import { instanceOf } from 'prop-types';
-import { GameID, GradedGameID, CustomGameID, 
+import { GameID, GradedGameID, CustomGameID, GameIDBase ,
          Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
@@ -20,7 +20,6 @@ export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bit
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 const NO_MOVE = 0xd7fc;
 
-export const MIN_GAME_ID_SIZE = 5;
 export const MIN_GAME_SIZE = 26;
 
 
@@ -38,9 +37,10 @@ export const checkFitsInChunk = function(x: number) {
 
 
 export const chunkify = function(x: number, num_chunks: number): number[] {
+    // Split the bits of x into num_chunks * bit strings, each of length CHUNK_SIZE
     // JS converts numbers to signed 32 bit integers, 
     // and has >> as well as >>>.  This function
-    // supports higher unsigned integers using bit strings.
+    // supports larger unsigned integers using bit strings.
     const chunks = [];
     const target_length = num_chunks*CHUNK_SIZE;
     const minNumBits = x.toString(2).length;
@@ -89,34 +89,7 @@ export const destringifyCodeUnits = function*(s: string): IterableIterator<numbe
 }
 
 
-export const destringifyGameID = function(key: string): GameID {
-
-
-    if (key.length < MIN_GAME_ID_SIZE) {
-        throw new Error(`Need ${MIN_GAME_ID_SIZE} code-units to encode a GameID. `
-                        +`Got: ${key.length}, key=${key}`
-        )   
-    }
-
-    const takeNextN = makeTakeNextNDestringified(key);
-    const next = () => takeNextN(1).next().value;
-
-    const grade = next();
-    const goal = next();
-    const form_index = next();
-    const form = Forms[form_index];
-    // const index_top_15_bits = key.charCodeAt(3);
-    // const index_bottom_15_bits = key.charCodeAt(4)
-    // Less than 32-bits total so this works using JS native operators
-    const index = deChunkify([next(), next()]);
-
-    return new GradedGameID(grade, goal, form, index);
-}
-
-
-
-
-const makeTakeNextNDestringified = function(s: string): (N: number) => IterableIterator<number> {
+const makeTakeNextNDestringified = function(s: string): [() => number, (N: number) => IterableIterator<number>] {
     const codeUnitsIterator = destringifyCodeUnits(s);
     const takeNextNDestringified = function*(N: number): IterableIterator<number> {
         // Iterator.prototype.take is not supported on Safari (as of 10 Dec 2024)
@@ -133,18 +106,111 @@ const makeTakeNextNDestringified = function(s: string): (N: number) => IterableI
             yield result.value;
         }
     }
-    return takeNextNDestringified;
+    const next = () => takeNextNDestringified(1).next().value
+    return [next, takeNextNDestringified];
 }
 
 
-// export const isStringifiedGameIDGradedOrCustom(stringified: string) {
+const seedsFromDestringified = function*(destringified: Iterable<number>): IterableIterator<number> {
+    for (const seedIndex of destringified) {
+        if(seedIndex === NO_SEED) {
+            continue;
+        } else if ((0 <= seedIndex) && (seedIndex < SEEDS.length)) {
+            yield seedIndex;
+        } else {
+            throw new Error(`Unrecognised seed index: ${seedIndex}. `
+                           + `Must be between 0 and ${SEEDS.length-1}, `
+                           +`or ===NO_SEED code ${NO_SEED}`
+            );
+        }
+    }    
+}
 
-// }
+
+const destringifyGradedGameID = function(key: string): GradedGameID {
+
+
+    if (key.length < GradedGameID.MIN_SIZE) {
+        throw new Error(`Need ${GradedGameID.MIN_SIZE} code-units to stringify a GradedGameID. `
+                        +`Got: ${key.length}, key=${key}`
+        )   
+    }
+
+    
+    const [next, takeNextN] = makeTakeNextNDestringified(key);
+
+    const type_code = GradedGameID.GAME_ID_TYPE_CODE; // "G"
+    if (next() !== type_code.charCodeAt(0)) {
+        throw new Error(`Incorrect GameID-type-flag.  Must be ${type_code}.  Got: ${key[0]}`);
+    }
+
+    const grade = next();
+    const goal = next();
+    const form_index = next();
+    const form = Forms[form_index];
+    // const index_top_15_bits = key.charCodeAt(3);
+    // const index_bottom_15_bits = key.charCodeAt(4)
+    // Less than 32-bits total so this works using JS native operators
+    const index = deChunkify([next(), next()]);
+
+    return new GradedGameID(grade, goal, form, index);
+}
+
+
+const destringifyCustomGameID = function(key: string): CustomGameID {
+    // ["C".charCodeAt(0), gameID.goal, ...gameID.seedIndices]
+
+    if (key.length < CustomGameID.MIN_SIZE) {
+        throw new Error(`Need ${CustomGameID.MIN_SIZE} code-units to stringify a CustomGameID. `
+                        +`Got: ${key.length}, key=${key}`
+        )   
+    }
+
+    const [next, takeNextN] = makeTakeNextNDestringified(key);
+
+    const type_code = CustomGameID.GAME_ID_TYPE_CODE; // "C"
+    if (next() !== type_code.charCodeAt(0)) {
+        throw new Error(`Incorrect GameID-type-flag.  Must be ${type_code}.  Got: ${key[0]}`);
+    }
+
+    const goal = next();
+    
+    const seedIndices = Array.from(seedsFromDestringified(takeNextN(MAX_SEEDS)));;
+
+    return new CustomGameID(goal, seedIndices);
+}
+
+
+export const getStringifiedGameIDClass = function(
+    stringified: string,
+    ): typeof GradedGameID | typeof CustomGameID {
+
+    switch (stringified[0]) {
+        case "G" : return GradedGameID;
+        case "C" : return CustomGameID;
+        default: throw new Error(`Could not find GameID for: ${stringified}`);
+    }
+}
+
+
+export const destringifyGameID = function(stringified: string): GameID {
+    
+    switch (getStringifiedGameIDClass(stringified)) {
+        case GradedGameID : return destringifyGradedGameID(stringified);
+        case CustomGameID : return destringifyCustomGameID(stringified);
+    }
+    throw new Error(` getStringifiedGameIDClass("${stringified}") should've errored. `)
+}
+
+
+
 
 export function stringifyGameID(gameID: GradedGameID): string
 export function stringifyGameID(gameID: CustomGameID): string
-export function stringifyGameID(gameID:  GradedGameID | CustomGameID): string
-export function stringifyGameID(gameID:  GradedGameID | CustomGameID): string {
+export function stringifyGameID(gameID: GradedGameID | CustomGameID): string
+export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
+
+    let keyData;
 
     if (gameID instanceof GradedGameID) {
         checkFitsInChunk(gameID.grade);
@@ -153,17 +219,22 @@ export function stringifyGameID(gameID:  GradedGameID | CustomGameID): string {
         const form_index = Forms.indexOf(gameID.form() as string);
         checkFitsInChunk(form_index);
 
-        const keyData = [gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
+        keyData = ["G".charCodeAt(0), gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
         //index_top_15_bits, index_bottom_15_bits];
 
-        return stringifyCodeUnits(keyData);
     } else if (gameID instanceof CustomGameID) {
-        return ""
+
+        checkFitsInChunk(gameID.goal);
+        gameID.seedIndices.forEach(checkFitsInChunk);
+
+        keyData = ["C".charCodeAt(0), gameID.goal, ...gameID.seedIndices];
     } else {
         throw new Error(`Unsupported gameID type: ${gameID}`);
     }
-}
+    
+    return stringifyCodeUnits(keyData);
 
+}
 
 
 export const destringifyGame = function(s: string, id: GameID): Game {
@@ -178,8 +249,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
         )   
     }
 
-    const takeNextN = makeTakeNextNDestringified(s);
-    const next = () => takeNextN(1).next().value;
+    const [next, takeNextN] = makeTakeNextNDestringified(s);
 
     // Skip schema code (e.g. "S")
     next();
@@ -194,20 +264,7 @@ export const destringifyGame = function(s: string, id: GameID): Game {
 
     const solved = solved_num === 1;
 
-    const seedIndices = [];
-
-    for (const seedIndex of takeNextN(MAX_SEEDS)) {
-        if(seedIndex === NO_SEED) {
-            continue;
-        } else if ((0 <= seedIndex) && (seedIndex < SEEDS.length)) {
-            seedIndices.push(seedIndex);
-        } else {
-            throw new Error(`Unrecognised seed index: ${seedIndex}. `
-                           + `Must be between 0 and ${SEEDS.length-1}, `
-                           +`or ===NO_SEED code ${NO_SEED}`
-            );
-        }
-    }
+    const seedIndices = Array.from(seedsFromDestringified(takeNextN(MAX_SEEDS)));
 
     const opIndices = [];
 
@@ -304,6 +361,17 @@ export const destringifyGame = function(s: string, id: GameID): Game {
     return game;
 }
 
+
+
+
+// export const destringifyGame = function(stringified: string, id: GameID): Game {
+//     const GameIDClass = getStringifiedGameIDClass(stringified);
+
+
+// }
+
+
+
 function* checkAndPadIterable<T>(
     it: Iterable<T>,
     paddedLen: number,
@@ -354,7 +422,7 @@ export const gameDataCodeUnits = function*(game: Game): IterableIterator<number>
     }
 
     for (const opIndex of checkItemsFitAndPadIterable(
-                game.opIndices, MAX_OPS, NO_OP)) { 
+                game.opIndices ?? [], MAX_OPS, NO_OP)) { 
         yield opIndex;
     }
 
