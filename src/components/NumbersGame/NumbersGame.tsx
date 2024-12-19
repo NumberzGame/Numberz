@@ -45,7 +45,7 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 }
 
 
-const gameFactory = function(id: GameID): Game{
+const gameFactory = function(id:  GameID): Game{
 
   const state = new GameState();
   const datetime_ms = Date.now();
@@ -137,7 +137,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
 
     const setGameUsingImmerProducerAndStore = function(
-        producer: (draft: Game) => undefined,
+        producer: (draft: Game) => void,
       ) {
 
         const produceAndStore = function(draft: Game) {

@@ -1,5 +1,7 @@
 
-import { GameID, Game, GameState, Forms, Move } from './Classes';
+import { instanceOf } from 'prop-types';
+import { GameID, GradedGameID, CustomGameID, 
+         Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
 
@@ -108,7 +110,7 @@ export const destringifyGameID = function(key: string): GameID {
     // Less than 32-bits total so this works using JS native operators
     const index = deChunkify([next(), next()]);
 
-    return new GameID(grade, goal, form, index);
+    return new GradedGameID(grade, goal, form, index);
 }
 
 
@@ -134,19 +136,34 @@ const makeTakeNextNDestringified = function(s: string): (N: number) => IterableI
     return takeNextNDestringified;
 }
 
-export const stringifyGameID = function(gameID: GameID): string {
 
-    checkFitsInChunk(gameID.grade);
-    checkFitsInChunk(gameID.goal);
+// export const isStringifiedGameIDGradedOrCustom(stringified: string) {
 
-    const form_index = Forms.indexOf(gameID.form);
-    checkFitsInChunk(form_index);
+// }
 
-    const keyData = [gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
-    //index_top_15_bits, index_bottom_15_bits];
+export function stringifyGameID(gameID: GradedGameID): string
+export function stringifyGameID(gameID: CustomGameID): string
+export function stringifyGameID(gameID:  GradedGameID | CustomGameID): string
+export function stringifyGameID(gameID:  GradedGameID | CustomGameID): string {
 
-    return stringifyCodeUnits(keyData);
+    if (gameID instanceof GradedGameID) {
+        checkFitsInChunk(gameID.grade);
+        checkFitsInChunk(gameID.goal);
+
+        const form_index = Forms.indexOf(gameID.form() as string);
+        checkFitsInChunk(form_index);
+
+        const keyData = [gameID.grade, gameID.goal, form_index, ...chunkify(gameID.index, 2)];
+        //index_top_15_bits, index_bottom_15_bits];
+
+        return stringifyCodeUnits(keyData);
+    } else if (gameID instanceof CustomGameID) {
+        return ""
+    } else {
+        throw new Error(`Unsupported gameID type: ${gameID}`);
+    }
 }
+
 
 
 export const destringifyGame = function(s: string, id: GameID): Game {

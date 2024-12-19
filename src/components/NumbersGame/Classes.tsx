@@ -47,21 +47,51 @@ const GRADERS_LIST: GRADER[] = [
 const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, GRADERS_LIST[i]])));
 
 
-export class GameID{
+export class GameIDBase{
+    
+    [immerable] = true;
+    readonly goal: number;
+    _form: string | null;
+
+    constructor(goal: number) {
+        if (this.constructor === GameIDBase) {
+            throw new Error("Not enough info to identify a game uniquely.");
+        }
+        this.goal = goal;
+        this._form = null;
+    }
+
+    form(): string | null {
+        return this._form;
+    }
+}
+
+export class CustomGameID extends GameIDBase{
+    [immerable] = true;
+    seedIndices: number[];
+    constructor(goal: number, seedIndices: number[]) {
+        super(goal);
+        this.seedIndices = seedIndices
+    }
+}
+
+
+export class GradedGameID extends GameIDBase{
     [immerable] = true;
     readonly grade: number;
-    readonly goal: number;
-    readonly form: string;
+    // readonly form: string;
     readonly index: number;
 
     constructor(grade: number, goal: number, form: string, index: number) {
+        super(goal);
         this.grade = grade;
-        this.goal = goal;
-        this.form = form;
+        this._form = form;
         this.index = index;
     }
   }
 
+
+export type GameID = GradedGameID | CustomGameID;
 
 export const HINT_UNDO = Symbol();
 
@@ -293,7 +323,7 @@ export class Game{
     id: GameID;
 
     // Date-time (milli seconds since 1970)
-    // when this GameID was first shown.
+    // when this GameIDBase was first shown.
     readonly timestamp_ms: number;
 
     // Indices of seeds in deduped symbols.json["SEEDS"]
@@ -397,13 +427,14 @@ export class Game{
         return operands.includes(this.id.goal);
     }
 
+
     getHints(): MoveData | typeof HINT_UNDO {
             let easiestSolution = null;
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-            if (operands.length === numSeedsFromForm(this.id.form)) {
-                easiestSolution = solutionAsOperand(this.id.form, this.seeds(), this.opIndices.map((i) => OP_SYMBOLS[i]));
+            if ((this.id.form() !== null) && operands.length === numSeedsFromForm(this.id.form() as string)) {
+                easiestSolution = solutionAsOperand(this.id.form() as string, this.seeds(), this.opIndices.map((i) => OP_SYMBOLS[i]));
             } else {
                 for (const solution of solutions(this.id.goal, operands)) {
                     const grade = calcGrade(solution);
