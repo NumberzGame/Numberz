@@ -128,12 +128,24 @@ export function NumbersGame(props: NumbersGameProps) {
 
     // A trivial closure.  useImmer will only
     // call callback-factory functions with no args. 
-    const loadOrCreateNewGame = function() {
+    const loadOrCreateNewGame = function(): Game {
         return loadGameFromLocalStorageOrCreateNew(gameID);
     }
 
     const [game, setGameUsingImmerProducer] = useImmer(loadOrCreateNewGame);
     const [hintsShown, setHintsShown] = useState(false);
+
+
+    const setGameUsingImmerProducerAndStore = function(
+        producer: (draft: Game) => undefined,
+      ) {
+
+        const produceAndStore = function(draft: Game) {
+            producer(draft);
+            storeGameInLocalStorage(draft);
+        }
+        setGameUsingImmerProducer(produceAndStore);
+    }
 
     if (game.solved()) {
         // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
@@ -169,12 +181,11 @@ export function NumbersGame(props: NumbersGameProps) {
 
     const makeOpButtonClickHandler = function(opSymbol: string): () => void {
       const opButtonClickHandler = function() {
-        setGameUsingImmerProducer((draft: Game) => {
+        setGameUsingImmerProducerAndStore((draft: Game) => {
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             
             const move = draft.state.moves.at(-1)!;
             move.opIndex = opIndex === move.opIndex ? null : opIndex;
-            storeGameInLocalStorage(draft);
         });
       }
       return opButtonClickHandler;
@@ -208,7 +219,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
     const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
       const operandButtonClickHandler = function() {
-        setGameUsingImmerProducer((draft: Game) => {
+        setGameUsingImmerProducerAndStore((draft: Game) => {
             const move = draft.state.moves.at(-1)!;
             const operandIndices = move.operandIndices;
             const len = operandIndices.length;
@@ -228,7 +239,6 @@ export function NumbersGame(props: NumbersGameProps) {
                              +`Move: ${move}`
               );
             }
-            storeGameInLocalStorage(draft);
         });
       }
       return operandButtonClickHandler;
@@ -267,7 +277,7 @@ export function NumbersGame(props: NumbersGameProps) {
         return;
       }
 
-      setGameUsingImmerProducer((draft: Game) => {
+      setGameUsingImmerProducerAndStore((draft: Game) => {
           const moves = draft.state.moves;
           const lastMove = moves.at(-1)!;
           
@@ -275,18 +285,16 @@ export function NumbersGame(props: NumbersGameProps) {
           if (moves.length < MAX_MOVES) {
             moves.push(new Move());
           }
-          storeGameInLocalStorage(draft);
       });
     }
     const undoButtonHandler = function() {
-      setGameUsingImmerProducer((draft: Game) => {
+      setGameUsingImmerProducerAndStore((draft: Game) => {
           const moves = draft.state.moves;
           const i=moves.findLastIndex((move) => move.submitted);
           if (i >= 0) {
             // By default a new Move() is unsubmitted.
             moves.splice(i, 1);
           }
-          storeGameInLocalStorage(draft);
       });
     }
 
