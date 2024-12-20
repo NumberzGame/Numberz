@@ -1,7 +1,8 @@
 
 import { useRef, useState } from 'react';
 
-import {Text, Stack, Slider } from '@mantine/core';
+import {Anchor, Center, Group, HoverCard, 
+        Image, Text, Stack, Slider } from '@mantine/core';
 
 import {
   QueryClient,
@@ -19,9 +20,9 @@ import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './Numbe
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
 // Wont work in Deno - need to append " with { type: "json" }"
-import NUM_SOLS_OF_ALL_GRADES from '../../../public/grades_goals_solutions_forms/num_sols_of_each_grade.json';
-import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_form.json';
-// import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../../public/grades_goals_solutions_forms/num_of_sols_of_each_grade_and_goal.json';
+// import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
+// import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
+import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
 type StrNumsMappingT = {
   [key in string]: number;
@@ -140,6 +141,37 @@ const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecod
 
 const GRADE = 22;
 
+
+export function onWin() {
+    // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
+    // Photographer credit: https://stocksnap.io/author/travelphotographer
+    return <>
+            <Center mt="md">
+            <Text size="lg">
+              You are the winner!!
+            </Text>
+            </Center>
+            <Group justify="center" mt="md">
+              <HoverCard shadow="md" openDelay={2000}>
+                <HoverCard.Target>
+                  <Image
+                  h={500}
+                  w="auto"
+                  src="./fireworks-background_CPLJUAMC1T.jpg"
+                  radius="lg"
+                ></Image>
+                </HoverCard.Target>
+                <HoverCard.Dropdown>
+                  <Anchor href="https://stocksnap.io/author/travelphotographer"
+                          size="sm"
+                          c="violet">Photo credit: "TravelPhotographer"</Anchor>
+                </HoverCard.Dropdown>
+              </HoverCard>
+            </Group>
+    </>
+    }
+
+
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(GRADE); //useRef(props.grade);
 
@@ -181,6 +213,7 @@ export function GameBoSelector(props: {grade: number}) {
     gameComponent = (
         <NumbersGame 
           game = {game}
+          onWin = {onWin}
         ></NumbersGame>
     )
   }
@@ -299,6 +332,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   
   return <NumbersGame
           game={game}
+          onWin={onWin}
           >
          </NumbersGame>
 }

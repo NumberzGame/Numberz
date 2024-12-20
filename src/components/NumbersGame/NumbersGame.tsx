@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 // import { useLocalStorage } from '@mantine/hooks';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from "use-immer";
@@ -130,7 +130,7 @@ export function HintButton(props: HintButtonProps) {
 
 export interface NumbersGameProps{
     game: Game
-    // onWin: () => void
+    onWin: () => ReactNode
     // onQuit: () => void
 }
 // Add Game Manager
@@ -158,32 +158,7 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     if (game.solved()) {
-        // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
-        // Photographer credit: https://stocksnap.io/author/travelphotographer
-        return <>
-                <Center mt="md">
-                <Text size="lg">
-                  You are the winner!!
-                </Text>
-                </Center>
-                <Group justify="center" mt="md">
-                  <HoverCard shadow="md" openDelay={2000}>
-                    <HoverCard.Target>
-                      <Image
-                      h={500}
-                      w="auto"
-                      src="./fireworks-background_CPLJUAMC1T.jpg"
-                      radius="lg"
-                    ></Image>
-                    </HoverCard.Target>
-                    <HoverCard.Dropdown>
-                      <Anchor href="https://stocksnap.io/author/travelphotographer"
-                              size="sm"
-                              c="violet">Photo credit: "TravelPhotographer"</Anchor>
-                    </HoverCard.Dropdown>
-                  </HoverCard>
-                </Group>
-        </>
+        return <props.onWin></props.onWin>
     }
 
 
