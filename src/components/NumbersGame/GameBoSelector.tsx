@@ -24,6 +24,7 @@ import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
+
 type StrNumsMappingT = {
   [key in string]: number;
 };
@@ -33,43 +34,47 @@ function sumValues(obj: StrNumsMappingT): number {
 
 }
 
+
+const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(Object.entries(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map(([k, v]) => [k, sumValues(v)]));
+
 function randomGrade(): number {
+    return 22
+    const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
+    let index = randomPositiveInteger(numSolsAllGrades);
 
-  const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
-  let index = randomPositiveInteger(numSolsAllGrades);
-
-  let numSols = 0;
-  for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
-      numSols += value;
-      if (index < numSols) {
-        return parseInt(grade); 
-      }
-  }
-  throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
+    let numSols = 0;
+    for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
+        numSols += value;
+        if (index < numSols) {
+          return parseInt(grade); 
+        }
+    }
+    throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
 
 }
 
 function randomGoal(
-    grade: number,// grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
+    grade: number, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): number {
-    return 224
-    // // If nullish, shortcut to empty object making the main loop 
-    // // have 0 iterations, ending in the "form not found" error
-    // const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
-    
-    // const numSolsOfGrade = sumValues(gradesObj);
-    // let index = randomPositiveInteger(numSolsOfGrade);
 
-    // let numSolsSoFar = 0;
-    // for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
-    //   numSolsSoFar += numSols;
-    //     if (index < numSols) {
-    //       return goal; 
-    //     }
-        
-    // }
+    // return 224
+    // If nullish, shortcut to empty object making the main loop 
+    // have 0 iterations, ending in the "form not found" error
+    const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[grade.toString() as keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL] ?? {};
     
-    // throw new Error(`No goal found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+    const numSolsOfGrade = sumValues(gradesObj);
+    let index = randomPositiveInteger(numSolsOfGrade);
+
+    let numSolsSoFar = 0;
+    for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
+      numSolsSoFar += numSols;
+        if (index < numSols) {
+          return parseInt(goal); 
+        }
+        
+    }
+    
+    throw new Error(`No goal found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
 }
 
 function randomForm(
@@ -203,8 +208,8 @@ export function GameBoSelector(props: {grade: number}) {
             game = new Game(currentGame, datetime_ms, seedIndices, opIndices, state);
         } else if (currentGame instanceof GradedGameID) {
             throw new Error(`GradedGameID: ${currentGame} came from game history, but could not be found`
-                           +` in localstorage.  If the browser's localstorage was not after `
-                           +`the game ID was retrieved from localstorage, there may be a bug in the game. `
+                           +` in localstorage.  If the browser's localstorage was not cleared, after `
+                           +`the game ID was retrieved from localstorage, then there may be a bug in the game. `
             );
         } else {
             throw new Error(`Unsupported game ID class: ${currentGame}. `);
