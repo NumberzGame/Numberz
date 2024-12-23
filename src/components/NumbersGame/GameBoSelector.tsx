@@ -19,10 +19,12 @@ import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger,
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
-// Wont work in Deno - need to append " with { type: "json" }"
+// These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
+
+import NOT_SO_SMALL_INDEX from './superMiniIndexStr';
 
 
 type StrNumsMappingT = {
