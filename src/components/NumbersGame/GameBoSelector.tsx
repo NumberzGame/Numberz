@@ -17,7 +17,7 @@ import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger,
          MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "./Core";
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
-import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
+import { GameID, Game, GradedGameID, CustomGameID, GameState, numSeedsFromForm } from './Classes';
 import { spacer, FormsAndFreqs } from '../SuperMiniIndexStr/IndexCodec';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
@@ -73,13 +73,16 @@ function randomGoal(
     let numSolsSoFar = 0;
     for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
       numSolsSoFar += numSols;
-        if (index < numSols) {
+        if (index < numSolsSoFar) {
           return parseInt(goal); 
         }
         
     }
     
-    throw new Error(`No goal found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
+    throw new Error(
+      `No goal found for index: ${index}, numSols: ${numSolsSoFar} `
+      +`grade: ${grade} in num_of_sols_of_each_grade_and_form.json`
+    );
 }
 
 
@@ -236,8 +239,9 @@ export function GameBoSelector(props: {grade: number}) {
   const [currentGame, setCurrentGame] = useState<GameID | null>(null);
 
   const gradeSliderHandler = function(val: number) {
-    gradeObj.current = val as number;
+    gradeObj.current = 22; //val as number;
   }
+  
   let gameComponent;
   if (currentGame === null) {
       gameComponent = (
@@ -310,9 +314,9 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     queryKey: [ key ],
     queryFn: async () => {
       const response = await fetch(
-        `./grades_goals_solutions_forms/${grade}/${goal}/solutions_${key}.dat`,
+        `./grades_goals_forms_solutions/${grade}/${goal}/solutions_${key}.dat`,
       );
-      return await response.bytes()
+      return await response.bytes();
     },
   });
   
@@ -336,13 +340,17 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
   const sols = [];
   const seedIndicesAndOpIndices = [];
+
+  const numSeeds = numSeedsFromForm(form);
+  const numOps = numSeeds - 1;
+
   while (true) {
       // num seeds (6) and num ops (5) are 
       // determined by the form above (((2_2)_1)_1)
       // const seeds = Array.from(decoder(dataIterator, 6));
       // const opSymbols = Array.from(decoder(dataIterator, 5));
-      const seedIndices = Array.from(intDecoder(dataIterator, MAX_SEEDS, seedsBitWidths));
-      const opIndices = Array.from(intDecoder(dataIterator, MAX_OPS, opsBitWidths));
+      const seedIndices = Array.from(intDecoder(dataIterator, numSeeds, seedsBitWidths));
+      const opIndices = Array.from(intDecoder(dataIterator, numOps, opsBitWidths));
       const seeds = seedIndices.map(x => SEEDS[x]);
       const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
       // const opSymbols = Array.from(decoder(dataIterator, 5));

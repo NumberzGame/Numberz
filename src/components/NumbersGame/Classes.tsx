@@ -312,7 +312,7 @@ const getRedHerringIndicesWithoutMakingEasier = function(
 }
 
 
-const numSeedsFromForm = function(form: string): number {
+export const numSeedsFromForm = function(form: string): number {
     let total = 0;
     for (const match of form.matchAll(/\d+/g)) {
         total += parseInt(match[0]);
