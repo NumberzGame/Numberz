@@ -1,4 +1,3 @@
-
 import { useRef, useState } from 'react';
 
 import {Anchor, Center, Group, HoverCard, 
@@ -15,7 +14,7 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
-         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "./Core";
+         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX, GoalT, Range} from "./Core";
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
@@ -25,6 +24,14 @@ import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
 // import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
+
+const GRADES_NUMS = Object.keys(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map((k) => parseInt(k));
+const GRADE_MIN = GRADES_NUMS.reduce((x, y) => Math.min(x, y));
+const GRADE_MAX = GRADES_NUMS.reduce((x, y) => Math.max(x, y));
+
+
+
+type GradeT = Range<1, 248>;
 
 
 type StrNumsMappingT = {
@@ -41,7 +48,7 @@ const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(Object.entries(NUM_SOLS_OF_EAC
 
 
 
-function randomGrade(): number {
+function randomGrade(): GradeT {
     return 22
     const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
     let index = randomPositiveInteger(numSolsAllGrades);
@@ -50,7 +57,7 @@ function randomGrade(): number {
     for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
         numSols += value;
         if (index < numSols) {
-          return parseInt(grade); 
+          return parseInt(grade) as GradeT; 
         }
     }
     throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
@@ -58,7 +65,7 @@ function randomGrade(): number {
 }
 
 function randomGoal(
-    grade: number, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
+    grade: GradeT, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): number {
 
     // return 224
@@ -163,7 +170,7 @@ const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS,
 const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
 const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
-const GRADE = 22;
+const GRADE: GradeT = 22;
 
 
 export function onWin() {
@@ -203,7 +210,7 @@ export function GameBoSelector(props: {grade: number}) {
   const [currentGame, setCurrentGame] = useState<GameID | null>(null);
 
   const gradeSliderHandler = function(val: number) {
-    gradeObj.current = val;
+    gradeObj.current = val as GradeT;
   }
   let gameComponent;
   if (currentGame === null) {
@@ -263,7 +270,7 @@ export function GameBoSelector(props: {grade: number}) {
 
 
 interface NewGradedGameNewIDProps {
-  grade: number
+  grade: GradeT
 }
 
 
