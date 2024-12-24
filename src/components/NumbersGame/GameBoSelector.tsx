@@ -15,7 +15,7 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
-         MAX_OPS, MAX_SEEDS, } from "./Core";
+         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "./Core";
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
@@ -24,7 +24,7 @@ import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
-import NOT_SO_SMALL_INDEX from './superMiniIndexStr';
+// import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
 
 
 type StrNumsMappingT = {
@@ -38,6 +38,8 @@ function sumValues(obj: StrNumsMappingT): number {
 
 
 const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(Object.entries(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map(([k, v]) => [k, sumValues(v)]));
+
+
 
 function randomGrade(): number {
     return 22
@@ -79,6 +81,7 @@ function randomGoal(
     throw new Error(`No goal found for grade: ${grade} in num_of_sols_of_each_grade_and_form.json`);
 }
 
+
 function randomForm(
     grade: number,
     goal: number,
@@ -88,11 +91,24 @@ function randomForm(
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
 
-    return '(((2_2)_1)_1)';
+    // return '(((2_2)_1)_1)';
 
-
-    // const formsObj = NUM_SOLS_OF_EACH_GRADE_AND_FORM[grade] ?? {};
+    // const key = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
+    // const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[key];
     
+    // const gradeKey = grade.toString as keyof typeof 
+
+    // const totalNumSolsOfGradeAndGoal = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[grade][goal];
+
+    // let numSolsSoFar = 0;
+    // for (const [goal, numSols] of Generator that looks for first 4 bits after spacer (0x8000) {
+    //   numSolsSoFar += numSols;
+    //     if (index < numSols) {
+    //       return parseInt(goal); 
+    //     }
+        
+    // }
+
     // const numSolsOfGrade = sumValues(formsObj);
     // let index = randomPositiveInteger(numSolsOfGrade);
     // let numSols = 0;
@@ -110,6 +126,7 @@ function randomForm(
     
     // throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
 
+    return '(((2_2)_1)_1)';
 }
 
 // These two should be the same:
