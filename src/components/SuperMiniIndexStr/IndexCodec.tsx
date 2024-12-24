@@ -1,0 +1,1 @@
+export const spacer = '\u8000';

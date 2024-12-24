@@ -14,16 +14,17 @@ import { MakeSubByteEncoderAndDecoder,
  } from 'sub_byte';
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
-         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX, GoalT, Range} from "./Core";
+         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "./Core";
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
+import { spacer } from '../SuperMiniIndexStr/IndexCodec';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
-// import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
+import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
 
 const GRADES_NUMS = Object.keys(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map((k) => parseInt(k));
 const GRADE_MIN = GRADES_NUMS.reduce((x, y) => Math.min(x, y));
@@ -31,14 +32,7 @@ const GRADE_MAX = GRADES_NUMS.reduce((x, y) => Math.max(x, y));
 
 
 
-type GradeT = Range<1, 248>;
-
-
-type StrNumsMappingT = {
-  [key in string]: number;
-};
-
-function sumValues(obj: StrNumsMappingT): number {
+function sumValues(obj: Record<string, number>): number {
     return Object.values(obj).reduce((x, y) => x+y);
 
 }
@@ -48,7 +42,7 @@ const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(Object.entries(NUM_SOLS_OF_EAC
 
 
 
-function randomGrade(): GradeT {
+function randomGrade(): number {
     return 22
     const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
     let index = randomPositiveInteger(numSolsAllGrades);
@@ -57,7 +51,7 @@ function randomGrade(): GradeT {
     for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) => parseInt(k))) {
         numSols += value;
         if (index < numSols) {
-          return parseInt(grade) as GradeT; 
+          return parseInt(grade) as number; 
         }
     }
     throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
@@ -65,7 +59,7 @@ function randomGrade(): GradeT {
 }
 
 function randomGoal(
-    grade: GradeT, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
+    grade: number, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): number {
 
     // return 224
@@ -89,25 +83,42 @@ function randomGoal(
 }
 
 
+function assert(condition: any, goalKey: string, grade: number): asserts condition {
+  if (!condition) {
+    throw new Error(`Goal: ${goalKey} not found for grade: ${grade} in ${NUM_SOLS_OF_EACH_GRADE_AND_GOAL}}`);
+  }
+}
+
+
 function randomForm(
     grade: number,
     goal: number,
-    // grade: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_FORM,
-    // goal: keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
+    // grade: keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS,
+    // goal: number, //keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): string {
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
 
-    // return '(((2_2)_1)_1)';
 
-    // const key = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
-    // const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[key];
+    const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
+    const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
+    const goalIndex = goal - GOAL_MIN;  // 1 goal per step of 1, so the interpolation formula is easy.
+    const goalsDataStrings = goalsFormsDataString.split(spacer, goalIndex+1);
+    const goalFormsDataString = goalsDataStrings[goalIndex];
     
     // const gradeKey = grade.toString as keyof typeof 
 
-    // const totalNumSolsOfGradeAndGoal = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[grade][goal];
+    const gradeKey = grade.toString() as keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL
+    const gradesTotalsObj = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[gradeKey] as Record<string, number>;
+    const goalKey = goal.toString();
+    assert(goalKey in gradesTotalsObj, goalKey, grade);
+    const totalNumSolsOfGradeAndGoal = gradesTotalsObj[goalKey];
 
-    // let numSolsSoFar = 0;
+    const solutionIndex = randomPositiveInteger(totalNumSolsOfGradeAndGoal);
+    
+
+
+
     // for (const [goal, numSols] of Generator that looks for first 4 bits after spacer (0x8000) {
     //   numSolsSoFar += numSols;
     //     if (index < numSols) {
@@ -170,7 +181,7 @@ const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS,
 const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
 const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
-const GRADE: GradeT = 22;
+const GRADE: number = 22;
 
 
 export function onWin() {
@@ -210,7 +221,7 @@ export function GameBoSelector(props: {grade: number}) {
   const [currentGame, setCurrentGame] = useState<GameID | null>(null);
 
   const gradeSliderHandler = function(val: number) {
-    gradeObj.current = val as GradeT;
+    gradeObj.current = val as number;
   }
   let gameComponent;
   if (currentGame === null) {
@@ -270,7 +281,7 @@ export function GameBoSelector(props: {grade: number}) {
 
 
 interface NewGradedGameNewIDProps {
-  grade: GradeT
+  grade: number
 }
 
 

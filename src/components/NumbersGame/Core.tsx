@@ -15,12 +15,11 @@ import SYMBOLS from '../../data/symbols.json';
 // }
 
 
-export type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] extends N
-  ? Acc[number]
-  : Enumerate<N, [...Acc, Acc['length']]>;
+// export type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] extends N
+//   ? Acc[number]
+//   : Enumerate<N, [...Acc, Acc['length']]>;
 
-export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
-
+// export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
 
 export const MAX_SEEDS = 6;
 export const MAX_OPS = MAX_SEEDS - 1;
@@ -42,8 +41,6 @@ export const GOAL_MIN = SYMBOLS["GOAL_MIN"];
 export const GOAL_MAX = SYMBOLS["GOAL_MAX"];
 
 
-
-export type GoalT = Range<100, 999>;
 
 export const NUM_REQUIRED_OPERANDS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op) => [op, 2])));
 
