@@ -13,7 +13,7 @@ function next<T>(iterator: IterableIterator<T>): T {
 }
 
 
-class FormsAndFreqs{
+export class FormsAndFreqs{
     rawBytes: Uint8Array;
     totalNumForms: number | null;
     numFormsInThisSection: number | null;

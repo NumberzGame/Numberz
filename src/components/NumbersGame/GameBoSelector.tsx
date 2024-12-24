@@ -18,7 +18,7 @@ import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger,
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
 import { evalSolution, solutionExpr} from './solutionEvaluator';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from './Classes';
-import { spacer } from '../SuperMiniIndexStr/IndexCodec';
+import { spacer, FormsAndFreqs } from '../SuperMiniIndexStr/IndexCodec';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
@@ -116,16 +116,31 @@ function randomForm(
 
     const solutionIndex = randomPositiveInteger(totalNumSolsOfGradeAndGoal);
     
+    const decoder = new FormsAndFreqs(goalFormsDataString);
+
+    const formsAndFreqs = Array.from(decoder.formsAndFreqs());
+
+    const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a+c);
+
+    if (totalSols !== totalNumSolsOfGradeAndGoal) {
+        throw new Error(`Decoding error.  Got totalSols: ${totalSols}.  Expected: ${totalNumSolsOfGradeAndGoal}`);
+    }
 
 
+    let numSolsSoFar = 0;
 
-    // for (const [goal, numSols] of Generator that looks for first 4 bits after spacer (0x8000) {
-    //   numSolsSoFar += numSols;
-    //     if (index < numSols) {
-    //       return parseInt(goal); 
-    //     }
+    for (const [form, freq] of formsAndFreqs) {
+        numSolsSoFar += freq;
+        if (solutionIndex < numSolsSoFar) {
+            return form; 
+        }
         
-    // }
+    }
+    
+    throw new Error(
+         `No form found for grade: ${grade} with index: ${solutionIndex} `
+        +`in SuperMiniIndexStr.json.json`
+    );
 
     // const numSolsOfGrade = sumValues(formsObj);
     // let index = randomPositiveInteger(numSolsOfGrade);
@@ -144,7 +159,7 @@ function randomForm(
     
     // throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
 
-    return '(((2_2)_1)_1)';
+    // return '(((2_2)_1)_1)';
 }
 
 // These two should be the same:
