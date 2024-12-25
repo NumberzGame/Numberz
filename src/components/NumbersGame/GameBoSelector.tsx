@@ -126,7 +126,9 @@ function randomForm(
     const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a+c);
 
     if (totalSols !== totalNumSolsOfGradeAndGoal) {
-        throw new Error(`Decoding error.  Got totalSols: ${totalSols}.  Expected: ${totalNumSolsOfGradeAndGoal}`);
+        throw new Error(
+          `Decoding error.  Got totalSols: ${totalSols}.  Expected: ${totalNumSolsOfGradeAndGoal} `
+          +`, grade: ${grade}, goal: ${goal}`);
     }
 
 
