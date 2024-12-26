@@ -169,37 +169,10 @@ function randomForm(
     // return '(((2_2)_1)_1)';
 }
 
-// These two should be the same:
-// console.log(sumValues(NUM_SOLS_OF_ALL_GRADES));
-// console.log(Object.values(NUM_SOLS_OF_EACH_GRADE_AND_FORM).map(sumValues).reduce((x, y) => x+y));
-
-
-// const [encodeOps,
-//        decodeOps,
-//        opsBitWidths,
-//        opsEncodings,
-//        opsDecodings,
-// ] = MakeSubByteEncoderAndDecoder([OP_SYMBOLS]);
-
-// const [encodeSeeds,
-//        decodeSeeds,
-//        seedsBitWidths,
-//        seedsEncodings,
-//        seedsDecodings,
-// ] = MakeSubByteEncoderAndDecoder([ALL_SEEDS]);
 
 const seedsValueSets = [ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS];
 const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, ];
-// const valueSets = [,...seedsValueSets,...opsValueSets];
 
-// const [encoder,
-//        decoder,
-//        bitWidths,
-//        encodings,
-//        decodings,
-// ] = MakeSubByteEncoderAndDecoder<(string | number)>(valueSets);
-
-// const [bitWidths, encodings, decodings] = getBitWidthsEncodingsAndDecodings<(string | number)>(valueSets)
 const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
 const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
@@ -349,16 +322,11 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   const numOps = numSeeds - 1;
 
   while (true) {
-      // num seeds (6) and num ops (5) are 
-      // determined by the form above (((2_2)_1)_1)
-      // const seeds = Array.from(decoder(dataIterator, 6));
-      // const opSymbols = Array.from(decoder(dataIterator, 5));
       const seedIndices = Array.from(intDecoder(dataIterator, numSeeds, seedsBitWidths));
       const opIndices = Array.from(intDecoder(dataIterator, numOps, opsBitWidths));
       const seeds = seedIndices.map(x => SEEDS[x]);
       const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
-      // const opSymbols = Array.from(decoder(dataIterator, 5));
-      if (seeds.length < 6 ) { //|| opSymbols.length < 5) {
+      if (seeds.length < numSeeds || opSymbols.length < numOps) {
         break;
       }
 
@@ -380,24 +348,6 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   const datetime_ms = Date.now();
   const game = new Game(id, datetime_ms, seedIndices, opIndices, state);
 
-  // const texts = [];
-  // for (const x of dataNums) {
-  //   texts.push(<Text>{x}</Text>)
-  // }
-  // const dataTexts = dataNums.map((x) => <Text>{x}</Text>);
-
-  // const forms: string[] = Array.from(Object.keys(data));
-  // const freqs: number[] = Array.from(Object.values(data));
-  // const FormTexts = Object.entries(data).map(([k, v]: [string, any]) => (<Text>{k} : {v.toString()}</Text>));
-
-      // <div>
-      //   <h1>{data.full_name}</h1>
-      //   <p>{data.description}</p>
-      //   <strong>👀 {data.subscribers_count}</strong>{' '}
-      //   <strong>✨ {data.stargazers_count}</strong>{' '}
-      //   <strong>🍴 {data.forks_count}</strong>
-      //   <div>{isFetching ? 'Updating...' : ''}</div>
-      // </div>
   
   return <>
           <Text>Form: {game.id.form()}</Text>
