@@ -5,11 +5,11 @@
 
 // Works in Vite / ESBuild:
 // 
-import SYMBOLS from '../../data/symbols.json';
+// import SYMBOLS from '../../data/symbols.json';
 // let SYMBOLS;
 // An import declaration can only be used at the top level of a namespace or module.
 // if ("Deno" in window) {
-//   import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+  import SYMBOLS from '../../data/symbols.json' with { type: "json" };
 // } else {
 //   import SYMBOLS from '../../data/symbols.json';
 // }
@@ -39,7 +39,7 @@ export const SEEDS = Array.from(new Set(ALL_SEEDS));
 export const OP_SYMBOLS: string[] = SYMBOLS["OPS"];
 export const GOAL_MIN = SYMBOLS["GOAL_MIN"];
 export const GOAL_MAX = SYMBOLS["GOAL_MAX"];
-
+export const FORMS = SYMBOLS["FORMS"];
 
 
 export const NUM_REQUIRED_OPERANDS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op) => [op, 2])));
@@ -62,22 +62,6 @@ const OP_FUNCS: BINARY_OP[] = [
 ];
 
 export const OPS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, OP_FUNCS[i]])));
-
-export const FORMS = [
-  "2",
-  "3",
-  "4",
-  "(2, 2)",
-  "5",
-  "(3, 2)",
-  "(1, (2, 2))",
-  "6",
-  "(4, 2)",
-  "(3, 3)",
-  "(2, (2, 2))",
-  "(1, (3, 2))",
-  "(1, (1, (2, 2)))",
-];
 
 export class Operand {
     readonly val: number;
