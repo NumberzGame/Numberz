@@ -62,7 +62,7 @@ function randomGoal(
     grade: number, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): number {
 
-    // return 224
+    return 224;
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
     const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[grade.toString() as keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL] ?? {};
@@ -102,6 +102,7 @@ function randomForm(
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
 
+    // return '(((2_2)_1)_1)';
 
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
@@ -397,9 +398,12 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
       //   <div>{isFetching ? 'Updating...' : ''}</div>
       // </div>
   
-  return <NumbersGame
+  return <>
+          <Text>Form: {game.id.form()}</Text>
+          <NumbersGame
           game={game}
           onWin={onWin}
           >
          </NumbersGame>
+         </>
 }
