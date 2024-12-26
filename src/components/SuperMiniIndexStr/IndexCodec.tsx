@@ -58,10 +58,21 @@ export class FormsAndFreqs{
 
 
     *formsAndFreqs(): IterableIterator<[string, number]> {
+        this.pastZeroMarker = false;
         const uintIterator: IterableIterator<number> = intDecoder(this.rawBytes, null, this.bitWidths());
 
         this.totalNumForms = this.numFormsToGo = next(uintIterator);
-        for (const uint of uintIterator) {
+        // This while loop is needed instead of a for/of, as we wish to resume
+        // iteration of uintIterator in a later loop.
+        // Breaking out of a for/of loop, over a Generator, calls the 
+        // Generator's return method, closing it.   
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of#description
+        while (true) {
+            let result = uintIterator.next(); 
+            if (result.done) {
+                break;
+            }
+            const uint = result.value;
             this.numFormsInThisSection = next(uintIterator);
 
             if (uint === 0b000) {
@@ -102,3 +113,6 @@ export class FormsAndFreqs{
 
     }
 }
+
+let faf = new FormsAndFreqs("\u5089\u605a\u42e0\u7d02\u1d80\u5b00\u3541\u2090\u6428\u0fe0\u2300");
+console.log(Array.from(faf.formsAndFreqs()));

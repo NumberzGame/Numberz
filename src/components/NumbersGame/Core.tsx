@@ -4,12 +4,13 @@
 // import SYMBOLS from '../../data/symbols.json' with { type: "json" };
 
 // Works in Vite / ESBuild:
-// 
-// import SYMBOLS from '../../data/symbols.json';
+import SYMBOLS from '../../data/symbols.json';
+
+// An import declaration can only be used at the top level of a namespace or module,
+// so this doesn't work either:
 // let SYMBOLS;
-// An import declaration can only be used at the top level of a namespace or module.
 // if ("Deno" in window) {
-  import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+  // import SYMBOLS from '../../data/symbols.json' with { type: "json" };
 // } else {
 //   import SYMBOLS from '../../data/symbols.json';
 // }
