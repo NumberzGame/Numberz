@@ -8,10 +8,10 @@ import { Anchor, Badge, Button, Group, Text, TextInput, Image,
          Slider, Box, HoverCard, Center } from '@mantine/core';
 import { nanoid } from "nanoid";
 
-import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from './Core';
-import { Game, GameID, GameState, Move, HINT_UNDO, CustomGameID, GradedGameID} from './Classes';
+import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from '../../gameCode/Core';
+import { Game, GameID, GameState, Move, HINT_UNDO, CustomGameID, GradedGameID} from '../../gameCode/Classes';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
-         destringifyCodeUnits } from './Schema';
+         destringifyCodeUnits } from '../../gameCode/Schema';
 
 const overrideSymbolText = function(s: string): string {
   if (s === '//') {

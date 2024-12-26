@@ -1,4 +1,4 @@
-import {FORMS} from '../NumbersGame/Core';
+import {FORMS} from '../Core';
 import { intEncoder, intDecoder } from 'sub_byte';
    
 export const spacer = '\u8000';
@@ -114,5 +114,5 @@ export class FormsAndFreqs{
     }
 }
 
-let faf = new FormsAndFreqs("\u5089\u605a\u42e0\u7d02\u1d80\u5b00\u3541\u2090\u6428\u0fe0\u2300");
-console.log(Array.from(faf.formsAndFreqs()));
+// let faf = new FormsAndFreqs("\u5089\u605a\u42e0\u7d02\u1d80\u5b00\u3541\u2090\u6428\u0fe0\u2300");
+// console.log(Array.from(faf.formsAndFreqs()));

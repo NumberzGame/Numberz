@@ -13,12 +13,13 @@ import { MakeSubByteEncoderAndDecoder,
   getBitWidthsEncodingsAndDecodings, intDecoder
  } from 'sub_byte';
 
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
-         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "./Core";
 import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
-import { evalSolution, solutionExpr} from './solutionEvaluator';
-import { GameID, Game, GradedGameID, CustomGameID, GameState, numSeedsFromForm } from './Classes';
-import { spacer, FormsAndFreqs } from '../SuperMiniIndexStr/IndexCodec';
+
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
+         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "../../gameCode/Core";
+import { evalSolution, solutionExpr} from '../../gameCode/solutionEvaluator';
+import { GameID, Game, GradedGameID, CustomGameID, GameState, numSeedsFromForm } from '../../gameCode/Classes';
+import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';

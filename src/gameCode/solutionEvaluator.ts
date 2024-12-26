@@ -1,7 +1,6 @@
 
 
 
-import { InvalidEvent } from 'react';
 import { OPS, SEEDS, INVALID_ARGS, OP_SYMBOLS, Operand } from './Core';
 
 

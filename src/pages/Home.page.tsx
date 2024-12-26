@@ -4,7 +4,7 @@ import { NumbersGame } from '../components/NumbersGame/NumbersGame';
 import { GameBoSelector } from '../components/NumbersGame/GameBoSelector';
 // import { theme } from '../theme';
 
-import { GameID, GradedGameID } from '../components/NumbersGame/Classes';
+import { GameID, GradedGameID } from '../gameCode/Classes';
 
 
 export function HomePage() {
