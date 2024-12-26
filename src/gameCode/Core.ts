@@ -78,3 +78,24 @@ export class Operand {
 export const randomPositiveInteger = function(lessThan: number): number {
   return Math.floor(Math.random()*Math.floor(lessThan));
 }
+
+
+export function* takeNextN<T>(N: number, iterator: IterableIterator<T>, errorMessage: string | null = null): IterableIterator<T> {
+  
+  // Iterator.prototype.take is not supported on Safari (as of 10 Dec 2024)
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/take
+  // const NResults = codeUnitsIterator.take(N); 
+  
+  errorMessage ??= (
+         `iterator: ${iterator} exhausted. `
+        +`Too few items yielded for required number: N=${N}`
+        );
+  
+    for (let i = 0; i < N; i++) {
+      const result = iterator.next();
+      if (result.done) {
+          throw new Error(errorMessage);
+      }
+      yield result.value;
+    }
+}

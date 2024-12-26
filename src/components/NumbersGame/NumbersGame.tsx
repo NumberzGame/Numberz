@@ -301,10 +301,6 @@ export function NumbersGame(props: NumbersGameProps) {
 
 
     return <>
-      {/* <Text ta="center" size="lg" maw={580} mx="auto" mt="xl">
-        Play the game below!!!
-      </Text> */}
-      {/* Text Goal */}
       <Group justify="center" mt="md">
       <Text> Make: </Text>
       <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
@@ -312,14 +308,7 @@ export function NumbersGame(props: NumbersGameProps) {
       </Badge>
 
       </Group>
-      {/* <Group justify="center" mt="md">
-      <TextInput
-        // label="Input label"
-        ta="center" size="lg" maw={235} mx="auto" mt="md"
-        // description="Input description"
-        // placeholder="Input placeholder"
-      />
-      </Group> */}
+
       <Group justify="center" mt="md">
         {OperandsButtons}
       </Group>

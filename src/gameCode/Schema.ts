@@ -3,7 +3,8 @@ import { instanceOf } from 'prop-types';
 import { GameID, GradedGameID, CustomGameID, GameIDBase ,
          Game, GameState, Forms, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
-        MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
+        MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES, 
+        takeNextN} from './Core';
 
 
 const SCHEMA_CODE = "S";
@@ -95,19 +96,12 @@ export const destringifyCodeUnits = function*(s: string): IterableIterator<numbe
 const makeTakeNextNDestringified = function(s: string): [() => number, (N: number) => IterableIterator<number>] {
     const codeUnitsIterator = destringifyCodeUnits(s);
     const takeNextNDestringified = function*(N: number): IterableIterator<number> {
-        // Iterator.prototype.take is not supported on Safari (as of 10 Dec 2024)
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/take
-        // const NResults = codeUnitsIterator.take(N); 
-        for (let i = 0; i < N; i++) {
-            const result = codeUnitsIterator.next();
-            if (result.done) {
-                throw new Error(`codeUnitsIterator exhausted. `
-                    +`s=${s} too short for required number of calls/iterations. `
-                    +`latest N=${N}`
-                );
-            }
-            yield result.value;
-        }
+        const errorMessage = (
+             `codeUnitsIterator exhausted. `
+            +`s=${s} too short for required number of calls/iterations. `
+            +`latest N=${N}`
+        );
+        yield* takeNextN(N, codeUnitsIterator, errorMessage);
     }
     const next = () => takeNextNDestringified(1).next().value
     return [next, takeNextNDestringified];

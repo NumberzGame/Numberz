@@ -1,25 +1,19 @@
 import { useRef, useState } from 'react';
 
 import {Anchor, Center, Group, HoverCard, 
-        Image, Text, Stack, Slider } from '@mantine/core';
+        Image, Text, Slider } from '@mantine/core';
 
 import {
-  QueryClient,
-  QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
 
-import { MakeSubByteEncoderAndDecoder,
-  getBitWidthsEncodingsAndDecodings, intDecoder
- } from 'sub_byte';
+import { NumbersGame, loadGameFromLocalStorage } from './NumbersGame';
 
-import { NumbersGame, NumbersGameProps, loadGameFromLocalStorage } from './NumbersGame';
-
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS, FORMS, randomPositiveInteger, 
-         MAX_OPS, MAX_SEEDS, GOAL_MIN, GOAL_MAX} from "../../gameCode/Core";
-import { evalSolution, solutionExpr} from '../../gameCode/solutionEvaluator';
-import { GameID, Game, GradedGameID, CustomGameID, GameState, numSeedsFromForm } from '../../gameCode/Classes';
+import { randomPositiveInteger, GOAL_MIN, } from "../../gameCode/Core";
+import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
+import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
+
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
@@ -27,9 +21,6 @@ import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grad
 
 import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
 
-const GRADES_NUMS = Object.keys(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map((k) => parseInt(k));
-const GRADE_MIN = GRADES_NUMS.reduce((x, y) => Math.min(x, y));
-const GRADE_MAX = GRADES_NUMS.reduce((x, y) => Math.max(x, y));
 
 
 
@@ -170,11 +161,6 @@ function randomForm(
 }
 
 
-const seedsValueSets = [ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS];
-const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, ];
-
-const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
-const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
 
 const GRADE: number = 22;
 
@@ -311,42 +297,8 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     return 'Fetching game... ';
   }
 
-  const dataNums = Uint8Array.from(data);
-
-  const dataIterator = dataNums[Symbol.iterator]() as IterableIterator<number>;
-
-  const sols = [];
-  const seedIndicesAndOpIndices = [];
-
-  const numSeeds = numSeedsFromForm(form);
-  const numOps = numSeeds - 1;
-
-  while (true) {
-      const seedIndices = Array.from(intDecoder(dataIterator, numSeeds, seedsBitWidths));
-      const opIndices = Array.from(intDecoder(dataIterator, numOps, opsBitWidths));
-      const seeds = seedIndices.map(x => SEEDS[x]);
-      const opSymbols = opIndices.map(x => OP_SYMBOLS[x]);
-      if (seeds.length < numSeeds || opSymbols.length < numOps) {
-        break;
-      }
-
-      if (evalSolution(form, seeds, opSymbols) !== goal) {
-          throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
-      }
-      seedIndicesAndOpIndices.push([seedIndices, opIndices]);
-      sols.push(<Text>{solutionExpr(form, seeds, opSymbols)}</Text>);
-  }
-
-  const index = randomPositiveInteger(sols.length);
-  const sol = sols[index];
-  const id = new GradedGameID(grade, goal, form, index);
-
-  
-  const [seedIndices, opIndices] = seedIndicesAndOpIndices[index];
- 
-  const state = new GameState();
-  const datetime_ms = Date.now();
-  const game = new Game(id, datetime_ms, seedIndices, opIndices, state);
+  const seedsAndOpIndices = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
+  const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
 
   
   return <>
