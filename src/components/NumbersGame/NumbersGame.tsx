@@ -76,33 +76,7 @@ if (storageAvailable()) {
 }
 
 
-const gameFactory = function(id: GameID): Game {
-  
-  const state = new GameState();
-  const datetime_ms = Date.now();
-  let seedIndices, opIndices;
-  if (id instanceof CustomGameID) {
-      seedIndices = id.seedIndices;
-      opIndices = null;
-  } else if (id instanceof GradedGameID){
-    seedIndices = [9, 11, 1, 12, 0, 0];
-    opIndices = [3, 2, 1, 3, 2];
-  } else {
-    throw new Error(`Unsupported GameID class: ${id}`);
-  }
 
-  const game = new Game(id, datetime_ms, seedIndices, opIndices, state);
-  
-  // stored as a side effect.
-  storeGameInLocalStorage(game);
-  
-  return game;
-  
-}
-
-const loadGameFromLocalStorageOrCreateNew = function(id:  GameID): Game{
-  return loadGameFromLocalStorage(id) ?? gameFactory(id);
-} 
 
 
 const GOAL_GRADIENT = { from: 'lime', to: 'yellow', deg: 90 };

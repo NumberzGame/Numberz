@@ -96,13 +96,14 @@ function randomForm(
 
     // return FORMS[6]; //  "((2, 2), 1)",
     // return FORMS[8]; //  "(4, 2)",
-    
+
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
     const goalIndex = goal - GOAL_MIN;  // 1 goal per step of 1, so the interpolation formula is easy.
     const goalsDataStrings = goalsFormsDataString.split(spacer, goalIndex+1);
     const goalFormsDataString = goalsDataStrings[goalIndex];
     
+
     // const gradeKey = grade.toString as keyof typeof 
 
     const gradeKey = grade.toString() as keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL
@@ -200,14 +201,14 @@ export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(GRADE); //useRef(props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
-  const [currentGame, setCurrentGame] = useState<GameID | null>(null);
+  const [currentGameID, setCurrentGame] = useState<GameID | null>(null);
 
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = 22; //val as number;
   }
   
   let gameComponent;
-  if (currentGame === null) {
+  if (currentGameID === null) {
       gameComponent = (
         <NewGradedGameWithNewID 
          grade = {gradeObj.current}
@@ -215,24 +216,24 @@ export function GameBoSelector(props: {grade: number}) {
       )
   } else {
 
-    let game = loadGameFromLocalStorage(currentGame);
+    let game = loadGameFromLocalStorage(currentGameID);
     if (game === null) {
         // game not found in localStorage, or localStorage unavailable
         // Either way, we have nothing to destringify into a Game.
-        if (currentGame instanceof CustomGameID) {
+        if (currentGameID instanceof CustomGameID) {
           
             const state = new GameState();
             const datetime_ms = Date.now();
-            const seedIndices = currentGame.seedIndices;
+            const seedIndices = currentGameID.seedIndices;
             const opIndices = null;
-            game = new Game(currentGame, datetime_ms, seedIndices, opIndices, state);
-        } else if (currentGame instanceof GradedGameID) {
-            throw new Error(`GradedGameID: ${currentGame} came from game history, but could not be found`
+            game = new Game(currentGameID, datetime_ms, seedIndices, opIndices, state);
+        } else if (currentGameID instanceof GradedGameID) {
+            throw new Error(`GradedGameID: ${currentGameID} came from game history, but could not be found`
                            +` in localstorage.  If the browser's localstorage was not cleared, after `
                            +`the game ID was retrieved from localstorage, then there may be a bug in the game. `
             );
         } else {
-            throw new Error(`Unsupported game ID class: ${currentGame}. `);
+            throw new Error(`Unsupported game ID class: ${currentGameID}. `);
         }
     }
     gameComponent = (
@@ -270,42 +271,52 @@ interface NewGradedGameNewIDProps {
 
 function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
-  const grade = props.grade;
-  const goal = randomGoal(grade); //
-  const form = randomForm(grade, goal); //
+  let game: Game;
 
-  const formStrNoCommas = form.replaceAll(/\s*,\s*/g,'_')
-  const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: [ fileName ],
-    queryFn: async () => {
-      const response = await fetch(
-        `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
-      );
-      if (!response.ok) {
-        throw new Error(`Fetch response not OK: ${response}`);
-      }
-      return await response.bytes();
-    },
-  });
-  
+  while (true) {
+    const grade = props.grade;
+    const goal = randomGoal(grade); //
+    const form = randomForm(grade, goal); //
+
+    const formStrNoCommas = form.replaceAll(/\s*,\s*/g,'_')
+    const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
+    const { isPending, error, data, isFetching } = useQuery({
+      queryKey: [ fileName ],
+      queryFn: async () => {
+        const response = await fetch(
+          `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        );
+        if (!response.ok) {
+          throw new Error(`Fetch response not OK: ${response}`);
+        }
+        return await response.bytes();
+      },
+    });
+    
 
 
-  if (isPending) {
-    return 'Loading game...';
+    if (isPending) {
+      return 'Loading game...';
+    }
+
+    if (error) {
+      return 'An error has occurred: ' + error.message;
+    }
+    
+    if (isFetching) {
+      return 'Fetching game... ';
+    }
+
+    const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
+    game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
+
+    // Only break if the game has not been played before.
+    // (previously played games are stored in local storage).
+    if (loadGameFromLocalStorage(game.id) === null) {
+      break
+    }
+
   }
-
-  if (error) {
-    return 'An error has occurred: ' + error.message;
-  }
-  
-  if (isFetching) {
-    return 'Fetching game... ';
-  }
-
-  const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
-  const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
-
   
   return <>
           <Text>Form: {game.id.form()}</Text>
