@@ -282,6 +282,9 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
       const response = await fetch(
         `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
       );
+      if (!response.ok) {
+        throw new Error(`Fetch response not OK: ${response}`);
+      }
       return await response.bytes();
     },
   });

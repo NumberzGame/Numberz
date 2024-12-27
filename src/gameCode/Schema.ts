@@ -1,8 +1,8 @@
 
 import { instanceOf } from 'prop-types';
 import { GameID, GradedGameID, CustomGameID, GameIDBase ,
-         Game, GameState, Forms, Move } from './Classes';
-import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, 
+         Game, GameState, Move } from './Classes';
+import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, FORMS,
         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES, 
         takeNextN} from './Core';
 
@@ -144,7 +144,7 @@ const destringifyGradedGameID = function(key: string): GradedGameID {
     const grade = next();
     const goal = next();
     const form_index = next();
-    const form = Forms[form_index];
+    const form = FORMS[form_index];
     // const index_top_15_bits = key.charCodeAt(3);
     // const index_bottom_15_bits = key.charCodeAt(4)
     // Less than 32-bits total so this works using JS native operators
@@ -223,7 +223,7 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
         checkFitsInChunk(gameID.grade);
         checkFitsInChunk(gameID.goal);
 
-        const form_index = Forms.indexOf(gameID.form() as string);
+        const form_index = FORMS.indexOf(gameID.form() as string);
         checkFitsInChunk(form_index);
 
         keyData = [

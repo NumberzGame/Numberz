@@ -1,7 +1,7 @@
 // deno run --unstable-sloppy-imports --allow-read --allow-env RoundtripStringifyGame.tsx
 // or:
 // deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=RoundtripStringifyGame.tsx
-import { GradedGameID, Forms, Game, Move, GameState } from './Classes';
+import { GradedGameID, Game, Move, GameState } from './Classes';
 import { OPS,SEEDS,GOAL_MIN, GOAL_MAX, MAX_SEEDS, MAX_OPERANDS, MAX_MOVES, MAX_OPS } from './Core';
 import { destringifyGameID, stringifyGameID, destringifyGame, stringifyGame, 
          CHUNK_SIZE, chunkify, deChunkify, stringifyCodeUnits, destringifyCodeUnits,

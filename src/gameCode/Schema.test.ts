@@ -8,9 +8,9 @@
 import { expect, test } from 'vitest'
 import fc from 'fast-check';
 
-import { OPS,OP_SYMBOLS,SEEDS,GOAL_MIN, GOAL_MAX,
+import { OPS,OP_SYMBOLS,SEEDS,GOAL_MIN, GOAL_MAX, FORMS,
          MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES } from './Core';
-import { GradedGameID, CustomGameID, Forms, Game, Move, GameState } from './Classes';
+import { GradedGameID, CustomGameID, Game, Move, GameState } from './Classes';
 import { destringifyGameID, stringifyGameID,
          destringifyGame, stringifyGame, 
          CHUNK_SIZE, chunkify, deChunkify,
@@ -45,7 +45,7 @@ test('for each GradedGameID, stringifyGameID should roundtrip with destringifyGa
   fc.assert(
     fc.property(fc.integer({min: 1, max: 223}),
                 fc.integer({min: GOAL_MIN, max: GOAL_MAX}),
-                fc.constantFrom(...Forms),
+                fc.constantFrom(...FORMS),
                 fc.nat({max: 781176}),
                 (grade, goal, form, index) => {
       const gameID = new GradedGameID(grade, goal, form, index);
@@ -78,7 +78,7 @@ test('for each Game with a Graded GameID, stringifyGame should roundtrip with de
   fc.assert(
     fc.property(fc.integer({min: 1, max: 223}),
                 fc.integer({min: GOAL_MIN, max: GOAL_MAX}),
-                fc.constantFrom(...Forms),
+                fc.constantFrom(...FORMS),
                 fc.nat({max: 781176}),
                 // A millisecond later than the max, is 2**45 miliseconds since 1970
                 fc.date({min: new Date(Date.now()), max: new Date("3084-12-12T12:41:28.831Z")}),
