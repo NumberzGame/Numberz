@@ -4,28 +4,7 @@
 import { OPS, SEEDS, INVALID_ARGS, OP_SYMBOLS, Operand } from './Core';
 
 
-const throwIfInvalidArgsOrNull = function(
-    result: number | null | typeof INVALID_ARGS,
-    arg1: any = null,
-    arg2: any = null,
-    ) {
-    
-    if (result === INVALID_ARGS) {
-        throw new Error(
-            `Could not evaluate solution.  Indivisible. `
-            +`arg1: ${arg1}, arg2: ${arg2}`
-        );
-    } 
 
-    if (result === null) {
-
-        throw new Error(
-            `Could not evaluate solution.  Null.  (Empty brackets or 0 seeds). `
-            +`arg1: ${arg1}, arg2: ${arg2}`
-        );
-    }
-
-}
 
 
 export const evalSolution = function(
@@ -33,6 +12,33 @@ export const evalSolution = function(
     seeds: Iterable<number>,
     opSymbols: Iterable<string>,
     ): number | null {
+
+
+    const throwIfInvalidArgsOrNull = function(
+        result: number | null | typeof INVALID_ARGS,
+        arg1: any = null,
+        arg2: any = null,
+        ) {
+        
+        if (result === INVALID_ARGS) {
+            throw new Error(
+                `Could not evaluate solution.  Indivisible. `
+                +`arg1: ${arg1}, arg2: ${arg2} `
+                +`form: ${form}, seeds: ${seeds}, opSymbols: ${opSymbols}. `
+            );
+        } 
+
+        if (result === null) {
+
+            throw new Error(
+                `Could not evaluate solution.  Null.  (Empty brackets or 0 seeds). `
+                +`arg1: ${arg1}, arg2: ${arg2}`
+                +`form: ${form}, seeds: ${seeds}, opSymbols: ${opSymbols}. `
+            );
+        }
+
+    }
+
 
     const formCharsIterator = form[Symbol.iterator]();
     const seedIterator = seeds[Symbol.iterator]();

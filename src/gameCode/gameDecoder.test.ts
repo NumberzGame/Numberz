@@ -17,18 +17,21 @@ const SOLS_DIR = '../../public/grades_goals_forms_solutions';
 
 
 const gradesGoalDirsGoalsForms = function*(): IterableIterator<[number, string, number, string]> {
-    for (let grade = 1; grade <= 246; grade++) {
+    // for (let grade = 1; grade <= 246; grade++) {
+    for (let grade = 22; grade <= 22; grade++) {
         const gradeDir = `${SOLS_DIR}/${grade}`;
         if (!existsSync(gradeDir)) {
             continue;
         }
-        for (let goal = GOAL_MIN; goal <= GOAL_MAX; goal++) { 
+        // for (let goal = GOAL_MIN; goal <= GOAL_MAX; goal++) { 
+        for (let goal = 224; goal <= 224; goal++) { 
             const goalDir = `${gradeDir}/${goal}`;
             if (!existsSync(goalDir)) {
                 continue;
             }
 
-            for (const form of FORMS) { 
+            // for (const form of FORMS) { 
+            for (const form of ["(4, 2)",]) { 
                 yield [grade, goalDir, goal, form];
             }
         }
@@ -39,7 +42,7 @@ const gradesGoalDirsGoalsForms = function*(): IterableIterator<[number, string, 
 
 for (const [grade, goalDir, goal, form] of gradesGoalDirsGoalsForms()) {
 
-    const formStrNoCommas = form.replaceAll(', ','_');
+    const formStrNoCommas = form.replaceAll(/\s*,\s*/g,'_');
     const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
     const filePath = `${goalDir}/${fileName}`;
 
@@ -60,6 +63,7 @@ for (const [grade, goalDir, goal, form] of gradesGoalDirsGoalsForms()) {
         const seedAndOpsymbols = symbols[i];
         const solExpr=solExprs[i];
         const result = evalSolution(form,...seedAndOpsymbols);
+        console.log(`${solExpr} (under |-| and |/| ===) ${result}`);
         if (result !== goal) {
             console.log(`${solExpr} (under |-| and |/| !==) ${result}`);
             broken = true;

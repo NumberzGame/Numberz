@@ -95,6 +95,7 @@ function randomForm(
     // have 0 iterations, ending in the "form not found" error
 
     // return '(((2_2)_1)_1)';
+    return "(4, 2)";
 
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
@@ -272,12 +273,14 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   const grade = props.grade;
   const goal = randomGoal(grade); //
   const form = randomForm(grade, goal); //
-  const key = `${goal}_${form}_grade_${grade}`;
+
+  const formStrNoCommas = form.replaceAll(/\s*,\s*/g,'_')
+  const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
   const { isPending, error, data, isFetching } = useQuery({
-    queryKey: [ key ],
+    queryKey: [ fileName ],
     queryFn: async () => {
       const response = await fetch(
-        `./grades_goals_forms_solutions/${grade}/${goal}/solutions_${key}.dat`,
+        `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
       );
       return await response.bytes();
     },
