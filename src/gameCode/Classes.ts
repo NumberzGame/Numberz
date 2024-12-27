@@ -428,7 +428,6 @@ export class Game{
                         easiestSolution = solution;
                     }
                 }
-                console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
                 if (easiestSolution === null) {
                     // No solution found. 
                     return HINT_UNDO;
@@ -439,6 +438,7 @@ export class Game{
                 }
             }
 
+            console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
