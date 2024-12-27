@@ -413,7 +413,8 @@ export class Game{
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-            if (this.opIndices && this.id.form() !== null && operands.length === numSeedsFromForm(this.id.form()!)) {
+            // if (this.opIndices && this.id.form() !== null && operands.length === numSeedsFromForm(this.id.form()!)) {
+            if (this.opIndices && this.id.form() !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
                 easiestSolution = solutionAsOperand(this.id.form() as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
             } else {
                 for (const solution of solutions(this.id.goal, operands)) {
@@ -427,6 +428,7 @@ export class Game{
                         easiestSolution = solution;
                     }
                 }
+                console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
                 if (easiestSolution === null) {
                     // No solution found. 
                     return HINT_UNDO;

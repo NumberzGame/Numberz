@@ -96,6 +96,7 @@ function randomForm(
 
     // return FORMS[6]; //  "((2, 2), 1)",
     // return FORMS[8]; //  "(4, 2)",
+    return FORMS[4]; // "5"
 
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
