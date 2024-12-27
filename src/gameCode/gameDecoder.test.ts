@@ -19,7 +19,8 @@ const goal = parseInt(argv[3]);
 
 for (const form of FORMS) { 
 
-    const filePath = `../../public/grades_goals_forms_solutions/${grade}/${goal}/solutions_${goal}_${form}_grade_${grade}.dat`;
+    const fileName = `solutions_${goal}_${form}_grade_${grade}.dat`.replaceAll(', ','_');
+    const filePath = `../../public/grades_goals_forms_solutions/${grade}/${goal}/${fileName}`;
 
     if (!existsSync(filePath)) {
         continue;
