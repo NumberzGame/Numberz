@@ -9,7 +9,7 @@ import {
 
 import { NumbersGame, loadGameFromLocalStorage } from './NumbersGame';
 
-import { randomPositiveInteger, GOAL_MIN, } from "../../gameCode/Core";
+import { randomPositiveInteger, GOAL_MIN, FORMS} from "../../gameCode/Core";
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
@@ -94,9 +94,9 @@ function randomForm(
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
 
-    // return '(((2_2)_1)_1)';
-    return "(4, 2)";
-
+    // return FORMS[6]; //  "((2, 2), 1)",
+    // return FORMS[8]; //  "(4, 2)",
+    
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
     const goalIndex = goal - GOAL_MIN;  // 1 goal per step of 1, so the interpolation formula is easy.
