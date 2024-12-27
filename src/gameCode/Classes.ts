@@ -443,7 +443,7 @@ export class Game{
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             const index1 = operands.indexOf(operand1);
-            const index2 = operands.indexOf(operand2);
+            const index2 = operands.lastIndexOf(operand2);
             return new MoveData(opIndex, [index1, index2]);
     }
 
