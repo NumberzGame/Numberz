@@ -1,10 +1,10 @@
 
 
 // Works in Deno
-// import SYMBOLS from '../../data/symbols.json' with { type: "json" };
+import SYMBOLS from '../data/symbols.json' with { type: "json" };
 
 // Works in Vite / ESBuild:
-import SYMBOLS from '../data/symbols.json';
+// import SYMBOLS from '../data/symbols.json';
 
 // An import declaration can only be used at the top level of a namespace or module,
 // so this doesn't work either:

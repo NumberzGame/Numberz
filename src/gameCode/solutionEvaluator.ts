@@ -39,10 +39,11 @@ export const evalSolution = function(
     const opSymbolIterator = opSymbols[Symbol.iterator]();
 
     const nextSeed = () => seedIterator.next().value;
-    const nextOp = () => {const opSymbol = opSymbolIterator.next().value;
-                          console.log(opSymbol);
-                          return OPS[opSymbol];
-                         }
+    const nextOp = () => OPS[opSymbolIterator.next().value];
+    // const nextOp = () => {const opSymbol = opSymbolIterator.next().value;
+    //                       console.log(opSymbol);
+    //                       return OPS[opSymbol];
+    //                      }
 
     const evalSolutionFromIterators = function(
         valSoFar: number | null = null,

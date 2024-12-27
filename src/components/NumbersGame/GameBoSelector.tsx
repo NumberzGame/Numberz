@@ -297,7 +297,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     return 'Fetching game... ';
   }
 
-  const seedsAndOpIndices = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
+  const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
   const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
 
   

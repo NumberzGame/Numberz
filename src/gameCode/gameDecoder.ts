@@ -3,7 +3,7 @@
 import { intDecoder, getBitWidthsEncodingsAndDecodings } from 'sub_byte';
 
 import { SEEDS, ALL_SEEDS, OP_SYMBOLS, randomPositiveInteger, takeNextN} from "./Core";
-import { evalSolution, } from './solutionEvaluator';
+import { evalSolution, solutionExpr } from './solutionEvaluator';
 import { Game, GradedGameID, GameState, numSeedsFromForm } from './Classes';
 
 
@@ -21,18 +21,30 @@ const bitWidthsFromNumSeeds = function(numSeeds: number): number[] {
     return seedsBitWidths.concat(opsBitWidths);
 }
 
-export function decodeSolsFromGoalFormAndBinaryData(goal: number, form: string, data: Uint8Array): [number[], number[]][] {
+export function decodeSolsFromGoalFormAndBinaryData(
+    goal: number,
+    form: string,
+    data: Uint8Array,
+    ): [[number[], number[]][],
+        [number[], string[]][],
+        string[],
+       ]{
 
     const dataIterator = data[Symbol.iterator]() as IterableIterator<number>;
 
     const seedIndicesAndOpIndices: [number[], number[]][]  = [];
+    const solSymbols: [number[], string[]][] = [];
+    const solStrings: string[] = [];
 
     const numSeeds = numSeedsFromForm(form);
     const numOps = numSeeds - 1;
 
     const bitWidths = bitWidthsFromNumSeeds(numSeeds);
 
-    while (true) {
+    const numBytesPerSol = Math.ceil((bitWidths[0] * numSeeds + bitWidths[numSeeds] * numOps) / 8);
+
+    for (let p = 0; p <= data.length - numBytesPerSol; p += numBytesPerSol) { 
+    // while (true) {
 
         const decodedSymbols = intDecoder(dataIterator, numSeeds + numOps, bitWidths);
 
@@ -49,9 +61,11 @@ export function decodeSolsFromGoalFormAndBinaryData(goal: number, form: string, 
             throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
         }
         seedIndicesAndOpIndices.push([seedIndices, opIndices]);
+        solSymbols.push([seeds, opSymbols]);
+        solStrings.push(solutionExpr(form,seeds, opSymbols));
     }
 
-        return seedIndicesAndOpIndices;
+        return [seedIndicesAndOpIndices, solSymbols, solStrings];
 
     }
 
@@ -75,3 +89,4 @@ export function randomGameFromGradeGoalFormAndSols(
 
     return game;
 }
+
