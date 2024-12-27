@@ -7,24 +7,30 @@ import { evalSolution, } from './solutionEvaluator';
 import { Game, GradedGameID, GameState, numSeedsFromForm } from './Classes';
 
 
+const bitWidthsFromNumSeeds = function(numSeeds: number): number[] {
 
-const seedsValueSets = [ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS, ALL_SEEDS];
-const opsValueSets= [OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, OP_SYMBOLS, ];
 
-const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
-const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
+    const numOps = numSeeds - 1;
 
-const bitWidths = seedsBitWidths.concat(opsBitWidths);
+    const seedsValueSets = Array(numSeeds).fill(ALL_SEEDS);
+    const opsValueSets= Array(numOps).fill(OP_SYMBOLS);
+
+    const [seedsBitWidths, seedsEncodings, seedsDecodings] = getBitWidthsEncodingsAndDecodings(seedsValueSets)
+    const [opsBitWidths, opsEncodings, opsDecodings] = getBitWidthsEncodingsAndDecodings(opsValueSets)
+
+    return seedsBitWidths.concat(opsBitWidths);
+}
 
 export function decodeSolsFromGoalFormAndBinaryData(goal: number, form: string, data: Uint8Array): [number[], number[]][] {
-    const dataNums = Uint8Array.from(data);
 
-    const dataIterator = dataNums[Symbol.iterator]() as IterableIterator<number>;
+    const dataIterator = data[Symbol.iterator]() as IterableIterator<number>;
 
     const seedIndicesAndOpIndices: [number[], number[]][]  = [];
 
     const numSeeds = numSeedsFromForm(form);
     const numOps = numSeeds - 1;
+
+    const bitWidths = bitWidthsFromNumSeeds(numSeeds);
 
     while (true) {
 
@@ -36,7 +42,7 @@ export function decodeSolsFromGoalFormAndBinaryData(goal: number, form: string, 
         const seeds = seedIndices.map(seedIndex => SEEDS[seedIndex]);
         const opSymbols = opIndices.map(opIndex => OP_SYMBOLS[opIndex]);
         if (seeds.length < numSeeds || opSymbols.length < numOps) {
-        break;
+          break;
         }
 
         if (evalSolution(form, seeds, opSymbols) !== goal) {
