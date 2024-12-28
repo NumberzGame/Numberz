@@ -144,24 +144,6 @@ function randomForm(
         +`in SuperMiniIndexStr.json.json`
     );
 
-    // const numSolsOfGrade = sumValues(formsObj);
-    // let index = randomPositiveInteger(numSolsOfGrade);
-    // let numSols = 0;
-    // for (const form of FORMS) {
-    //     if (!(form in formsObj)) {
-    //       continue;
-    //     }
-    //     const value = formsObj[form as keyof typeof formsObj];
-    //     numSols += value;
-    //     if (index < numSols) {
-    //       return form; 
-    //     }
-        
-    // }
-    
-    // throw new Error(`No form found for grade: ${grade} with index: ${index }in num_of_sols_of_each_grade_and_goal.json`);
-
-    // return '(((2_2)_1)_1)';
 }
 
 
@@ -184,7 +166,7 @@ export function onWin() {
                   <Image
                   h={500}
                   w="auto"
-                  src="./fireworks-background_CPLJUAMC1T.jpg"
+                  src="/fireworks-background_CPLJUAMC1T.jpg"
                   radius="lg"
                 ></Image>
                 </HoverCard.Target>
@@ -275,22 +257,19 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
   let game: Game;
 
-  while (true) {
+  // while (true) {
     const grade = props.grade;
     const goal = randomGoal(grade); //
     const form = randomForm(grade, goal); //
 
-    const formStrNoCommas = form.replaceAll(/\s*,\s*/g,'_')
+    const formStrNoCommas = form.replaceAll(', ','_');
     const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
     const { isPending, error, data, isFetching } = useQuery({
       queryKey: [ fileName ],
       queryFn: async () => {
         const response = await fetch(
-          `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+          `/grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
         );
-        if (!response.ok) {
-          throw new Error(`Fetch response not OK: ${response}`);
-        }
         return await response.bytes();
       },
     });
@@ -314,11 +293,13 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
     // Only break if the game has not been played before.
     // (previously played games are stored in local storage).
-    if (loadGameFromLocalStorage(game.id) === null) {
-      break
-    }
-
-  }
+    // const prevGame = loadGameFromLocalStorage(game.id);
+    // console.log(prevGame);
+    // if (prevGame === null) {
+    //   break;
+    // }
+  //   break;
+  // }
   
   return <>
           <Text>Form: {game.id.form()}</Text>
@@ -326,6 +307,6 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
           game={game}
           onWin={onWin}
           >
-         </NumbersGame>
+          </NumbersGame>
          </>
 }
