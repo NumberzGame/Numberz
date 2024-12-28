@@ -54,7 +54,7 @@ function randomGoal(
     grade: number, // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
     ): number {
 
-    // return 224;
+    return 224;
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
     const gradesObj = NUM_SOLS_OF_EACH_GRADE_AND_GOAL[grade.toString() as keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL] ?? {};
@@ -118,10 +118,10 @@ function randomFormAndIndex(
 
 
     // const formIndex = 6; //  "((2, 2), 1)",
-    // const formIndex = 8; //  "(4, 2)",
+    const formIndex = 8; //  "(4, 2)",
     // const formIndex = 4; // "5"
     // const formIndex = 7; // "6"
-    // return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex])];
+    return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex])];
 
 
     const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a+c);
