@@ -85,19 +85,15 @@ function assert(condition: any, goalKey: string, grade: number): asserts conditi
 }
 
 
-function randomForm(
+function randomFormAndIndex(
     grade: number,
     goal: number,
     // grade: keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS,
     // goal: number, //keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
-    ): string {
+    ): [string, number] {
     // If nullish, shortcut to empty object making the main loop 
     // have 0 iterations, ending in the "form not found" error
 
-    // return FORMS[6]; //  "((2, 2), 1)",
-    // return FORMS[8]; //  "(4, 2)",
-    // return FORMS[4]; // "5"
-    // return FORMS[7]; // "6"
 
     const gradeDataStringsKey = grade.toString() as keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS
     const goalsFormsDataString = NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS[gradeDataStringsKey] as string;
@@ -120,6 +116,14 @@ function randomForm(
 
     const formsAndFreqs = Array.from(decoder.formsAndFreqs());
 
+
+    // const formIndex = 6; //  "((2, 2), 1)",
+    // const formIndex = 8; //  "(4, 2)",
+    // const formIndex = 4; // "5"
+    // const formIndex = 7; // "6"
+    // return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex])];
+
+
     const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a+c);
 
     if (totalSols !== totalNumSolsOfGradeAndGoal) {
@@ -130,11 +134,12 @@ function randomForm(
 
 
     let numSolsSoFar = 0;
-
     for (const [form, freq] of formsAndFreqs) {
+        const prevNumSolsSoFar = numSolsSoFar;
         numSolsSoFar += freq;
         if (solutionIndex < numSolsSoFar) {
-            return form; 
+            const solIndexThisForm = solutionIndex - prevNumSolsSoFar;
+            return [form, solIndexThisForm]; 
         }
         
     }
@@ -193,14 +198,20 @@ export function GameBoSelector(props: {grade: number}) {
   
   let gameComponent;
   if (currentGameID === null) {
-      const grade = gradeObj.current;
-      const goal = randomGoal(grade); //
-      const form = randomForm(grade, goal); //
+      let gameID: GradedGameID;
+      do {      
+          const grade = gradeObj.current;
+          const goal = randomGoal(grade); //
+          const [form, formIndex] = randomFormAndIndex(grade, goal); //
+          // localStorage.getItem returns null if the key is not found
+          // loadGameFromLocalStorage passes this null through, signifying
+          // a graded game with that gameID has not been played before.
+          gameID = new GradedGameID(grade, goal, form, formIndex);
+      } while (loadGameFromLocalStorage(gameID) === null);
+      
       gameComponent = (
         <NewGradedGameWithNewID 
-         grade = {grade}
-         goal = {goal}
-         form = {form}
+        gameID = {gameID}
         ></NewGradedGameWithNewID>
       )
   } else {
@@ -254,62 +265,60 @@ export function GameBoSelector(props: {grade: number}) {
 
 
 interface NewGradedGameNewIDProps {
-  grade: number
-  goal: number
-  form: string
+  gameID: GradedGameID;
 }
 
 
 function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
-  let game: Game;
+  const gameID = props.gameID;
 
   // while (true) {
-    const grade = props.grade;
-    const goal = props.goal; //
-    const form = props.form; //
+  const grade = gameID.grade;
+  const goal = gameID.goal; //
+  const form = gameID.form; //
 
-    const formStrNoCommas = form.replaceAll(', ','_');
-    const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
-    const { isPending, error, data, isFetching } = useQuery({
-      queryKey: [ grade, goal, form ],
-      queryFn: async () => {
-        const response = await fetch(
-          `/grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
-        );
-        return await response.bytes();
-      },
-    });
-    
+  const formStrNoCommas = form.replaceAll(', ','_');
+  const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
+  const { isPending, error, data, isFetching } = useQuery({
+    queryKey: [ grade, goal, form ],
+    queryFn: async () => {
+      const response = await fetch(
+        `/grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+      );
+      return await response.bytes();
+    },
+  });
+  
 
 
-    if (isPending) {
-      return 'Loading game...';
-    }
+  if (isPending) {
+    return 'Loading game...';
+  }
 
-    if (error) {
-      return 'An error has occurred: ' + error.message;
-    }
-    
-    if (isFetching) {
-      return 'Fetching game... ';
-    }
+  if (error) {
+    return 'An error has occurred: ' + error.message;
+  }
+  
+  if (isFetching) {
+    return 'Fetching game... ';
+  }
 
-    const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
-    game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
+  const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
+  const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
 
-    // Only break if the game has not been played before.
-    // (previously played games are stored in local storage).
-    // const prevGame = loadGameFromLocalStorage(game.id);
-    // console.log(prevGame);
-    // if (prevGame === null) {
-    //   break;
-    // }
+  // Only break if the game has not been played before.
+  // (previously played games are stored in local storage).
+  // const prevGame = loadGameFromLocalStorage(game.id);
+  // console.log(prevGame);
+  // if (prevGame === null) {
   //   break;
   // }
-  
+  //   break;
+  // }
+    
   return <>
-          <Text>Form: {game.id.form()}</Text>
+          <Text>Form: {gameID.form}</Text>
           <NumbersGame
           game={game}
           onWin={onWin}

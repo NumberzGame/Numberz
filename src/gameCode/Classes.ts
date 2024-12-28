@@ -28,19 +28,17 @@ export class GameIDBase{
     
     [immerable] = true;
     readonly goal: number;
-    _form: string | null;
+    form: string | null;
 
     constructor(goal: number) {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
         this.goal = goal;
-        this._form = null;
+        this.form = null;
     }
 
-    form(): string | null {
-        return this._form;
-    }
+
 }
 
 export class CustomGameID extends GameIDBase{
@@ -61,11 +59,12 @@ export class GradedGameID extends GameIDBase{
     // readonly form: string;
     readonly index: number;
     static readonly GAME_ID_TYPE_CODE = "G";
+    readonly form: string;
 
     constructor(grade: number, goal: number, form: string, index: number) {
         super(goal);
         this.grade = grade;
-        this._form = form;
+        this.form = form;
         this.index = index;
     }
   }
@@ -413,9 +412,9 @@ export class Game{
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-            // if (this.opIndices && this.id.form() !== null && operands.length === numSeedsFromForm(this.id.form()!)) {
-            if (this.opIndices && this.id.form() !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
-                easiestSolution = solutionAsOperand(this.id.form() as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
+            // if (this.opIndices && this.id.form !== null && operands.length === numSeedsFromForm(this.id.form!)) {
+            if (this.opIndices && this.id.form !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
+                easiestSolution = solutionAsOperand(this.id.form as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
             } else {
                 for (const solution of solutions(this.id.goal, operands)) {
                     const grade = calcGrade(solution);

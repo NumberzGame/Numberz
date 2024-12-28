@@ -223,7 +223,7 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
         checkFitsInChunk(gameID.grade);
         checkFitsInChunk(gameID.goal);
 
-        const form_index = FORMS.indexOf(gameID.form() as string);
+        const form_index = FORMS.indexOf(gameID.form);
         checkFitsInChunk(form_index);
 
         keyData = [
