@@ -193,9 +193,14 @@ export function GameBoSelector(props: {grade: number}) {
   
   let gameComponent;
   if (currentGameID === null) {
+      const grade = gradeObj.current;
+      const goal = randomGoal(grade); //
+      const form = randomForm(grade, goal); //
       gameComponent = (
         <NewGradedGameWithNewID 
-         grade = {gradeObj.current}
+         grade = {grade}
+         goal = {goal}
+         form = {form}
         ></NewGradedGameWithNewID>
       )
   } else {
@@ -250,6 +255,8 @@ export function GameBoSelector(props: {grade: number}) {
 
 interface NewGradedGameNewIDProps {
   grade: number
+  goal: number
+  form: string
 }
 
 
@@ -259,13 +266,13 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
   // while (true) {
     const grade = props.grade;
-    const goal = randomGoal(grade); //
-    const form = randomForm(grade, goal); //
+    const goal = props.goal; //
+    const form = props.form; //
 
     const formStrNoCommas = form.replaceAll(', ','_');
     const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
     const { isPending, error, data, isFetching } = useQuery({
-      queryKey: [ fileName ],
+      queryKey: [ grade, goal, form ],
       queryFn: async () => {
         const response = await fetch(
           `/grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
