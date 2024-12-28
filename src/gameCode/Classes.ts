@@ -446,4 +446,12 @@ export class Game{
             return new MoveData(opIndex, [index1, index2]);
     }
 
+    lastMove(): Move {
+        return this.state.moves.at(-1)!
+    }
+
+    lastMoveOperandIndices(): number[] {
+        return this.lastMove().operandIndices;
+    }
+
   }

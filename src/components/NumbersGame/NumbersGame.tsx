@@ -143,7 +143,7 @@ export function NumbersGame(props: NumbersGameProps) {
         setGameUsingImmerProducerAndStore((draft: Game) => {
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             
-            const move = draft.state.moves.at(-1)!;
+            const move = draft.lastMove();
             move.opIndex = opIndex === move.opIndex ? null : opIndex;
         });
       }
@@ -158,7 +158,11 @@ export function NumbersGame(props: NumbersGameProps) {
 
       const displayText = overrideSymbolText(s);
 
-      if (hint && hint !== HINT_UNDO && hint.opSymbol() === s) {
+      let colour = "blue";
+
+      if (game.lastMove().opIndex !== null && s === OP_SYMBOLS[game.lastMove().opIndex!]) {
+        colour = "pink"
+      } else if (hint && hint !== HINT_UNDO && hint.opSymbol() === s) {
         return <Button 
           variant="gradient"
           gradient={GOAL_GRADIENT}
@@ -171,6 +175,7 @@ export function NumbersGame(props: NumbersGameProps) {
       return <Button 
         onClick={makeOpButtonClickHandler(s)}
         key={nanoid()}
+        color={colour}
       >
         <b>{displayText}</b>
       </Button>
@@ -179,8 +184,10 @@ export function NumbersGame(props: NumbersGameProps) {
     const makeOperandButtonClickHandler = function(val: number, operandIndex: number): () => void {
       const operandButtonClickHandler = function() {
         setGameUsingImmerProducerAndStore((draft: Game) => {
-            const move = draft.state.moves.at(-1)!;
-            const operandIndices = move.operandIndices;
+            // const move = draft.state.moves.at(-1)!;
+            // const operandIndices = move.operandIndices;
+            const operandIndices = draft.lastMoveOperandIndices();
+            
             const len = operandIndices.length;
             if (operandIndices.includes(operandIndex)) {
               // Unselect already selected operand
@@ -195,7 +202,7 @@ export function NumbersGame(props: NumbersGameProps) {
             } else {
               throw new Error(`Move has too many operand indices: ${operandIndices}. `
                              +`Cannot have more than MAX_OPERANDS: ${MAX_OPERANDS}. `
-                             +`Move: ${move}`
+                             +`Move: ${draft.lastMove}`
               );
             }
         });
@@ -207,7 +214,11 @@ export function NumbersGame(props: NumbersGameProps) {
 
       const clickHandler = makeOperandButtonClickHandler(val, index)
 
-      if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
+      let colour = "blue";
+
+      if (game.lastMoveOperandIndices().includes(index)) {
+        colour = "pink";
+      } else if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
         return <Button 
           variant="gradient"
           gradient={GOAL_GRADIENT}
@@ -221,6 +232,7 @@ export function NumbersGame(props: NumbersGameProps) {
       return <Button 
         onClick={clickHandler}
         key={nanoid()}
+        color={colour}
       >
         {val}
       </Button>
