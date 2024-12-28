@@ -121,7 +121,7 @@ function randomFormAndIndex(
     const formIndex = 8; //  "(4, 2)",
     // const formIndex = 4; // "5"
     // const formIndex = 7; // "6"
-    return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex])];
+    return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex][1])];
 
 
     const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a+c);
