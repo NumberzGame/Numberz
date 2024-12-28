@@ -207,7 +207,7 @@ export function GameBoSelector(props: {grade: number}) {
           // loadGameFromLocalStorage passes this null through, signifying
           // a graded game with that gameID has not been played before.
           gameID = new GradedGameID(grade, goal, form, formIndex);
-      } while (loadGameFromLocalStorage(gameID) === null);
+      } while (loadGameFromLocalStorage(gameID) !== null);
       
       gameComponent = (
         <NewGradedGameWithNewID 
