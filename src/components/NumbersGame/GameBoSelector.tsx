@@ -11,7 +11,7 @@ import {
 import { NumbersGame } from './NumbersGame';
 
 import { randomPositiveInteger, GOAL_MIN } from "../../gameCode/Core";
-import { stringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
+import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
@@ -177,35 +177,44 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 
 
 
-let storeGameInLocalStorage: (game: Game) => void;
-let loadGameFromLocalStorage: (id: GameID) => Game | null;
+let storeInLocalStorageIfAvailable: (k: string, v: string) => void;
+let getFromLocalStorageIfAvailable: (k: string) => string | null;
 
 if (storageAvailable()) {
-
-  storeGameInLocalStorage = function(game: Game) {
-      const key = stringifyGameID(game.id);
-      const val = stringifyGame(game);
-      localStorage.setItem(key, val);
-  }
-
-  loadGameFromLocalStorage = function(id: GameID) {
-      const key = stringifyGameID(id);
-
-      const val = localStorage.getItem(key);
-
-      if (val === null) {
-          return null;
-      }
-
-      return destringifyGame(val, id);
-
-  }
-
+    storeInLocalStorageIfAvailable = (k: string, v: string) => localStorage.setItem(k, v);
+    getFromLocalStorageIfAvailable = (k: string) => localStorage.getItem(k);
 } else {
-    storeGameInLocalStorage = (game: Game) => {};
-    loadGameFromLocalStorage = (id: GameID) => null;
+    storeInLocalStorageIfAvailable = (k: string, v: string) => {};
+    getFromLocalStorageIfAvailable = (k: string) => null;
 }
 
+
+const storeGame = function(game: Game) {
+  const key = stringifyGameID(game.id);
+  const val = stringifyGame(game);
+  storeInLocalStorageIfAvailable(key, val);
+}
+
+const loadStoredGame = function(id: GameID): Game | null {
+  const key = stringifyGameID(id);
+
+  const val = getFromLocalStorageIfAvailable(key);
+
+  if (val === null) {
+      return null;
+  }
+
+  return destringifyGame(val, id);
+}
+
+const loadCurrentGameIDIfAvailable = function(): GameID | null {
+    const result = getFromLocalStorageIfAvailable('currentGame');
+    if (result === null) {
+        return null;
+    }
+
+    return destringifyGameID(result);
+}
 
 const GRADE: number = 22;
 
@@ -258,12 +267,21 @@ export function WinScreen(props: winScreenProps) {
 const onQuit = function() {}
 
 
+
+
+
+
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(GRADE); //useRef(props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
-  const [currentGameID, setCurrentGame] = useState<GameID | null>(null);
+  const [currentGameID, setCurrentGame] = useState<GameID | null>(loadCurrentGameIDIfAvailable);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
+
+  const onWin = function(): void {
+      winScreenHandlers.open()
+      // setCurrentGame(null);
+  }
 
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = 22; //val as number;
@@ -277,20 +295,22 @@ export function GameBoSelector(props: {grade: number}) {
           const goal = randomGoal(grade); //
           const [form, formIndex] = randomFormAndIndex(grade, goal); //
           // localStorage.getItem returns null if the key is not found
-          // loadGameFromLocalStorage passes this null through, signifying
+          // loadStoredGame passes this null through, signifying
           // a graded game with that gameID has not been played before.
           gameID = new GradedGameID(grade, goal, form, formIndex);
-      } while (loadGameFromLocalStorage(gameID) !== null);
+      } while (loadStoredGame(gameID) !== null);
       
       gameComponent = (
         <NewGradedGameWithNewID 
         gameID = {gameID}
-        onWin = {winScreenHandlers.open}
+        onWin = {onWin}
+        store = {storeGame}
+        onQuit = {onQuit}
         ></NewGradedGameWithNewID>
       )
   } else {
 
-    let game = loadGameFromLocalStorage(currentGameID);
+    let game = loadStoredGame(currentGameID);
     if (game === null) {
         // game not found in localStorage, or localStorage unavailable
         // Either way, we have nothing to destringify into a Game.
@@ -313,8 +333,8 @@ export function GameBoSelector(props: {grade: number}) {
     gameComponent = (
         <NumbersGame 
           game = {game}
-          onWin = {winScreenHandlers.open}
-          store = {storeGameInLocalStorage}
+          onWin = {onWin}
+          store = {storeGame}
           onQuit = {onQuit}
         ></NumbersGame>
     )
@@ -344,13 +364,17 @@ export function GameBoSelector(props: {grade: number}) {
 interface NewGradedGameNewIDProps {
   gameID: GradedGameID;
   onWin: () => void;
+  store: (game: Game) => void;
+  onQuit: () => void
 }
 
 
 
 
 function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
-
+  // This sub component contains all the Tan Query stuff
+  // needed to look up game solutions from the cache, that
+  // shouldn't cause rerendeing of the Game selection menu.
   const gameID = props.gameID;
 
   // while (true) {
@@ -389,7 +413,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
   // Only break if the game has not been played before.
   // (previously played games are stored in local storage).
-  // const prevGame = loadGameFromLocalStorage(game.id);
+  // const prevGame = loadStoredGame(game.id);
   // console.log(prevGame);
   // if (prevGame === null) {
   //   break;
@@ -402,7 +426,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
           <NumbersGame
           game={game}
           onWin={props.onWin}
-          store={storeGameInLocalStorage}
+          store={storeGame}
           onQuit = {onQuit}
           >
           </NumbersGame>
