@@ -434,8 +434,12 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     queryKey: [ grade, goal, form ],
     queryFn: async () => {
       const response = await fetch(
-        `/all_grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        `./all_grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        // `./grade_22_goals_forms_solutions/${grade}/${goal}/${fileName}`,
       );
+      if (!response.ok){
+          throw new Error(`Something went wrong fetching grade: ${grade}, goal: ${goal}, form: ${form}`);
+      }
       return await response.bytes();
     },
   });

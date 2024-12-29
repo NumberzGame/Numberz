@@ -12,5 +12,5 @@ export default defineConfig({
   build: {
     copyPublicDir: false,
   },
-  assetsInclude: ['**/*.dat'],
+  assetsInclude: ['/all_grades_goals_forms_solutions/*/*/*.*','/grade_22_goals_forms_solutions/*/*/*.*'],
 });
