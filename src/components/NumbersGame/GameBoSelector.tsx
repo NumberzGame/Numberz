@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, ReactNode } from 'react';
 
 import { useDisclosure } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button,
@@ -195,7 +195,11 @@ const storeGame = function(game: Game) {
   storeInLocalStorageIfAvailable(key, val);
 }
 
-const loadStoredGame = function(id: GameID): Game | null {
+const loadStoredGame = function(id: GameID | null): Game | null {
+  if (id === null) {
+    return null;
+}
+
   const key = stringifyGameID(id);
 
   const val = getFromLocalStorageIfAvailable(key);
@@ -268,76 +272,102 @@ const onQuit = function() {}
 
 
 
-
+const newGradedGameID = function(minGrade: number, maxGrade: number): GradedGameID {
+  let gameID: GradedGameID;
+  do {      
+      const grade = minGrade + randomPositiveInteger(1+maxGrade-minGrade);
+      const goal = randomGoal(grade); //
+      const [form, formIndex] = randomFormAndIndex(grade, goal); //
+      // localStorage.getItem returns null if the key is not found
+      // loadStoredGame passes this null through, signifying
+      // a graded game with that gameID has not been played before.
+      gameID = new GradedGameID(grade, goal, form, formIndex);
+  } while (loadStoredGame(gameID) !== null);
+  return gameID
+}
 
 
 export function GameBoSelector(props: {grade: number}) {
-  const gradeObj = useRef(GRADE); //useRef(props.grade);
+  const gradeObj = useRef<number>(GRADE); //useRef(props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
-  const [currentGameID, setCurrentGame] = useState<GameID | null>(loadCurrentGameIDIfAvailable);
+  const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfAvailable);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
       winScreenHandlers.open()
-      // setCurrentGame(null);
+      setCurrentGameID(null);
   }
 
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = 22; //val as number;
   }
   
-  let gameComponent;
+  const setCurrentGameIDToNewGradedGameID = function() {
+    setCurrentGameID(newGradedGameID(gradeObj.current, gradeObj.current));
+  }
+  const menu = <></>;
   if (currentGameID === null) {
-      let gameID: GradedGameID;
-      do {      
-          const grade = gradeObj.current;
-          const goal = randomGoal(grade); //
-          const [form, formIndex] = randomFormAndIndex(grade, goal); //
-          // localStorage.getItem returns null if the key is not found
-          // loadStoredGame passes this null through, signifying
-          // a graded game with that gameID has not been played before.
-          gameID = new GradedGameID(grade, goal, form, formIndex);
-      } while (loadStoredGame(gameID) !== null);
+      if (true) { //(getFromLocalStorageIfAvailable('game-history') === null) {
+          setCurrentGameIDToNewGradedGameID();
+          return <></>;
+      } else {
+          return <>{menu}</>;
+      }
+      // return <Menu></Menu>;
       
+      // gameComponent = (
+      //   <NewGradedGameWithNewID 
+      //   gameID = {gameID}
+      //   onWin = {onWin}
+      //   store = {storeGame}
+      //   onQuit = {onQuit}
+      //   ></NewGradedGameWithNewID>
+      // )
+  } 
+
+  let game = loadStoredGame(currentGameID);
+  let gameComponent: ReactNode;
+  if (game === null && currentGameID instanceof GradedGameID) {
       gameComponent = (
         <NewGradedGameWithNewID 
-        gameID = {gameID}
+        gameID = {currentGameID}
         onWin = {onWin}
         store = {storeGame}
         onQuit = {onQuit}
         ></NewGradedGameWithNewID>
       )
-  } else {
 
-    let game = loadStoredGame(currentGameID);
-    if (game === null) {
-        // game not found in localStorage, or localStorage unavailable
-        // Either way, we have nothing to destringify into a Game.
-        if (currentGameID instanceof CustomGameID) {
-          
-            const state = new GameState();
-            const datetime_ms = Date.now();
-            const seedIndices = currentGameID.seedIndices;
-            const opIndices = null;
-            game = new Game(currentGameID, datetime_ms, seedIndices, opIndices, state);
-        } else if (currentGameID instanceof GradedGameID) {
-            throw new Error(`GradedGameID: ${currentGameID} came from game history, but could not be found`
-                           +` in localstorage.  If the browser's localstorage was not cleared, after `
-                           +`the game ID was retrieved from localstorage, then there may be a bug in the game. `
-            );
-        } else {
-            throw new Error(`Unsupported game ID class: ${currentGameID}. `);
-        }
-    }
-    gameComponent = (
-        <NumbersGame 
-          game = {game}
-          onWin = {onWin}
-          store = {storeGame}
-          onQuit = {onQuit}
-        ></NumbersGame>
-    )
+  } else {
+      if (currentGameID instanceof CustomGameID) {
+      
+          const state = new GameState();
+          const datetime_ms = Date.now();
+          const seedIndices = currentGameID.seedIndices;
+          const opIndices = null;
+          game = new Game(currentGameID, datetime_ms, seedIndices, opIndices, state);
+          // gameComponent = (
+          //   <NumbersGame 
+          //     game = {game}
+          //     onWin = {onWin}
+          //     store = {storeGame}
+          //     onQuit = {onQuit}
+          //   ></NumbersGame>
+      } 
+      if (game === null) {
+          throw new Error(` Unsupported GameID type: ${currentGameID}.  No corresponding game found`
+                          +` in localstorage for it.  Was the browser's localstorage cleared or were keys`
+                          +` deleted from it, immediately after the gameID was retrieved from localstorage? `
+          );
+      }
+      gameComponent = (
+          <NumbersGame 
+            game = {game}
+            onWin = {onWin}
+            store = {storeGame}
+            onQuit = {onQuit}
+          ></NumbersGame>
+      )
   }
   return <>
     <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
