@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 
+import { useDisclosure } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button,
-        Image, Text, Slider } from '@mantine/core';
+        Image, Text, Slider, Modal } from '@mantine/core';
 
 import {
   useQuery,
@@ -209,14 +210,26 @@ if (storageAvailable()) {
 const GRADE: number = 22;
 
 
-export function onWin() {
+interface winScreenProps {
+    opened: boolean;
+    close: () => void;
+
+}
+
+
+
+export function WinScreen(props: winScreenProps) {
     // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
     // Photographer credit: https://stocksnap.io/author/travelphotographer
-    return <>
+    return <Modal
+              opened = {props.opened}
+              onClose = {props.close}
+              title="You are the winner!!"
+              size="auto"
+            >
             <Center mt="md">
-            <Text size="lg">
-              You are the winner!!
-            </Text>
+            {/* <Text size="lg">
+            </Text> */}
                 {/* <Group gap="xs" maw = "400" justify="right" mt="sm" mr="sm" >
                   <Button size="md" onClick={}><b>X</b></Button>
                 </Group> */}
@@ -238,8 +251,11 @@ export function onWin() {
                 </HoverCard.Dropdown>
               </HoverCard>
             </Group>
-    </>
+    </Modal>
     }
+
+
+const onQuit = function() {}
 
 
 export function GameBoSelector(props: {grade: number}) {
@@ -247,6 +263,7 @@ export function GameBoSelector(props: {grade: number}) {
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGame] = useState<GameID | null>(null);
+  const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = 22; //val as number;
@@ -268,6 +285,7 @@ export function GameBoSelector(props: {grade: number}) {
       gameComponent = (
         <NewGradedGameWithNewID 
         gameID = {gameID}
+        onWin = {winScreenHandlers.open}
         ></NewGradedGameWithNewID>
       )
   } else {
@@ -295,12 +313,14 @@ export function GameBoSelector(props: {grade: number}) {
     gameComponent = (
         <NumbersGame 
           game = {game}
-          onWin = {onWin}
+          onWin = {winScreenHandlers.open}
           store = {storeGameInLocalStorage}
+          onQuit = {onQuit}
         ></NumbersGame>
     )
   }
   return <>
+    <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
     {gameComponent}
     
     <Slider
@@ -323,7 +343,10 @@ export function GameBoSelector(props: {grade: number}) {
 
 interface NewGradedGameNewIDProps {
   gameID: GradedGameID;
+  onWin: () => void;
 }
+
+
 
 
 function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
@@ -378,8 +401,9 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
           <Text>Form: {gameID.form}</Text>
           <NumbersGame
           game={game}
-          onWin={onWin}
+          onWin={props.onWin}
           store={storeGameInLocalStorage}
+          onQuit = {onQuit}
           >
           </NumbersGame>
          </>

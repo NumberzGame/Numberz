@@ -50,17 +50,13 @@ export function HintButton(props: HintButtonProps) {
 
 }
 
+
 export interface NumbersGameProps{
     game: Game;
-    onWin: () => ReactNode;
+    onWin: () => void;
     store: (game: Game) => void;
-    // onQuit: () => void
+    onQuit: () => void
 }
-// Add Game Manager
-
-
-
-
 
 
 export function NumbersGame(props: NumbersGameProps) {
@@ -82,7 +78,7 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     if (game.solved()) {
-        return <props.onWin></props.onWin>
+        props.onWin()
     }
 
 
