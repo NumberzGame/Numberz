@@ -287,8 +287,33 @@ const newGradedGameID = function(minGrade: number, maxGrade: number): GradedGame
 }
 
 
+interface gradeSliderProps{
+    initialValue: number;
+    onChangeEnd: (val: number) => void;
+}
+
+function GradeSlider(props: gradeSliderProps) {
+  const [grade, setGrade] = useState(props.initialValue);
+  return <Slider
+    value = {grade}
+    min={1}
+    max = {246}
+    marks={[
+      {value: 1, label: '1'},
+    //   // { value: 20, label: '20%' },
+    //   // { value: 50, label: '50%' },
+    //   // { value: 80, label: '80%' },
+      {value: 246, label: '246'},
+    ]}
+    // mt = {15}
+    onChange={setGrade}
+    onChangeEnd = {props.onChangeEnd}
+  />
+}
+
+
 export function GameBoSelector(props: {grade: number}) {
-  const gradeObj = useRef<number>(GRADE); //useRef(props.grade);
+  const gradeObj = useRef(22); //props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfAvailable);
@@ -300,7 +325,7 @@ export function GameBoSelector(props: {grade: number}) {
   }
 
   const gradeSliderHandler = function(val: number) {
-    gradeObj.current = 22; //val as number;
+    gradeObj.current = val;// as number;
   }
   
   const setCurrentGameIDToNewGradedGameID = function() {
@@ -373,20 +398,11 @@ export function GameBoSelector(props: {grade: number}) {
     <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
     {gameComponent}
     
-    <Slider
-        value = {gradeObj.current}
-        min={GRADE}
-        max = {GRADE}
-        // marks={[
-        //   {value: 0, label: '1'},
-        //   // { value: 20, label: '20%' },
-        //   // { value: 50, label: '50%' },
-        //   // { value: 80, label: '80%' },
-        //   {value: 100, label: '223'},
-        // ]}
-        mt = {15}
-        onChangeEnd = {gradeSliderHandler}
-      />
+    <GradeSlider
+      initialValue={gradeObj.current}
+      onChangeEnd={gradeSliderHandler}
+    >  
+    </GradeSlider>
   </>
 }
 
