@@ -1,7 +1,7 @@
 
 
 
-import { OPS, SEEDS, INVALID_ARGS, OP_SYMBOLS, Operand } from './Core';
+import { OPS, INVALID_ARGS, Operand } from './Core';
 
 
 
@@ -139,7 +139,7 @@ export const solutionExpr = function(
 
     const opExpr = ' o ';
     const seedExpr = '1';
-    let retval = form.replaceAll('_', opExpr);
+    let retval = form.replaceAll(', ', opExpr).replaceAll('_', opExpr);
     for (let i = 6; i > 1; i--) {
         retval = retval.replaceAll(i.toString(),`(${i-1}${opExpr}${seedExpr})`);
     }
