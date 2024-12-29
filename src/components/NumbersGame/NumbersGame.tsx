@@ -24,58 +24,6 @@ const STARTING_DIFFICULTY = 25;
 
 
 
-function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorage"): boolean {
-  // https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#testing_for_availability
-  let storage;
-  try {
-    storage = window[type];
-    const x = "__storage_test__";
-    storage.setItem(x, x);
-    storage.removeItem(x);
-    return true;
-  } catch (e) {
-    return Boolean(
-      e instanceof DOMException &&
-      e.name === "QuotaExceededError" &&
-      // acknowledge QuotaExceededError only if there's something already stored
-      storage &&
-      storage.length !== 0
-    );
-  }
-}
-
-
-
-let storeGameInLocalStorage: (game: Game) => void;
-export let loadGameFromLocalStorage: (id: GameID) => Game | null;
-
-if (storageAvailable()) {
-
-  storeGameInLocalStorage = function(game: Game) {
-      const key = stringifyGameID(game.id);
-      const val = stringifyGame(game);
-      localStorage.setItem(key, val);
-  }
-
-  loadGameFromLocalStorage = function(id: GameID) {
-      const key = stringifyGameID(id);
-
-      const val = localStorage.getItem(key);
-
-      if (val === null) {
-          return null;
-      }
-
-      return destringifyGame(val, id);
-
-  }
-
-} else {
-    storeGameInLocalStorage = (game: Game) => {};
-    loadGameFromLocalStorage = (id: GameID) => null;
-}
-
-
 
 
 
@@ -103,8 +51,9 @@ export function HintButton(props: HintButtonProps) {
 }
 
 export interface NumbersGameProps{
-    game: Game
-    onWin: () => ReactNode
+    game: Game;
+    onWin: () => ReactNode;
+    store: (game: Game) => void;
     // onQuit: () => void
 }
 // Add Game Manager
@@ -119,6 +68,7 @@ export function NumbersGame(props: NumbersGameProps) {
     const [game, setGameUsingImmerProducer] = useImmer(props.game);
     const [hintsShown, setHintsShown] = useState(false);
 
+    const store = props.store;
 
     const setGameUsingImmerProducerAndStore = function(
         producer: (draft: Game) => void,
@@ -126,7 +76,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
         const produceAndStore = function(draft: Game) {
             producer(draft);
-            storeGameInLocalStorage(draft);
+            store(draft);
         }
         setGameUsingImmerProducer(produceAndStore);
     }

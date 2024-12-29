@@ -1,15 +1,16 @@
 import { useRef, useState } from 'react';
 
-import {Anchor, Center, Group, HoverCard, 
+import {Anchor, Center, Group, HoverCard, Button,
         Image, Text, Slider } from '@mantine/core';
 
 import {
   useQuery,
 } from '@tanstack/react-query'
 
-import { NumbersGame, loadGameFromLocalStorage } from './NumbersGame';
+import { NumbersGame } from './NumbersGame';
 
-import { randomPositiveInteger, GOAL_MIN, FORMS} from "../../gameCode/Core";
+import { randomPositiveInteger, GOAL_MIN } from "../../gameCode/Core";
+import { stringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
@@ -153,6 +154,58 @@ function randomFormAndIndex(
 
 
 
+function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorage"): boolean {
+  // https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#testing_for_availability
+  let storage;
+  try {
+    storage = window[type];
+    const x = "__storage_test__";
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (e) {
+    return Boolean(
+      e instanceof DOMException &&
+      e.name === "QuotaExceededError" &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage &&
+      storage.length !== 0
+    );
+  }
+}
+
+
+
+let storeGameInLocalStorage: (game: Game) => void;
+let loadGameFromLocalStorage: (id: GameID) => Game | null;
+
+if (storageAvailable()) {
+
+  storeGameInLocalStorage = function(game: Game) {
+      const key = stringifyGameID(game.id);
+      const val = stringifyGame(game);
+      localStorage.setItem(key, val);
+  }
+
+  loadGameFromLocalStorage = function(id: GameID) {
+      const key = stringifyGameID(id);
+
+      const val = localStorage.getItem(key);
+
+      if (val === null) {
+          return null;
+      }
+
+      return destringifyGame(val, id);
+
+  }
+
+} else {
+    storeGameInLocalStorage = (game: Game) => {};
+    loadGameFromLocalStorage = (id: GameID) => null;
+}
+
+
 const GRADE: number = 22;
 
 
@@ -164,6 +217,9 @@ export function onWin() {
             <Text size="lg">
               You are the winner!!
             </Text>
+                {/* <Group gap="xs" maw = "400" justify="right" mt="sm" mr="sm" >
+                  <Button size="md" onClick={}><b>X</b></Button>
+                </Group> */}
             </Center>
             <Group justify="center" mt="md">
               <HoverCard shadow="md" openDelay={2000}>
@@ -240,6 +296,7 @@ export function GameBoSelector(props: {grade: number}) {
         <NumbersGame 
           game = {game}
           onWin = {onWin}
+          store = {storeGameInLocalStorage}
         ></NumbersGame>
     )
   }
@@ -322,6 +379,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
           <NumbersGame
           game={game}
           onWin={onWin}
+          store={storeGameInLocalStorage}
           >
           </NumbersGame>
          </>
