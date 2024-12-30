@@ -1,7 +1,7 @@
 import { useRef, useState, ReactNode } from 'react';
 
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
-import {Anchor, Center, Group, HoverCard, Button,
+import {Anchor, Center, Group, HoverCard, Button, CloseButton,
         Image, Text, Slider, Modal, Stack, NumberInput, 
         SimpleGrid, UnstyledButton, Popover} from '@mantine/core';
 import { nanoid } from 'nanoid';
@@ -354,37 +354,32 @@ const storedGames = function*(): IterableIterator<Game> {
 
 export function NumberInputWithDigitsKeys() {
   const [opened, { open, close }] = useDisclosure(false);
-  let justFocussed: boolean = false;
-  const openIfNotJustFocussed = function() {
-      if (!justFocussed) {
-        justFocussed = true;
-        open();
-      }
-  }
-  const closeAndResetJustFocussed = function() {
-      close();
-      justFocussed = false;
-  }
   const { ref, focused } = useFocusWithin({onFocus: open});
   const buttons = Array(10).fill(undefined).map((x, i) => 
     <UnstyledButton key = {nanoid()}>{i}</UnstyledButton>
   );
-  return <Group justify="center" mt="md">
-           <Modal 
+  buttons.push(<UnstyledButton >←</UnstyledButton>);
+  buttons.push(<CloseButton  onClick={close}/>);
+  return <Group 
+            justify="center" 
+            mt="md"
+            ref={ref}>
+           <Popover  
               opened={opened} 
-              onClose={close} 
-              returnFocus={false}
-              trapFocus={false}
-              size="auto"
+              onClose={close}
            >
              
-             {/* <FocusTrap.InitialFocus /> */}
+           <Popover.Target> 
+             <NumberInput 
+                maw = {300}
+             ></NumberInput>
+           </Popover.Target>
+           <Popover.Dropdown>
              <SimpleGrid cols={3}>
                {buttons}
              </SimpleGrid>
-           </Modal>
-           <NumberInput maw = {300} ref={ref}/>
-           {/* <FocusTrap.InitialFocus /> */}
+           </Popover.Dropdown>
+           </Popover>
          </Group>
 
 }
