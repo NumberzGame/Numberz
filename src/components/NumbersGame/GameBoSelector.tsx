@@ -3,13 +3,14 @@ import { useRef, useState, ReactNode } from 'react';
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button, CloseButton,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, UnstyledButton, Popover} from '@mantine/core';
+        SimpleGrid, UnstyledButton, Popover } from '@mantine/core';
+import { NumberFormatValues } from 'react-number-format';
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query'
 
 import { NumbersGame } from './NumbersGame';
 
-import { randomPositiveInteger, GOAL_MIN } from "../../gameCode/Core";
+import { randomPositiveInteger, GOAL_MIN, GOAL_MAX } from "../../gameCode/Core";
 import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
@@ -355,11 +356,47 @@ const storedGames = function*(): IterableIterator<Game> {
 export function NumberInputWithDigitsKeys() {
   const [opened, { open, close }] = useDisclosure(false);
   const { ref, focused } = useFocusWithin({onFocus: open});
+  const [value, setValue] = useState<string | number>('');
+  
+
+  const makeDigitButtonClickHandler = function(i: number) {
+      const digitButtonClickHandler = function(): void{
+          if (typeof value === 'string') {
+              setValue(`${value}${i}`);  
+          } else if (typeof value === 'number') {
+              setValue(10*value+i);
+          } else {
+              throw new Error(`Value: ${value} must be a number or a string. `
+                              +`Got type: ${typeof value}`
+                            );
+          };
+      }
+      return digitButtonClickHandler
+  }
+
+  const deleteButtonClickHandler = function(): void {
+
+      if (typeof value === 'string') {
+          setValue(value.slice(0,-1));  
+      } else if (typeof value === 'number') {
+          setValue(Math.floor(value / 10) );
+      } else {
+          throw new Error(`Value: ${value} must be a number or a string. `
+                         +`Got type: ${typeof value}`
+                         );
+      };
+  }
+
   const buttons = Array(10).fill(undefined).map((x, i) => 
-    <UnstyledButton key = {nanoid()}>{i}</UnstyledButton>
+    <Button 
+       variant = "transparent"
+       key = {nanoid()}
+       onClick = {makeDigitButtonClickHandler(i)}>
+      {i}
+    </Button>
   );
-  buttons.push(<UnstyledButton >←</UnstyledButton>);
-  buttons.push(<CloseButton  onClick={close}/>);
+  buttons.push(<Button variant = "transparent" onClick={deleteButtonClickHandler}>←</Button>);
+  buttons.push(<Button variant = "transparent" onClick={close} aria-label="Close Popover">X</Button>);
   return <Group 
             justify="center" 
             mt="md"
@@ -367,10 +404,15 @@ export function NumberInputWithDigitsKeys() {
            <Popover  
               opened={opened} 
               onClose={close}
+              trapFocus={true}
            >
              
            <Popover.Target> 
              <NumberInput 
+                value={value}
+                onChange={setValue}
+                min={GOAL_MIN}
+                max={GOAL_MAX}
                 maw = {300}
              ></NumberInput>
            </Popover.Target>
