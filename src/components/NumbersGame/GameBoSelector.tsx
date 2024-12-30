@@ -1,8 +1,9 @@
 import { useRef, useState, ReactNode } from 'react';
 
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button,
-        Image, Text, Slider, Modal, Stack } from '@mantine/core';
+        Image, Text, Slider, Modal, Stack, NumberInput, 
+        SimpleGrid, UnstyledButton, FocusTrap} from '@mantine/core';
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query'
 
@@ -351,9 +352,46 @@ const storedGames = function*(): IterableIterator<Game> {
 }
 
 
+export function NumberInputWithDigitsKeys() {
+  const [opened, { open, close }] = useDisclosure(false);
+  let justFocussed: boolean = false;
+  const openIfNotJustFocussed = function() {
+      if (!justFocussed) {
+        justFocussed = true;
+        open();
+      }
+  }
+  const closeAndResetJustFocussed = function() {
+      close();
+      justFocussed = false;
+  }
+  const { ref, focused } = useFocusWithin({onFocus: open});
+  const buttons = Array(10).fill(undefined).map((x, i) => 
+    <UnstyledButton key = {nanoid()}>{i}</UnstyledButton>
+  );
+  return <Group justify="center" mt="md">
+           <Modal 
+              opened={opened} 
+              onClose={closeAndResetJustFocussed} 
+              returnFocus={false}
+              size="auto"
+           >
+             
+             <FocusTrap.InitialFocus />
+             <SimpleGrid cols={3}>
+               {buttons}
+             </SimpleGrid>
+           </Modal>
+           <NumberInput maw = {300} ref={ref}/>
+           {/* <FocusTrap.InitialFocus /> */}
+         </Group>
+
+}
+
+
 
 export function GameBoSelector(props: {grade: number}) {
-  const gradeObj = useRef(22); //props.grade);
+  const gradeObj = useRef(1); //props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfStorageAvailable);
@@ -376,7 +414,7 @@ export function GameBoSelector(props: {grade: number}) {
   if (currentGameID === null) {
       // Check if the null in currentGameID came from the initial/default 
       // factory passed to useState, which checked localstorage.
-      if (true || loadCurrentGameIDIfStorageAvailable() === null) {
+      if (loadCurrentGameIDIfStorageAvailable() === null) {
         setCurrentGameIDToPreviouslyUnseenGradedGameID();
           return <></>;
       }
@@ -387,7 +425,10 @@ export function GameBoSelector(props: {grade: number}) {
       }); 
       console.log(storedGameSummaries);
       const menu = <Stack>{storedGameSummaries}</Stack>;
-      return <>{menu}</>;
+      return <Stack>
+               <NumberInputWithDigitsKeys/>
+               {menu}
+             </Stack>;
       
 
   }
