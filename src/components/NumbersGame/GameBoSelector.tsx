@@ -3,7 +3,7 @@ import { useRef, useState, ReactNode } from 'react';
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, UnstyledButton, FocusTrap} from '@mantine/core';
+        SimpleGrid, UnstyledButton, Popover} from '@mantine/core';
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query'
 
@@ -372,12 +372,13 @@ export function NumberInputWithDigitsKeys() {
   return <Group justify="center" mt="md">
            <Modal 
               opened={opened} 
-              onClose={closeAndResetJustFocussed} 
+              onClose={close} 
               returnFocus={false}
+              trapFocus={false}
               size="auto"
            >
              
-             <FocusTrap.InitialFocus />
+             {/* <FocusTrap.InitialFocus /> */}
              <SimpleGrid cols={3}>
                {buttons}
              </SimpleGrid>
