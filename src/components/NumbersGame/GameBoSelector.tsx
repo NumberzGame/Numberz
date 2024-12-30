@@ -2,11 +2,9 @@ import { useRef, useState, ReactNode } from 'react';
 
 import { useDisclosure } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button,
-        Image, Text, Slider, Modal } from '@mantine/core';
-
-import {
-  useQuery,
-} from '@tanstack/react-query'
+        Image, Text, Slider, Modal, Stack } from '@mantine/core';
+import { nanoid } from 'nanoid';
+import { useQuery } from '@tanstack/react-query'
 
 import { NumbersGame } from './NumbersGame';
 
@@ -179,13 +177,17 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 
 let storeInLocalStorageIfAvailable: (k: string, v: string) => void;
 let getFromLocalStorageIfAvailable: (k: string) => string | null;
+let getKeyFromLocalStorageIfAvailable: (index: number) => string | null;
+const LOCAL_STORAGE_AVAILABLE = storageAvailable();
 
-if (storageAvailable()) {
+if (LOCAL_STORAGE_AVAILABLE) {
     storeInLocalStorageIfAvailable = (k: string, v: string) => localStorage.setItem(k, v);
     getFromLocalStorageIfAvailable = (k: string) => localStorage.getItem(k);
+    getKeyFromLocalStorageIfAvailable = (i: number) => localStorage.key(i);
 } else {
-    storeInLocalStorageIfAvailable = (k: string, v: string) => {};
+    storeInLocalStorageIfAvailable = (k: string, v: string) => undefined;
     getFromLocalStorageIfAvailable = (k: string) => null;
+    getKeyFromLocalStorageIfAvailable = (i: number) => null;
 }
 
 
@@ -195,13 +197,8 @@ const storeGame = function(game: Game) {
   storeInLocalStorageIfAvailable(key, val);
 }
 
-const loadStoredGame = function(id: GameID | null): Game | null {
-  if (id === null) {
-    return null;
-}
 
-  const key = stringifyGameID(id);
-
+const loadStoredGameFromKeyAndID = function(key: string, id: GameID): Game | null {
   const val = getFromLocalStorageIfAvailable(key);
 
   if (val === null) {
@@ -209,15 +206,32 @@ const loadStoredGame = function(id: GameID | null): Game | null {
   }
 
   return destringifyGame(val, id);
+
 }
 
-const loadCurrentGameIDIfAvailable = function(): GameID | null {
-    const result = getFromLocalStorageIfAvailable('currentGame');
-    if (result === null) {
-        return null;
-    }
 
-    return destringifyGameID(result);
+const loadStoredGame = function(id: GameID | null): Game | null {
+  if (id === null) {
+    return null;
+  }
+
+  const key = stringifyGameID(id);
+
+  return loadStoredGameFromKeyAndID(key, id);
+}
+
+const loadCurrentGameIDIfStorageAvailable = function(): GameID | null {
+  const stringifiedID = getFromLocalStorageIfAvailable('currentGame');
+  if (stringifiedID === null) {
+      return null;
+  }
+
+  return destringifyGameID(stringifiedID);
+}
+
+const saveGameIDIfStorageAvailable = function(id: GameID): void {
+    const stringifiedID = stringifyGameID(id);
+    storeInLocalStorageIfAvailable('currentGame', stringifiedID)
 }
 
 const GRADE: number = 22;
@@ -272,7 +286,7 @@ const onQuit = function() {}
 
 
 
-const newGradedGameID = function(minGrade: number, maxGrade: number): GradedGameID {
+const previouslyUnseenGradedGameID = function(minGrade: number, maxGrade: number): GradedGameID {
   let gameID: GradedGameID;
   do {      
       const grade = minGrade + randomPositiveInteger(1+maxGrade-minGrade);
@@ -312,44 +326,74 @@ function GradeSlider(props: gradeSliderProps) {
 }
 
 
+const storedGames = function*(): IterableIterator<Game> {
+    if (!LOCAL_STORAGE_AVAILABLE) {
+        return;
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = getKeyFromLocalStorageIfAvailable(i);
+        if (key === null) {
+            return;
+        }
+        let gameID: GameID;
+        try {
+            gameID = destringifyGameID(key);
+        } catch (error) {
+            continue;
+        }
+        const game = loadStoredGameFromKeyAndID(key, gameID);
+        if (game === null) {
+            continue;
+        }
+        yield game;
+    }
+
+}
+
+
+
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(22); //props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
-  const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfAvailable);
+  const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfStorageAvailable);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
       winScreenHandlers.open()
       setCurrentGameID(null);
   }
-
+  // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = val;// as number;
   }
   
-  const setCurrentGameIDToNewGradedGameID = function() {
-    setCurrentGameID(newGradedGameID(gradeObj.current, gradeObj.current));
+  const setCurrentGameIDToPreviouslyUnseenGradedGameID = function() {
+    const gameID = previouslyUnseenGradedGameID(gradeObj.current, gradeObj.current)
+    setCurrentGameID(gameID);
   }
-  const menu = <></>;
+
   if (currentGameID === null) {
-      if (true) { //(getFromLocalStorageIfAvailable('game-history') === null) {
-          setCurrentGameIDToNewGradedGameID();
+      // Check if the null in currentGameID came from the initial/default 
+      // factory passed to useState, which checked localstorage.
+      if (true || loadCurrentGameIDIfStorageAvailable() === null) {
+        setCurrentGameIDToPreviouslyUnseenGradedGameID();
           return <></>;
-      } else {
-          return <>{menu}</>;
       }
-      // return <Menu></Menu>;
+
+      const storedGameSummaries = Array.from(storedGames()).map((game) => {
+          return <Text
+                  key={nanoid()}>{`${game.seedsAndDecoys()}.  Goal: ${game.id.goal}`}</Text>
+      }); 
+      console.log(storedGameSummaries);
+      const menu = <Stack>{storedGameSummaries}</Stack>;
+      return <>{menu}</>;
       
-      // gameComponent = (
-      //   <NewGradedGameWithNewID 
-      //   gameID = {gameID}
-      //   onWin = {onWin}
-      //   store = {storeGame}
-      //   onQuit = {onQuit}
-      //   ></NewGradedGameWithNewID>
-      // )
-  } 
+
+  }
+
+  // Write stringified gameID to localstorage (if available) under the key: "currentGame".
+  saveGameIDIfStorageAvailable(currentGameID)
 
   let game = loadStoredGame(currentGameID);
   let gameComponent: ReactNode;
@@ -385,6 +429,10 @@ export function GameBoSelector(props: {grade: number}) {
                           +` deleted from it, immediately after the gameID was retrieved from localstorage? `
           );
       }
+
+      // write stringifed game to local storage under its (stringified) game ID
+      storeGame(game);
+
       gameComponent = (
           <NumbersGame 
             game = {game}
@@ -394,6 +442,8 @@ export function GameBoSelector(props: {grade: number}) {
           ></NumbersGame>
       )
   }
+
+
   return <>
     <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
     {gameComponent}
@@ -434,8 +484,8 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
     queryKey: [ grade, goal, form ],
     queryFn: async () => {
       const response = await fetch(
-        `./all_grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
-        // `./grade_22_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        // `./all_grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        `./grade_22_goals_forms_solutions/${grade}/${goal}/${fileName}`,
       );
       if (!response.ok){
           throw new Error(`Something went wrong fetching grade: ${grade}, goal: ${goal}, form: ${form}`);
@@ -460,7 +510,7 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
 
   const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
   const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
-
+  props.store(game);
   // Only break if the game has not been played before.
   // (previously played games are stored in local storage).
   // const prevGame = loadStoredGame(game.id);
@@ -476,8 +526,8 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
           <NumbersGame
           game={game}
           onWin={props.onWin}
-          store={storeGame}
-          onQuit = {onQuit}
+          store={props.store}
+          onQuit = {props.onQuit}
           >
           </NumbersGame>
          </>

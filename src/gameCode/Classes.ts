@@ -437,7 +437,7 @@ export class Game{
                 }
             }
 
-            console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
+            // console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
