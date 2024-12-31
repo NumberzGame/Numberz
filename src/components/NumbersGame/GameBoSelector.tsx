@@ -480,7 +480,7 @@ export function GameBoSelector(props: {grade: number}) {
               ]
   )); 
   // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
-  const [historicalGameStr, setHistoricalGameStr] = useState<string>(Object.keys(historicalGames).at(-1)?.[0] ?? "");
+  const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(Object.keys(historicalGames).at(-1)?.[0] ?? null);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
@@ -532,7 +532,6 @@ export function GameBoSelector(props: {grade: number}) {
                   {seed}
                  </Button>
       });
-      const menu = <Stack>{historicalGames}</Stack>;
       return <Group justify="center" mt="md">
               <Stack justify="flex-start" mt="md">
                   <Group justify="space-between">
@@ -606,10 +605,15 @@ export function GameBoSelector(props: {grade: number}) {
                   <Group justify="space-between">
                     <Text>Previously played games. </Text>
                     <Button 
-                      onClick={() => setCurrentGameID(historicalGames?.[historicalGameStr].id)}
+                      onClick={() => {
+                        if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
+                            setCurrentGameID(historicalGames[historicalGameStr])
+                        };
+                      }}
                     >
                     New random game
                     </Button>
+                  </Group>
                   <Select
                     label="With native scroll"
                     placeholder="Pick value"
