@@ -455,6 +455,17 @@ const tooManyOfThisSeedUsed = function(seedIndex: number, seedIndices: number[])
     return countXinArr(seedIndex, seedIndices) > maxNumSeedsAllowed;
 }
 
+const formatterOptions: Intl.DateTimeFormatOptions = {
+  timeStyle: "medium",
+  dateStyle: "medium",
+};
+const formatter = new Intl.DateTimeFormat(navigator.language, formatterOptions);
+const prettifyGame = function(game: Game): string{
+    return (`${formatter.format(new Date(game.timestamp_ms))}.  `
+           +`Numbers: ${game.seedsAndDecoys().map((x)=>x.toString()).join(', ')}.  `
+           +`Goal: ${game.id.goal}. `
+           )
+}
 
 export function GameBoSelector(props: {grade: number}) {
   const gradeObj = useRef(1); //props.grade);
@@ -463,8 +474,13 @@ export function GameBoSelector(props: {grade: number}) {
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfStorageAvailable);
   const [newCustomGameID, setNewCustomGameIDWithImmer] = useImmer<CustomGameID>(new CustomGameID());
   
+  const historicalGames = Object.fromEntries(Array.from(storedGames()).map(
+    (game) => [prettifyGame(game),
+               game.id
+              ]
+  )); 
   // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
-  const [historicalGameID, setHistoricalGameID] = useState<GameID | null>(currentGameID);
+  const [historicalGameStr, setHistoricalGameStr] = useState<string>(Object.keys(historicalGames).at(-1)?.[0] ?? "");
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
@@ -488,17 +504,7 @@ export function GameBoSelector(props: {grade: number}) {
         setCurrentGameIDToPreviouslyUnseenGradedGameID();
           return <></>;
       }
-      const options: Intl.DateTimeFormatOptions = {
-        timeStyle: "medium",
-        dateStyle: "medium",
-      };
-      const formatter = new Intl.DateTimeFormat(navigator.language, options);
-      const storedGameSummaries = Array.from(storedGames()).map(
-              (game) => (`${formatter.format(new Date(game.timestamp_ms))}.  `
-                        +`Numbers: ${game.seedsAndDecoys().map((x)=>x.toString()).join(', ')}.  `
-                        +`Goal: ${game.id.goal}. `
-                        )
-      ); 
+
       const makeSeedButtonClickHandler = function(seedIndex: number): ()=>void {
           const seedButtonClickHandler = function(): void {
               setNewCustomGameIDWithImmer((draft: CustomGameID) => {
@@ -526,9 +532,9 @@ export function GameBoSelector(props: {grade: number}) {
                   {seed}
                  </Button>
       });
-      const menu = <Stack>{storedGameSummaries}</Stack>;
+      const menu = <Stack>{historicalGames}</Stack>;
       return <Group justify="center" mt="md">
-              <Stack justify="flex-start" mt="md" mah={800}>
+              <Stack justify="flex-start" mt="md">
                   <Group justify="space-between">
                     <Text>Chose difficulty. </Text>
                     <Button 
@@ -597,11 +603,19 @@ export function GameBoSelector(props: {grade: number}) {
                   </Group>
                 
                   <Divider my="md" />
-                  <Text>Previously played games. </Text>
+                  <Group justify="space-between">
+                    <Text>Previously played games. </Text>
+                    <Button 
+                      onClick={() => setCurrentGameID(historicalGames?.[historicalGameStr].id)}
+                    >
+                    New random game
+                    </Button>
                   <Select
                     label="With native scroll"
                     placeholder="Pick value"
-                    data={storedGameSummaries}
+                    data={Object.keys(historicalGames)}
+                    value={historicalGameStr}
+                    onChange={setHistoricalGameStr}
                     withScrollArea={false}
                     styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
                     mt="xs"
