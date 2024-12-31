@@ -2,10 +2,11 @@ import { useRef, useState, ReactNode } from 'react';
 import { useImmer } from "use-immer";
 
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
-import {Anchor, Center, Group, HoverCard, Button, CloseButton,
+import {Anchor, Center, Group, HoverCard, Button, Select,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, TagsInput, Popover, } from '@mantine/core';
-import { NumberFormatValues } from 'react-number-format';
+        SimpleGrid, TagsInput, Popover, Divider, } from '@mantine/core';
+
+
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query'
 
@@ -445,8 +446,13 @@ const countXinArr = function<T>(X: T, Arr: T[]): number {
 
 
 const allOfThisSeedUsed = function(seedIndex: number, seedIndices: number[]): boolean {
+  const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
+  return countXinArr(seedIndex, seedIndices) >= maxNumSeedsAllowed;
+}
+
+const tooManyOfThisSeedUsed = function(seedIndex: number, seedIndices: number[]): boolean {
     const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
-    return countXinArr(seedIndex, seedIndices) >= maxNumSeedsAllowed;
+    return countXinArr(seedIndex, seedIndices) > maxNumSeedsAllowed;
 }
 
 
@@ -482,11 +488,17 @@ export function GameBoSelector(props: {grade: number}) {
         setCurrentGameIDToPreviouslyUnseenGradedGameID();
           return <></>;
       }
-
-      const storedGameSummaries = Array.from(storedGames()).map((game) => {
-          return <Text
-                  key={nanoid()}>{`${game.seedsAndDecoys()}.  Goal: ${game.id.goal}`}</Text>
-      }); 
+      const options: Intl.DateTimeFormatOptions = {
+        timeStyle: "medium",
+        dateStyle: "medium",
+      };
+      const formatter = new Intl.DateTimeFormat(navigator.language, options);
+      const storedGameSummaries = Array.from(storedGames()).map(
+              (game) => (`${formatter.format(new Date(game.timestamp_ms))}.  `
+                        +`Numbers: ${game.seedsAndDecoys().map((x)=>x.toString()).join(', ')}.  `
+                        +`Goal: ${game.id.goal}. `
+                        )
+      ); 
       const makeSeedButtonClickHandler = function(seedIndex: number): ()=>void {
           const seedButtonClickHandler = function(): void {
               setNewCustomGameIDWithImmer((draft: CustomGameID) => {
@@ -516,14 +528,32 @@ export function GameBoSelector(props: {grade: number}) {
       });
       const menu = <Stack>{storedGameSummaries}</Stack>;
       return <Group justify="center" mt="md">
-              <Stack justify="center" mt="md">
+              <Stack justify="flex-start" mt="md" mah={800}>
+                  <Group justify="space-between">
+                    <Text>Chose difficulty. </Text>
+                    <Button 
+                      onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
+                    >
+                    New random game
+                    </Button>
+                  </Group>
                   <GradeSlider
                     initialValue={gradeObj.current}
                     onChangeEnd={gradeSliderHandler}
                   >  
                   </GradeSlider>
 
-                  <Group mt="lg">
+                  <Divider my="md" />
+
+                  <Group justify="space-between">
+                    <Text>Chose starting numbers and goal. </Text>
+                    <Button 
+                      onClick={() => setCurrentGameID(newCustomGameID)}
+                    >
+                    New custom game
+                    </Button>
+                  </Group>
+                  <Group mt="xs">
                     <Stack
                       h={500}
                       align="center"
@@ -534,7 +564,12 @@ export function GameBoSelector(props: {grade: number}) {
                         label="Starting numbers."
                         value={newCustomGameID.seedIndices.map((i) => SEEDS[i].toString())}
                         onChange={(value) => setNewCustomGameIDWithImmer(
-                                    draft => {draft.seedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)))}
+                                    draft => {
+                                        const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)));
+                                        if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))){
+                                            draft.seedIndices = newSeedIndices;
+                                        }
+                                    }
                                  )}
                         maxTags={MAX_SEEDS}
                         maw={280}
@@ -560,7 +595,17 @@ export function GameBoSelector(props: {grade: number}) {
                       </NumberInputWithDigitsKeys>
                     </Stack>
                   </Group>
-                  {menu}
+                
+                  <Divider my="md" />
+                  <Text>Previously played games. </Text>
+                  <Select
+                    label="With native scroll"
+                    placeholder="Pick value"
+                    data={storedGameSummaries}
+                    withScrollArea={false}
+                    styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
+                    mt="xs"
+                  />
               </Stack>
              </Group>
       
