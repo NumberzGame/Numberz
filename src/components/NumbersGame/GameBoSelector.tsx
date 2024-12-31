@@ -311,22 +311,25 @@ interface gradeSliderProps{
 
 function GradeSlider(props: gradeSliderProps) {
   const [grade, setGrade] = useState(props.initialValue);
-  return <Slider
-    value = {grade}
-    min={1}
-    max = {246}
-    marks={[
-      {value: 1, label: '1'},
-    //   // { value: 20, label: '20%' },
-    //   // { value: 50, label: '50%' },
-    //   // { value: 80, label: '80%' },
-      {value: 246, label: '246'},
-    ]}
-    // mt = {15}
-    maw={500}
-    onChange={setGrade}
-    onChangeEnd = {props.onChangeEnd}
-  />
+  return <>
+          <Text size="sm">Puzzle difficulty.</Text>
+          <Slider
+            value = {grade}
+            min={1}
+            max = {246}
+            marks={[
+              {value: 1, label: '1'},
+            //   // { value: 20, label: '20%' },
+            //   // { value: 50, label: '50%' },
+            //   // { value: 80, label: '80%' },
+              {value: 246, label: '246'},
+            ]}
+            // mt = {15}
+            maw={500}
+            onChange={setGrade}
+            onChangeEnd = {props.onChangeEnd}
+          />
+  </>
 }
 
 
