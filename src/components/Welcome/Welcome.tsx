@@ -10,7 +10,7 @@ export function Welcome() {
         <Text inherit variant="gradient" component="span" gradient={{ from: 'rebeccapurple', to: 'orange' }} >
           Numberz.  
         </Text>
-          <Text  component="span" size="lg" mb={4.5}>A numbers game.</Text>
+          <Text component="span" size="lg" mb={4.5}>A numbers game.</Text>
         </Group>
       </Title>
       {/* <Group justify="center">

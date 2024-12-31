@@ -4,7 +4,7 @@ import {immerable} from "immer"
 import { difficultyOfSum, difficultyOfProduct,
          difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
 
-import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP } from './Core';
+import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP, GOAL_MIN } from './Core';
 import { MAX_SEEDS, MAX_OPS, OP_RESULT, Operand, randomPositiveInteger } from "./Core";
 import { solutions, EXPR_PATTERN } from './solverDFS';
 import { solutionAsOperand } from "./solutionEvaluator";
@@ -27,14 +27,12 @@ const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, 
 export class GameIDBase{
     
     [immerable] = true;
-    readonly goal: number;
     form: string | null;
 
-    constructor(goal: number) {
+    constructor() {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
-        this.goal = goal;
         this.form = null;
     }
 
@@ -43,11 +41,14 @@ export class GameIDBase{
 
 export class CustomGameID extends GameIDBase{
     [immerable] = true;
-    readonly seedIndices: number[];
+    seedIndices: number[];
     static readonly GAME_ID_TYPE_CODE = "C";
+    goal: number;
+    
 
-    constructor(goal: number, seedIndices: number[]) {
-        super(goal);
+    constructor(goal: number = GOAL_MIN, seedIndices: number[] = []) {
+        super();
+        this.goal = goal;
         this.seedIndices = seedIndices
     }
 }
@@ -60,9 +61,11 @@ export class GradedGameID extends GameIDBase{
     readonly index: number;
     static readonly GAME_ID_TYPE_CODE = "G";
     readonly form: string;
+    readonly goal: number;
 
     constructor(grade: number, goal: number, form: string, index: number) {
-        super(goal);
+        super();
+        this.goal = goal;
         this.grade = grade;
         this.form = form;
         this.index = index;

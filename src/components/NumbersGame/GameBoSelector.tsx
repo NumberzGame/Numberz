@@ -1,16 +1,17 @@
 import { useRef, useState, ReactNode } from 'react';
+import { useImmer } from "use-immer";
 
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button, CloseButton,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, UnstyledButton, Popover } from '@mantine/core';
+        SimpleGrid, TagsInput, Popover, } from '@mantine/core';
 import { NumberFormatValues } from 'react-number-format';
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query'
 
 import { NumbersGame } from './NumbersGame';
 
-import { randomPositiveInteger, GOAL_MIN, GOAL_MAX } from "../../gameCode/Core";
+import { randomPositiveInteger, SEEDS, ALL_SEEDS, GOAL_MIN, GOAL_MAX, MAX_SEEDS } from "../../gameCode/Core";
 import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
 import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
@@ -322,6 +323,7 @@ function GradeSlider(props: gradeSliderProps) {
       {value: 246, label: '246'},
     ]}
     // mt = {15}
+    maw={500}
     onChange={setGrade}
     onChangeEnd = {props.onChangeEnd}
   />
@@ -353,11 +355,22 @@ const storedGames = function*(): IterableIterator<Game> {
 }
 
 
-export function NumberInputWithDigitsKeys() {
+interface NumberInputWithDigitsKeysProps{
+    value: number;
+    onSet: (value: number) => void;
+}
+
+export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const { ref, focused } = useFocusWithin({onFocus: open});
-  const [value, setValue] = useState<string | number>('');
+  const [value, setValueThisState] = useState<string | number>(props.value);
   
+  const setValue = function(value: string | number): void {
+      setValueThisState(value);
+      if (typeof value === 'number') {
+          props.onSet(value);
+      }
+  }
 
   const makeDigitButtonClickHandler = function(i: number) {
       const digitButtonClickHandler = function(): void{
@@ -395,11 +408,14 @@ export function NumberInputWithDigitsKeys() {
       {i}
     </Button>
   );
-  buttons.push(<Button variant = "transparent" onClick={deleteButtonClickHandler}>←</Button>);
-  buttons.push(<Button variant = "transparent" onClick={close} aria-label="Close Popover">X</Button>);
-  return <Group 
-            justify="center" 
-            mt="md"
+  buttons.push(<Button variant = "transparent" onClick={deleteButtonClickHandler} key = {nanoid()}>←</Button>);
+  buttons.push(<Button variant = "transparent" onClick={close} aria-label="Close Popover" key = {nanoid()}>X</Button>);
+  return <Stack 
+            h={300}
+            bg="var(--mantine-color-body)"
+            align="center"
+            justify="flex-start"
+            gap="md"
             ref={ref}>
            <Popover  
               opened={opened} 
@@ -409,6 +425,7 @@ export function NumberInputWithDigitsKeys() {
              
            <Popover.Target> 
              <NumberInput 
+                label="Goal: "
                 value={value}
                 onChange={setValue}
                 min={GOAL_MIN}
@@ -422,10 +439,20 @@ export function NumberInputWithDigitsKeys() {
              </SimpleGrid>
            </Popover.Dropdown>
            </Popover>
-         </Group>
+         </Stack>
 
 }
 
+
+const countXinArr = function<T>(X: T, Arr: T[]): number {
+    return Arr.filter((y) => y === X).length;          
+}
+
+
+const allOfThisSeedUsed = function(seedIndex: number, seedIndices: number[]): boolean {
+    const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
+    return countXinArr(seedIndex, seedIndices) >= maxNumSeedsAllowed;
+}
 
 
 export function GameBoSelector(props: {grade: number}) {
@@ -433,6 +460,10 @@ export function GameBoSelector(props: {grade: number}) {
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfStorageAvailable);
+  const [newCustomGameID, setNewCustomGameIDWithImmer] = useImmer<CustomGameID>(new CustomGameID());
+  
+  // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
+  const [historicalGameID, setHistoricalGameID] = useState<GameID | null>(currentGameID);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
@@ -461,14 +492,58 @@ export function GameBoSelector(props: {grade: number}) {
           return <Text
                   key={nanoid()}>{`${game.seedsAndDecoys()}.  Goal: ${game.id.goal}`}</Text>
       }); 
-      console.log(storedGameSummaries);
+      const makeSeedButtonClickHandler = function(seedIndex: number): ()=>void {
+          const seedButtonClickHandler = function(): void {
+              setNewCustomGameIDWithImmer((draft: CustomGameID) => {
+                  if (!allOfThisSeedUsed(seedIndex, draft.seedIndices) && draft.seedIndices.length < MAX_SEEDS) {
+                      draft.seedIndices.push(seedIndex);
+                  } else if (draft.seedIndices.includes(seedIndex)) {
+                      // Delete seedIndex from draft.seedIndices
+                      draft.seedIndices.splice(draft.seedIndices.lastIndexOf(seedIndex), 1)
+                  }
+              });
+          }
+          return seedButtonClickHandler;
+      }
+      const seedButtons = SEEDS.map((seed, seedIndex) => {
+          const clickHandler = makeSeedButtonClickHandler(seedIndex);
+          const colour = newCustomGameID.seedIndices.includes(seedIndex) ? "pink" : "blue";
+          return <Button 
+                  variant="filled" 
+                  size="compact-sm" 
+                  radius="xl"
+                  onClick={clickHandler}                           
+                  color={colour} 
+                  key = {nanoid()}
+                 >
+                  {seed}
+                 </Button>
+      });
       const menu = <Stack>{storedGameSummaries}</Stack>;
-      return <Stack>
-               <NumberInputWithDigitsKeys/>
-               {menu}
-             </Stack>;
-      
+      return <Group justify="center" mt="md">
+              <Stack justify="center" mt="md">
+                  <GradeSlider
+                    initialValue={gradeObj.current}
+                    onChangeEnd={gradeSliderHandler}
+                  >  
+                  </GradeSlider>
 
+                  <Group mt="lg">
+                    <SimpleGrid cols = {5}>
+                      {seedButtons}
+                    </SimpleGrid>
+                    <NumberInputWithDigitsKeys 
+                      value = {newCustomGameID.goal}
+                      onSet={(value) => setNewCustomGameIDWithImmer(
+                                draft => {draft.goal = value}
+                            )}
+                    >
+                    </NumberInputWithDigitsKeys>
+                  </Group>
+                  {menu}
+              </Stack>
+             </Group>
+      
   }
 
   // Write stringified gameID to localstorage (if available) under the key: "currentGame".
@@ -479,13 +554,12 @@ export function GameBoSelector(props: {grade: number}) {
   if (game === null && currentGameID instanceof GradedGameID) {
       gameComponent = (
         <NewGradedGameWithNewID 
-        gameID = {currentGameID}
-        onWin = {onWin}
-        store = {storeGame}
-        onQuit = {onQuit}
+          gameID = {currentGameID}
+          onWin = {onWin}
+          store = {storeGame}
+          onQuit = {onQuit}
         ></NewGradedGameWithNewID>
       )
-
   } else {
       if (currentGameID instanceof CustomGameID) {
       
@@ -527,11 +601,6 @@ export function GameBoSelector(props: {grade: number}) {
     <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
     {gameComponent}
     
-    <GradeSlider
-      initialValue={gradeObj.current}
-      onChangeEnd={gradeSliderHandler}
-    >  
-    </GradeSlider>
   </>
 }
 
@@ -599,9 +668,10 @@ function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
   // }
   //   break;
   // }
+  // 
+  // <Text>Form: {gameID.form}</Text>
     
   return <>
-          <Text>Form: {gameID.form}</Text>
           <NumbersGame
           game={game}
           onWin={props.onWin}
