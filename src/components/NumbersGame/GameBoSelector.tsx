@@ -181,7 +181,7 @@ function storageAvailable(type: "localStorage" | "sessionStorage" = "localStorag
 let storeInLocalStorageIfAvailable: (k: string, v: string) => void;
 let getFromLocalStorageIfAvailable: (k: string) => string | null;
 let getKeyFromLocalStorageIfAvailable: (index: number) => string | null;
-const LOCAL_STORAGE_AVAILABLE = storageAvailable();
+const LOCAL_STORAGE_AVAILABLE = storageAvailable("localStorage");
 
 if (LOCAL_STORAGE_AVAILABLE) {
     storeInLocalStorageIfAvailable = (k: string, v: string) => localStorage.setItem(k, v);
@@ -410,19 +410,11 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
   );
   buttons.push(<Button variant = "transparent" onClick={deleteButtonClickHandler} key = {nanoid()}>←</Button>);
   buttons.push(<Button variant = "transparent" onClick={close} aria-label="Close Popover" key = {nanoid()}>X</Button>);
-  return <Stack 
-            h={300}
-            bg="var(--mantine-color-body)"
-            align="center"
-            justify="flex-start"
-            gap="md"
-            ref={ref}>
-           <Popover  
+  return <Popover  
               opened={opened} 
               onClose={close}
               trapFocus={true}
            >
-             
            <Popover.Target> 
              <NumberInput 
                 label="Goal: "
@@ -431,6 +423,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
                 min={GOAL_MIN}
                 max={GOAL_MAX}
                 maw = {300}
+                ref={ref}
              ></NumberInput>
            </Popover.Target>
            <Popover.Dropdown>
@@ -439,7 +432,6 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
              </SimpleGrid>
            </Popover.Dropdown>
            </Popover>
-         </Stack>
 
 }
 
@@ -529,16 +521,41 @@ export function GameBoSelector(props: {grade: number}) {
                   </GradeSlider>
 
                   <Group mt="lg">
-                    <SimpleGrid cols = {5}>
-                      {seedButtons}
-                    </SimpleGrid>
-                    <NumberInputWithDigitsKeys 
-                      value = {newCustomGameID.goal}
-                      onSet={(value) => setNewCustomGameIDWithImmer(
-                                draft => {draft.goal = value}
-                            )}
+                    <Stack
+                      h={500}
+                      align="center"
+                      justify="flex-start"
+                      gap="md"
                     >
-                    </NumberInputWithDigitsKeys>
+                      <TagsInput 
+                        label="Starting numbers."
+                        value={newCustomGameID.seedIndices.map((i) => SEEDS[i].toString())}
+                        onChange={(value) => setNewCustomGameIDWithImmer(
+                                    draft => {draft.seedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)))}
+                                 )}
+                        maxTags={MAX_SEEDS}
+                        maw={280}
+                        w={280}
+                        mah={200}
+                      />
+                      <SimpleGrid cols = {5}>
+                        {seedButtons}
+                      </SimpleGrid>
+                    </Stack>
+                    <Stack
+                      h={500}
+                      align="center"
+                      justify="flex-start"
+                      gap="md"
+                    >
+                      <NumberInputWithDigitsKeys 
+                        value = {newCustomGameID.goal}
+                        onSet={(value) => setNewCustomGameIDWithImmer(
+                                  draft => {draft.goal = value}
+                              )}
+                      >
+                      </NumberInputWithDigitsKeys>
+                    </Stack>
                   </Group>
                   {menu}
               </Stack>
