@@ -463,7 +463,9 @@ const formatterOptions: Intl.DateTimeFormatOptions = {
 };
 const formatter = new Intl.DateTimeFormat(navigator.language, formatterOptions);
 const prettifyGame = function(game: Game): string{
-    return (`${formatter.format(new Date(game.timestamp_ms))}.  `
+    const id: GradedGameID | CustomGameID = game.id;
+    const description = id instanceof GradedGameID ? `Grade: ${id.grade}` : "Custom";
+    return (`${formatter.format(new Date(game.timestamp_ms))}. ${description}. `
            +`Numbers: ${game.seedsAndDecoys().map((x)=>x.toString()).join(', ')}.  `
            +`Goal: ${game.id.goal}. `
            )
@@ -478,11 +480,11 @@ export function GameSelector(props: {grade: number}) {
   
   const historicalGames = Object.fromEntries(Array.from(storedGames()).map(
     (game) => [prettifyGame(game),
-               game.id
+               game
               ]
   )); 
   // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
-  const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(Object.keys(historicalGames).at(-1)?.[0] ?? null);
+  const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(Object.keys(historicalGames).at(-1) ?? null);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
@@ -564,7 +566,16 @@ export function GameSelector(props: {grade: number}) {
                   <Group justify="space-between" mt="lg">
                     <Text>Choose starting numbers and goal. </Text>
                     <Button 
-                      onClick={() => setCurrentGameID(newCustomGameID)}
+                      onClick={() => {
+                        if (newCustomGameID.seedIndices.length === 0) {
+                          return;
+                        }
+                        setCurrentGameID(newCustomGameID);
+                        // Immer producers can also create new states 
+                        // if drafts are unmodified.
+                        // https://immerjs.github.io/immer/return
+                        setNewCustomGameIDWithImmer((draft) => new CustomGameID());
+                      }}
                     >
                     New custom game
                     </Button>
@@ -620,7 +631,7 @@ export function GameSelector(props: {grade: number}) {
                     <Button 
                       onClick={() => {
                         if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
-                            setCurrentGameID(historicalGames[historicalGameStr])
+                            setCurrentGameID(historicalGames[historicalGameStr].id)
                         };
                       }}
                     >
@@ -630,7 +641,7 @@ export function GameSelector(props: {grade: number}) {
                   <Select
                     label="Game history."
                     placeholder="Select game"
-                    data={Object.keys(historicalGames)}
+                    data={Object.keys(historicalGames).sort((a,b) =>historicalGames[b].timestamp_ms -historicalGames[a].timestamp_ms)}
                     value={historicalGameStr}
                     onChange={setHistoricalGameStr}
                     withScrollArea={false}
