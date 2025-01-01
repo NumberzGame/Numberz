@@ -20,11 +20,6 @@ const overrideSymbolText = function(s: string): string {
   return s;
 }
 
-const STARTING_DIFFICULTY = 25;
-
-
-
-
 
 
 const GOAL_GRADIENT = { from: 'lime', to: 'yellow', deg: 90 };

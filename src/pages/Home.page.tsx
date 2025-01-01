@@ -1,7 +1,7 @@
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
 import { NumbersGame } from '../components/NumbersGame/NumbersGame';
-import { GameBoSelector } from '../components/NumbersGame/GameBoSelector';
+import { GameSelector } from '../components/NumbersGame/GameSelector';
 // import { theme } from '../theme';
 
 import { GameID, GradedGameID } from '../gameCode/Classes';
@@ -26,7 +26,7 @@ export function HomePage() {
   return <>
     <ColorSchemeToggle  />
     <Welcome />
-    <GameBoSelector grade = {INITIAL_GRADE}></GameBoSelector>
+    <GameSelector grade = {INITIAL_GRADE}></GameSelector>
     {/* <NumbersGame gameID={gameID}></NumbersGame> */}
   </>
 

@@ -467,7 +467,7 @@ const prettifyGame = function(game: Game): string{
            )
 }
 
-export function GameBoSelector(props: {grade: number}) {
+export function GameSelector(props: {grade: number}) {
   const gradeObj = useRef(1); //props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
@@ -611,7 +611,7 @@ export function GameBoSelector(props: {grade: number}) {
                         };
                       }}
                     >
-                    New random game
+                    Resume old game
                     </Button>
                   </Group>
                   <Select
