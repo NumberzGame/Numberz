@@ -361,6 +361,9 @@ const storedGames = function*(): IterableIterator<Game> {
 }
 
 
+
+
+
 interface NumberInputWithDigitsKeysProps{
     value: number;
     onSet: (value: number) => void;
@@ -648,6 +651,25 @@ export function GameSelector(props: {grade: number}) {
                     styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
                     mt="xs"
                   />
+                  <Button
+                    mt="md"
+                    component="a"
+                    href={`data:text/json;charset=utf-8,${
+                            encodeURIComponent(
+                                JSON.stringify(
+                                    Object.values(historicalGames).sort(
+                                          (a, b) => b.timestamp_ms - a.timestamp_ms
+                                          ),
+                                    null,
+                                    4
+                                    )
+                                )
+                          }`
+                    }
+                    download="filename.json"
+                    >
+                  {`Download Json`}
+                  </Button>
                 </div>
               </Stack>
              </Group>
