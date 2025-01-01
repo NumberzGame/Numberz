@@ -4,11 +4,13 @@ import { useImmer } from "use-immer";
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button, Select,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, TagsInput, Popover, Divider, } from '@mantine/core';
+        SimpleGrid, TagsInput, Popover, Container } from '@mantine/core';
 
 
 import { nanoid } from 'nanoid';
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
+
+import classes from '../../styles.css';
 
 import { NumbersGame } from './NumbersGame';
 
@@ -532,10 +534,11 @@ export function GameSelector(props: {grade: number}) {
                   {seed}
                  </Button>
       });
-      return <Group justify="center" mt="md">
-              <Stack justify="flex-start" mt="md">
+      return <Group justify="center" mt="xl">
+              <Stack justify="flex-start">
+                <div>
                   <Group justify="space-between">
-                    <Text>Chose difficulty. </Text>
+                    <Text>Choose difficulty. </Text>
                     <Button 
                       onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
                     >
@@ -547,11 +550,10 @@ export function GameSelector(props: {grade: number}) {
                     onChangeEnd={gradeSliderHandler}
                   >  
                   </GradeSlider>
-
-                  <Divider my="md" />
-
-                  <Group justify="space-between">
-                    <Text>Chose starting numbers and goal. </Text>
+                </div>
+                <div>
+                  <Group justify="space-between" mt="lg">
+                    <Text>Choose starting numbers and goal. </Text>
                     <Button 
                       onClick={() => setCurrentGameID(newCustomGameID)}
                     >
@@ -560,13 +562,14 @@ export function GameSelector(props: {grade: number}) {
                   </Group>
                   <Group mt="xs">
                     <Stack
-                      h={500}
+                      h={200}
                       align="center"
                       justify="flex-start"
                       gap="md"
                     >
                       <TagsInput 
                         label="Starting numbers."
+                        placeholder="Enter numbers."
                         value={newCustomGameID.seedIndices.map((i) => SEEDS[i].toString())}
                         onChange={(value) => setNewCustomGameIDWithImmer(
                                     draft => {
@@ -586,7 +589,7 @@ export function GameSelector(props: {grade: number}) {
                       </SimpleGrid>
                     </Stack>
                     <Stack
-                      h={500}
+                      h={200}
                       align="center"
                       justify="flex-start"
                       gap="md"
@@ -601,9 +604,10 @@ export function GameSelector(props: {grade: number}) {
                     </Stack>
                   </Group>
                 
-                  <Divider my="md" />
+                </div>
+                <div>
                   <Group justify="space-between">
-                    <Text>Previously played games. </Text>
+                    <Text>Choose previously played game. </Text>
                     <Button 
                       onClick={() => {
                         if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
@@ -615,8 +619,8 @@ export function GameSelector(props: {grade: number}) {
                     </Button>
                   </Group>
                   <Select
-                    label="With native scroll"
-                    placeholder="Pick value"
+                    label="Game history."
+                    placeholder="Select game"
                     data={Object.keys(historicalGames)}
                     value={historicalGameStr}
                     onChange={setHistoricalGameStr}
@@ -624,6 +628,7 @@ export function GameSelector(props: {grade: number}) {
                     styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
                     mt="xs"
                   />
+                </div>
               </Stack>
              </Group>
       
