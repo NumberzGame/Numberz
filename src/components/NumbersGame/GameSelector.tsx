@@ -487,8 +487,17 @@ export function GameSelector(props: {grade: number}) {
 
   const onWin = function(): void {
       winScreenHandlers.open()
-      setCurrentGameID(null);
   }
+
+  const onClose = function(): void {
+      setCurrentGameID(null);
+      winScreenHandlers.close();
+  }
+
+  if (winScreenOpened && currentGameID !== null) {
+    return <WinScreen opened={winScreenOpened} close = {onClose}></WinScreen>
+  }
+
   // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function(val: number) {
     gradeObj.current = val;// as number;
@@ -686,7 +695,6 @@ export function GameSelector(props: {grade: number}) {
 
 
   return <>
-    <WinScreen opened={winScreenOpened} close = {winScreenHandlers.close}></WinScreen>
     {gameComponent}
     
   </>

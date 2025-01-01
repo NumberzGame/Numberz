@@ -72,9 +72,7 @@ export function NumbersGame(props: NumbersGameProps) {
         setGameUsingImmerProducer(produceAndStore);
     }
 
-    if (game.solved()) {
-        props.onWin()
-    }
+
 
 
 
@@ -181,12 +179,19 @@ export function NumbersGame(props: NumbersGameProps) {
     );
     
     const submitButtonHandler = function() {
+      // Don't submit invalid moves
       const lastMove = game.state.moves.at(-1)!;
-      
       const result = lastMove.result(game.currentOperandsDisplayOrder());
-
       if (result === null) {
-        return;
+          return;
+      }
+
+      if (game.solved(true)) {
+          props.onWin();
+          // Leave stored game in localstorage alone
+          // Player can resume and press submit to see 
+          // the win screen as many times as they like.
+          return;
       }
 
       setGameUsingImmerProducerAndStore((draft: Game) => {

@@ -78,7 +78,8 @@ export type GameID = GradedGameID | CustomGameID;
 export const HINT_UNDO = Symbol();
 
 class MoveData{
-
+    // A simple base class, only for holding data, 
+    // e.g. for storing hints.
     [immerable] = true;
     opIndex: number | null ;
     operandIndices: number[];
@@ -365,7 +366,7 @@ export class Game{
         return this.seedsAndDecoyIndices().map((i) => SEEDS[i]);
     }
 
-    currentOperandsDisplayOrder(): number[] {
+    currentOperandsDisplayOrder(testUnsubmittedMoves: boolean = false): number[] {
 
         const seedsAndDecoys = this.seedsAndDecoys();
         const operands= this.seedsDisplayOrder.map(i => seedsAndDecoys[i]);
@@ -377,7 +378,7 @@ export class Game{
 
             const result = move.result(operands);
             // Submitted valid moves must be at the start of state.moves
-            if (op_symbol === null || result === null || !move.submitted) {
+            if (op_symbol === null || result === null || (!move.submitted && !testUnsubmittedMoves)) {
                 break;
             }
 
@@ -404,8 +405,8 @@ export class Game{
         return operands;
     }
 
-    solved(): Boolean {
-        const operands = this.currentOperandsDisplayOrder();
+    solved(testUnsubmittedMoves: boolean = false): boolean {
+        const operands = this.currentOperandsDisplayOrder(testUnsubmittedMoves);
         return operands.includes(this.id.goal);
     }
 
