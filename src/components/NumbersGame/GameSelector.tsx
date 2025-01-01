@@ -4,7 +4,7 @@ import { useImmer } from "use-immer";
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
 import {Anchor, Center, Group, HoverCard, Button, Select,
         Image, Text, Slider, Modal, Stack, NumberInput, 
-        SimpleGrid, TagsInput, Popover, Container } from '@mantine/core';
+        SimpleGrid, TagsInput, Popover, FileInput } from '@mantine/core';
 
 
 import { nanoid } from 'nanoid';
@@ -16,7 +16,7 @@ import { NumbersGame } from './NumbersGame';
 
 import { randomPositiveInteger, SEEDS, ALL_SEEDS, GOAL_MIN, GOAL_MAX, MAX_SEEDS } from "../../gameCode/Core";
 import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
-import { GameID, Game, GradedGameID, CustomGameID, GameState } from '../../gameCode/Classes';
+import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
 
@@ -651,6 +651,7 @@ export function GameSelector(props: {grade: number}) {
                     styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
                     mt="xs"
                   />
+                  <Group justify="space-between">
                   <Button
                     mt="md"
                     component="a"
@@ -666,10 +667,60 @@ export function GameSelector(props: {grade: number}) {
                                 )
                           }`
                     }
-                    download="filename.json"
+                    download="numberz_game_history.json"
                     >
-                  {`Download Json`}
+                  Download game history.
                   </Button>
+                  <FileInput
+                    aria-label="Upload game history"
+                    accept="text/json"
+                    label="Upload game history"
+                    placeholder="(Warning: overwrites existing saved games with same ID)"
+                    onChange={async (fileBlob) => {
+                        if (fileBlob === null) {
+                            return;
+                        }
+                        const jsonString = await fileBlob.text();
+                        const uploadedGameData = JSON.parse(jsonString);
+                        for (const gameData of uploadedGameData) {
+                            const moves: Move[] = [];
+                            const stateObj = gameData?.['state'] ??{};
+                            for (const moveObj of stateObj?.['moves'] ?? []) {
+                                const move = new Move(
+                                                    moveObj?.['opIndex'] ?? null,
+                                                    moveObj?.['submitted'] ?? false,
+                                                    moveObj?.['operandIndices'] ?? [],
+                                                  );
+                                moves.push(move);
+                            }
+                            const state = new GameState(stateObj['solved'], moves);
+                            let id: GameID;
+                            const idData = gameData['id'];
+                            const goal = idData['goal'];
+                            if ('seedIndices' in idData){
+                                id = new CustomGameID(goal, idData['seedIndices']);
+                            } else if ('grade' in idData && 'form' in idData && 'index' in idData) {
+                                id = new GradedGameID(
+                                            idData['grade'],
+                                            idData['goal'],
+                                            idData['form'],
+                                            idData['index']
+                                            );
+                            } else {throw new Error(`Could not form GameID from: ${idData}`);}
+                            const game = new Game(
+                                              id,
+                                              gameData['timestamp_ms'],
+                                              gameData['seedIndices'],
+                                              gameData['opIndices'],
+                                              state,
+                                              gameData['redHerrings'],
+                                              gameData['seedsDisplayOrder'],
+                                              );
+                            storeGame(game);
+                        }
+                    }}
+                  />
+                  </Group>
                 </div>
               </Stack>
              </Group>
