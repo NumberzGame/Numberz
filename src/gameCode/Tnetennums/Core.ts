@@ -19,13 +19,15 @@ export type Grade = number;
 export type OpFunc = (x: OperandT, y: OperandT) => OperandT | typeof INVALID_ARGS | null;
 type Counter = Record<string, number>;
 
-export type OpsCacheKey = OperandsT;
-export type OpsCacheVal = Record<Op,[Result, Grade]>;
-export type OpsCache = Map<OpsCacheKey, OpsCacheVal>;
+export type OpsCacheKeyT = OperandsT;
+export type OpsCacheValT = Record<Op,[Result, Grade]>;
+export type OpsCacheT = Map<OpsCacheKeyT, OpsCacheValT>;
 export type DifficultyCalculator = (a: OperandT, b: OperandT) => Grade;
 export type DifficultyCalculators = Record<Op, DifficultyCalculator>;
 
-export const opsCache: OpsCache = new Map();
+export type ResultsAndGradesCacheT = Record<Result,Map<OpsCacheKeyT,Record<Op,Grade>>>;
+
+export const opsCache: OpsCacheT = new Map();
 
 
 export const DIFFICULTY_CALCULATORS: DifficultyCalculators = {
@@ -44,7 +46,7 @@ export const normalInverses: Record<Op, Op> = {
     "//": "*",  // if a // b is not None
 }
 
-export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKey{
+export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKeyT{
     // Defines the key structure.
     // all ops are commutative so no need
     // to cache both op(a,b) and op(b,a)
@@ -71,8 +73,8 @@ function* opsAndLevelsGen(
     b: OperandT,
     ops: Record<string, OpFunc> = OPS,
     level_calulators: DifficultyCalculators = DIFFICULTY_CALCULATORS,
-    ): IterableIterator<[keyof OpsCacheVal, ValueOf<OpsCacheVal>]> {
-        // Yields the not-null and not-INVALID_ARGS results of applying all ops to a and b."""
+    ): IterableIterator<[Op, [Result, Grade]]> {
+    // Yields the not-null and not-INVALID_ARGS results of applying all ops to a and b."""
 
     for (const [symbol, op] of Object.entries(ops)){
         const level_calulator = level_calulators[symbol];
@@ -93,13 +95,13 @@ function* opsAndLevelsGen(
 export function opsAndLevelsResults(
     a: OperandT,
     b: OperandT,
-    cache: OpsCache = opsCache,
-) : OpsCacheVal {
+    cache: OpsCacheT = opsCache,
+) : OpsCacheValT {
     //Memoises ops_and_levels_gen using, or updating the cache provided.
     //Returns the not None results of applying all ops to a and b.
     
     const key = opsCacheKey(a, b);
-    let results: OpsCacheVal;
+    let results: OpsCacheValT;
 
     if (cache.has(key)) {
         results = cache.get(key)!;
