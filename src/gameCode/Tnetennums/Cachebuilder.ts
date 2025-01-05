@@ -1,7 +1,8 @@
 
-import { enoughSeeds, opsAndLevelsResults, 
+import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
-         OperandT, Op, Result, ResultsAndGradesCacheT,
+         OperandT, Op, Result, ResultsAndGradesCacheT, GOALS,
+         inverseOp
         } from './Core';
 
 
@@ -37,28 +38,49 @@ export function addOpsResultsToCaches(
             newSymbol = symbol
         }
 
-        if (!(result in cache)) {  // result is also a key, the first one
-            cache[result] = new Map();
-        }
+        cache[result] ??= new Map();
+
         const resultsDict = cache[result];
         if (!resultsDict.has(key)) {
             // results_dict[key] = ''
             resultsDict.set(key, {});
         }
 
-        if (!(newSymbol in resultsDict.get(key)!)) {
-            // results_dict[key] += symbol
 
-            // grader = core.DIFFICULTY_CALCULATORS[symbol]
-            // try:
-            // difficulty_level = grader(a, b) if a >= b else grader(b, a)
-            // except AssertionError as e:
-            //     print(f'{a=}, {b=}, {symbol=}, {key=}, {newSymbol=}')
-            //     raise e
-            // results_dict[key][newSymbol] = difficulty_level
+        const symbolsAndGradesObj = resultsDict.get(key)!;
+        symbolsAndGradesObj[newSymbol] ??= level;
+    }
+}
+
+
+export function addTriplesToReverseCache(
+    forwardCache=resultsAndGradesCaches.forward,
+    reverseCache=resultsAndGradesCaches.reverse,
+    goals=GOALS,
+    ): void {
         
-            const symbolsAndGradesObj = resultsDict.get(key)!;
-            symbolsAndGradesObj[newSymbol] = level;
+    
+    reverseCache[3] ??= {};
+
+    const numMessages = 5;
+    const numGoalTripleVals = goals.length*Object.entries(forwardCache[3]!).length; 
+    const iterationsPerMessage = Math.max(numGoalTripleVals / numMessages, 1);
+    let i = 0;
+
+    for (const goal of goals) {
+        for (const tripleVal of Object.keys(forwardCache[3]).map(k => parseInt(k))) {
+            addOpsResultsToCaches(
+                reverseCache[3],
+                goal,
+                tripleVal,
+                (op: Op) => inverseOp(op, goal, tripleVal),
+                )
+
+            if (i++ % iterationsPerMessage === 0) {
+                console.log(
+                    `${i}/${numGoalTripleVals}, cached triple-triples for ${goal}, ${tripleVal}, ${Math.floor(100*i / numGoalTripleVals)}% done`
+                )
+            }
         }
     }
 }
