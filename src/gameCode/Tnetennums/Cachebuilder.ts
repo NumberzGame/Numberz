@@ -1,9 +1,11 @@
 
 import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
-         OperandT, Op, Result, ResultsAndGradesCacheT, GOALS,
-         inverseOp
+         OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
+         inverseOp, AllDepthsCacheT, Goal, GOALS_T
         } from './Core';
+
+import { ALL_SEEDS } from '../Core';
 
 
 
@@ -13,18 +15,11 @@ export function addOpsResultsToCaches(
     b: OperandT,
     symbolFunc: ((symbol: Op, operand?: OperandT, goal?: Result) => string) | null = null,
 ): void {
-    // mutates ops_cache (used for memoisation)
-    // results = core.ops_results(a,b)
-    const resultsAndLevels = opsAndLevelsResults(a, b);
-    // key = tuple(sorted((a,b)))
 
-    // for symbol, result in zip(core.OPS, results):
+    const resultsAndLevels = opsAndLevelsResults(a, b);
+
     for (let [symbol, [result, level]] of Object.entries(resultsAndLevels)){
-        // Assumes the only one that can return None: '//'
-        // is the last, (zip is zip_shortest) so no ops are
-        // missed and no results are misattributed.
-        // if result in (a, b):
-        //     continue
+
         let key: OpsCacheKeyT;
         let newSymbol;
         
@@ -54,9 +49,9 @@ export function addOpsResultsToCaches(
 
 
 export function addTriplesToReverseCache(
-    forwardCache=resultsAndGradesCaches.forward,
-    reverseCache=resultsAndGradesCaches.reverse,
-    goals=GOALS,
+    forwardCache: AllDepthsCacheT =resultsAndGradesCaches.forward,
+    reverseCache: AllDepthsCacheT=resultsAndGradesCaches.reverse,
+    goals: GOALS_T=GOALS,
     ): void {
         
     
@@ -83,4 +78,197 @@ export function addTriplesToReverseCache(
             }
         }
     }
+}
+
+
+
+export function makeCaches(
+    maxDepth=6,
+    seeds: Seed[] = ALL_SEEDS,
+    goals: GOALS_T = GOALS,
+    forwardCache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverseCache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+): [AllDepthsCacheT, AllDepthsCacheT] {
+    // # maxDepth = min(maxDepth, 4)
+    console.log(`Max depth: ${maxDepth}`);
+
+
+
+    const numIterations = 1086665;
+    console.log(`numIterations=${numIterations}`);
+
+
+    function* seedsGen(): IterableIterator<[number, OperandT, OperandT]>{
+        forwardCache[2] ??= {};
+
+        for (let i = 0; i < seeds.length-1; i++) {
+            for (let j=i+1; j < seeds.length; j++) {
+                yield [2, seeds[i], seeds[j]];
+            }
+        }
+
+
+        if (maxDepth >= 3) {
+            forwardCache[3] ??= {};
+
+            for (const [pairResult, pairsMap] of Object.entries(forwardCache[2])) {
+                for (const seed of seeds) {
+                    if (pairsMap.keys().every((operands) =>
+                        !enoughSeeds(operands.concat(seed), seeds)
+                    )) {
+                        continue;
+                    }
+                    yield [3, parseInt(pairResult), seed];
+                }
+            }
+        }
+
+        if (maxDepth >= 4) {
+            forwardCache[4] ??= {};
+
+            for (const [tripleResult, triplesMap] of Object.entries(forwardCache[3])) {
+                for (const seed of seeds) {
+                    if (triplesMap.keys().every(
+                            (operands) => operands.every(
+                                (pair, i, arr) => arr.filter(
+                                    (tripleSeed) => seeds.includes(tripleSeed)
+                                    ).every(
+                                        (tripleSeed) => forwardCache[2][pair].keys().every(
+                                            pairSeeds => !enoughSeeds(pairSeeds.concat([tripleSeed, seed]),seeds)
+                                            )
+                                        )
+                                )
+                            )
+                        ) {
+                        continue;
+                    }
+                    // if (all(
+                    //     not enough_seeds(pair_seeds + (triple_seed, seed), seeds)
+                    //     for operands in triplesMap
+                    //     for pair, triple_seed in itertools.permutations(operands, 2)
+                    //     for pair_seeds in forwardCache[2].get(pair, {})
+                    //     if triple_seed in seeds
+                    // )) {
+                    //     continue;
+                    // }
+                    yield [4, parseInt(tripleResult), seed];
+                }
+            }
+
+            const pairItems = Object.entries(forwardCache[2])
+            for (let i = 0; i < pairItems.length-1; i++) {
+                const pairItemA = pairItems[i];
+                const [pairA, pairAMap] = pairItemA;
+                for (let j=i+1; j < pairItems.length; j++) {
+                    const pairItemB = pairItems[j];
+                    const [pairB, pairBMap] = pairItemB;
+
+                    if (pairAMap.keys().every(
+                            (operandsA) => pairBMap.keys().every(
+                                (operandsB) => !enoughSeeds(operandsA.concat(operandsB), seeds)
+                                )
+                            )
+                        ) {
+                        continue;
+                    }
+
+                    yield [4, parseInt(pairA), parseInt(pairB)];
+                }
+            }
+        }
+
+        if (maxDepth >= 5) {
+            forwardCache[5] ??= {};
+            for (const pairItem of Object.entries(forwardCache[2])) {
+                
+                const [pair, pairMap] = pairItem;
+                for (const tripleItem of Object.entries(forwardCache[3])) {
+                    const [triple, tripleMap] = tripleItem;
+                    if (pairMap.keys().every(
+                            (pairOperands) => tripleMap.keys().every(
+                                (tripleOperands) => !enoughSeeds(pairOperands.concat(tripleOperands), seeds)
+                            )
+                        )) {
+                        continue;
+                    }
+
+                    yield [5, parseInt(triple), parseInt(pair)];
+                }
+            }
+        }
+    }
+
+
+    function* goalsReverseGen(): IterableIterator<[number, OperandT, OperandT]> {
+        if (maxDepth >= 5) {
+            reverseCache[1] ??= {};
+            for (const goal of goals) {
+                for (const seed of seeds) {
+                    yield [1, goal, seed]; //) for goal in goals for seed in seeds)
+                }
+            }
+        }
+
+        if (maxDepth >= 6) {
+            reverseCache[2] ??= {};
+            for (const [goal, goalMap] of Object.entries(reverseCache[1])) {
+                for (let [subGoal, seed] of goalMap.keys()) {
+                    if (!seeds.includes(seed)) {
+                        [subGoal, seed] = [seed, subGoal];
+                    }
+                    for (const nextSeed of seeds) {
+                        if (!enoughSeeds([nextSeed, seed], seeds)) {
+                            continue;
+                        }
+                        yield [2, subGoal, nextSeed];
+                    }
+                }
+            }
+            for (const goal of goals) {
+                for (const pair of Object.keys(forwardCache[2])) {
+                    yield [2, goal, parseInt(pair)];
+                }
+            }
+        }
+    }
+
+    const numMessages = 10
+    const iterationsPerMessage = Math.max(numIterations / numMessages, 1)
+    let i = 0
+
+    for (const [depth, a, b] of seedsGen()) {
+        addOpsResultsToCaches(forwardCache[depth], a, b, null);
+        if (i++ % iterationsPerMessage == 0) {
+            console.log(
+                `i=${i}, calculating depth ${depth}, [a,b]=${[a,b]}, ${Math.floor(100*i / numIterations)}% done`
+            )
+        }
+    }
+
+    console.log(`i=${i}`);
+
+
+    console.log("Building reverse cache...");
+    let k = 0;
+
+    for (const [depth, a, b] of goalsReverseGen()) {
+        addOpsResultsToCaches(
+            reverseCache[depth],
+            a,
+            b,
+            (symbol) => inverseOp(symbol, a, b),
+        );
+        if (k++ % iterationsPerMessage == 0) {
+            const progress = `${Math.floor(100*k / numIterations)}`;
+            console.log(`k=${k}, depth=${depth}, [a,b]=${[a,b]}, ${progress} done`)
+        }
+    }
+
+    console.log(`k=${k}`);
+    if (maxDepth >= 6) {
+        console.log(`Caching reverse triples...`);
+        addTriplesToReverseCache(forwardCache, reverseCache, goals)
+    }
+
+    return [forwardCache, reverseCache];
 }

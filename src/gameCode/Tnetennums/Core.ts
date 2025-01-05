@@ -11,20 +11,12 @@ export type ValueOf<T> = T[keyof T];
 export const GOAL_MIN = SYMBOLS["GOAL_MIN"];
 export const GOAL_MAX = SYMBOLS["GOAL_MAX"];
 
-export const GOALS = Object.freeze({
-    *[Symbol.iterator]() {
-        for (let goal = GOAL_MIN; goal <= GOAL_MAX; goal++) {
-            yield goal;
-        } 
-    },
-    "length" : GOAL_MAX - GOAL_MIN + 1,
- });
-
-
+export type Seed= number;
 export type OperandT = number;
 export type OperandsT = [number, number];
 export type Op = string;
 export type Result = number;
+export type Goal = Result;
 export type Grade = number;
 export type OpFunc = (x: OperandT, y: OperandT) => OperandT | typeof INVALID_ARGS | null;
 type Counter = Record<string, number>;
@@ -36,10 +28,24 @@ export type DifficultyCalculator = (a: OperandT, b: OperandT) => Grade;
 export type DifficultyCalculators = Record<Op, DifficultyCalculator>;
 
 export type ResultsAndGradesCacheT = Record<Result,Map<OpsCacheKeyT,Record<Op,Grade>>>;
-export type ResultsAndGradesCachesT = {"forward": Record<number,ResultsAndGradesCacheT>,
-                                       "reverse": Record<number,ResultsAndGradesCacheT>
+export type AllDepthsCacheT = Record<number,ResultsAndGradesCacheT>
+export type ResultsAndGradesCachesT = {"forward": AllDepthsCacheT,
+                                       "reverse": AllDepthsCacheT,
                                       };
 
+export interface GOALS_T extends Iterable<Goal> {
+    length: number
+}
+
+export const GOALS = Object.freeze({
+    *[Symbol.iterator]() {
+        for (let goal = GOAL_MIN; goal <= GOAL_MAX; goal++) {
+            yield goal;
+        } 
+    },
+    "length" : GOAL_MAX - GOAL_MIN + 1,
+    });
+                                        
 export const opsCache: OpsCacheT = new Map();
 export const resultsAndGradesCaches: ResultsAndGradesCachesT = {"forward": {}, "reverse": {}};
 
