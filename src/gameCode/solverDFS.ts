@@ -55,7 +55,7 @@ function* allOperandsFrom(operands: Operand[], maxDepth: number = 6): IterableIt
 
         for (const [symbol, op] of Object.entries(OPS)) {
             const result = op(x.val, y.val);
-            if (result === INVALID_ARGS) {
+            if (result === INVALID_ARGS || result === null) {
                 continue;
             }
             const subSolExpr = makeValidSubSolExpr(x, y, symbol);

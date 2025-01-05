@@ -235,7 +235,7 @@ export const getHintsAndGrades = function*(expr: string): IterableIterator<[stri
 
         const op = OPS[opSymbol];
         const val = op(seed1, seed2);
-        if (val === INVALID_ARGS) {
+        if (val === INVALID_ARGS || val === null) {
             continue
         }
         expr = expr.replace(match[0], val.toString());
