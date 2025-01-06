@@ -3,7 +3,7 @@ import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         combinations, enoughSeeds, resultsAndGradesCaches,
         GOAL_MIN, GOAL_MAX } from './Core';
 
-import {SEEDS} from '../Core';
+import {SEEDS, takeNextN} from '../Core';
 
 
 const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
@@ -573,4 +573,59 @@ function* reverse_solutions(
             reverse_cache,
         )
     }
+}
+
+
+function* forward_and_reverse_solutions(
+    seeds: Seed[],
+    goal: Result,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+    max_num_seeds: number | null = null,
+): IterableIterator<SolutionInfo> {
+
+    max_num_seeds = default_max_num_seeds(max_num_seeds, seeds.length);
+
+    for (const nStr of ["1", ...Object.keys(forward_cache)]){
+        const n = parseInt(nStr)
+        if (n <= max_num_seeds) {
+            yield* forward_solutions(seeds, goal, n, forward_cache, 0, true)
+        }
+            // # caches[5] contains (triple op pair)s
+    }
+
+    yield* reverse_solutions(
+        seeds,
+        goal,
+        forward_cache,
+        reverse_cache,
+        max_num_seeds,
+    )
+}
+
+
+
+export function* find_solutions(
+    nums: number[],
+    goal: number,
+    number_to_seek: number | string = 1,
+    max_num_seeds: number | null = null,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+): IterableIterator<SolutionInfo> {
+    max_num_seeds = default_max_num_seeds(max_num_seeds, nums.length)
+
+
+    let solutions = forward_and_reverse_solutions(
+        nums,
+        goal,
+        forward_cache=forward_cache,
+        reverse_cache=reverse_cache,
+        max_num_seeds=max_num_seeds,
+    );
+    if (!(String(number_to_seek).toLowerCase().includes("all"))){
+        // #
+        solutions = takeNextN(number_to_seek as number, solutions);
+    }
+    yield* solutions
 }
