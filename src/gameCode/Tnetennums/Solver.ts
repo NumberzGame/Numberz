@@ -1,7 +1,6 @@
 import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
-        opsAndLevelsResults,
-        pairCombinations
-} from './Core';
+        opsAndLevelsResults, ResultsAndGradesCacheT, AllDepthsCacheT,
+        combinations, enoughSeeds } from './Core';
 
 
 
@@ -171,7 +170,7 @@ class SolutionInfo {
         if (three_seeds.length !== 3) {
             throw new Error(`three_seeds must be length 3.  Got: ${three_seeds}`);
         }
-        for (const two_seeds of pairCombinations(three_seeds)) {
+        for (const two_seeds of combinations(2, three_seeds)) {
             const other_seed_list = Array.from(three_seeds);
             for (const seed of two_seeds) {
                 const index = other_seed_list.indexOf(seed);
@@ -181,9 +180,9 @@ class SolutionInfo {
                 other_seed_list.splice(index,1)
             }
             const other_seed = other_seed_list[0]
-
+            const [pair_seed_a, pair_seed_b] = two_seeds
             for (const [pair_symbol, [pair_result, pair_level]] of 
-                        Object.entries(opsAndLevelsResults(...two_seeds))){  //# pair = op(*two_seeds)
+                        Object.entries(opsAndLevelsResults(pair_seed_a, pair_seed_b))){  //# pair = op(*two_seeds)
                 const pair_sol = SolutionInfo.get_pairs(
                         pair_result,
                         two_seeds[0],
@@ -232,4 +231,117 @@ function default_max_num_seeds(max_num_seeds: number | null, max_: number | null
         return max_num_seeds;
     }
     return Math.min(max_, max_num_seeds);
+}
+
+
+function* forward_solutions(
+    seeds: Seed[],
+    goal: Result,
+    n: number,
+    forward_cache: AllDepthsCacheT,
+    grade_so_far: Grade = 0,
+    strict: boolean = false,
+): IterableIterator<SolutionInfo> {
+    // """Solutions that can be constructed by only using the forward cache,
+    // using precisely n from seeds.  n<= 5
+    // """
+
+    // # Assumes forward_cache is exhaustive.
+    if (n === 1){
+        if (seeds.includes(goal)){
+            yield SolutionInfo.get_trivial(goal);
+        }
+        return;
+    }
+
+    // # Need to have caches built first.
+    if (!(goal in (forward_cache[n] ?? {}))) {
+        return;
+    }
+
+    for (let [[a, b], symbols_and_grades] of (forward_cache[n]?.[goal] ?? new Map()).entries()){
+
+        // # can't use a in core.SEEDS and b in core.SEEDS as this
+        // # doesn't account for multiplicities
+        if ((n == 2 || !strict) && enoughSeeds([a, b], seeds)){
+
+            const sol_a = SolutionInfo.get_trivial(a)
+            yield* sol_a.get_solutions_extended_by_seed(goal, b, symbols_and_grades)
+
+        } else if ((seeds.includes(a) || seeds.includes(b)) && n >= 3) {
+
+            function* solutions_extended_by_seed(seed: Seed, sub_goal: OperandT) {
+                const nums_left = Array.from(seeds);
+                const index = nums_left.indexOf(seed);
+                if (index !== -1) {
+                    nums_left.splice(index, 1);
+                }
+                // # for sub_solution, grade, sub_form in forward_solutions(
+                for (const sub_sol of forward_solutions(
+                    nums_left, sub_goal, n - 1, forward_cache, grade_so_far, strict
+                )) {
+                    yield* sub_sol.get_solutions_extended_by_seed(
+                        goal, seed, symbols_and_grades
+                    )
+                }
+            }
+
+            if (!seeds.includes(a)){
+                [a, b] = [b, a];
+            } else if (strict && seeds.includes(b)) {
+                yield* solutions_extended_by_seed(b, a)
+            }
+
+            yield* solutions_extended_by_seed(a, b)
+            // # b may still be in seeds too (with insufficient multiplicity
+            // # e.g. a = b = 100, seeds.count(100) == 1).
+            // #
+            // # A List comprehension [seed for seed in seeds if seed != a]
+            // # will remove all occurences of a.  We want to only remove the first.
+
+        } else if ((4 <= n) && (n <= 5)) {
+            // # for partition_size in range(n // 2, n - 1):
+            for (let partition_size = Math.ceil(n / 2); partition_size < n - 1; partition_size++) {
+                // # Split seeds into all non-singleton partitions:
+                // # n = 4 -> (2,2)
+                // # n = 5 -> (3,2)
+                // # n = 6 -> (3,3), (4, 2)
+                // # so e.g. for len(seeds) = 5 we split into all those of sizes
+                // # 2 and 3 so don't need to consider those of sizes 3 and 2
+                for (const some_nums of combinations(partition_size, seeds)) {
+                    const rest_of_nums = Array.from(seeds);
+                    for (const num of some_nums) {
+                        const index = rest_of_nums.indexOf(num);
+                        if (index !== -1) {
+                            rest_of_nums.splice(index, 1);
+                        }
+                    }
+
+                    for (const sol_a of forward_solutions(
+                        some_nums,
+                        a,
+                        partition_size,
+                        forward_cache,
+                        grade_so_far,
+                        strict,
+                    )){
+                        for (const sol_b of forward_solutions(
+                            rest_of_nums,
+                            b,
+                            n - partition_size,
+                            forward_cache,
+                            grade_so_far,
+                            strict,
+                        )){
+                            yield* sol_a.get_solutions_extended_by_sub_sol(
+                                goal, sol_b, symbols_and_grades
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 }

@@ -158,10 +158,23 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op{
 }
 
 
-export function* pairCombinations<T>(arr: T[]): IterableIterator<[T,T]> {
-    for (let i = 0; i < arr.length-1; i++) {
-        for (let j=i+1; j < arr.length; j++) {
-            yield [arr[i], arr[j]];
+export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {
+
+    if (n > arr.length) {
+        throw new Error(`Not enough items in: ${arr} for combinations of length: ${n}.`);
+    }
+
+    if (n===1) {
+        for (const x of arr) {
+            yield [x];
+        }
+        return;
+    }
+
+    for (let i = 0; i < arr.length+1-n; i++) {
+
+        for (const combination of combinations(n-1, arr.slice(i+1))) {
+            yield [arr[i], ...combination];
         }
     }
 }

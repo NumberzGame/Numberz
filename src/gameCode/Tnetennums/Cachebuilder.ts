@@ -2,7 +2,7 @@
 import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
          OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
-         inverseOp, AllDepthsCacheT, Goal, GOALS_T, pairCombinations
+         inverseOp, AllDepthsCacheT, Goal, GOALS_T, combinations
         } from './Core';
 
 import { ALL_SEEDS } from '../Core';
@@ -101,8 +101,9 @@ export function makeCaches(
     function* seedsGen(): IterableIterator<[number, OperandT, OperandT]>{
         forwardCache[2] ??= {};
 
-        for (const pair of pairCombinations(seeds)) {
-            yield [2, ...pair];
+        for (const pair of combinations(2, seeds)) {
+            const [a, b] = pair;
+            yield [2, a, b];
         }
 
 
@@ -155,7 +156,7 @@ export function makeCaches(
 
             
             for (const [pairItemA, pairItemB] of 
-                    pairCombinations(Object.entries(forwardCache[2]))) {
+                    combinations(2, Object.entries(forwardCache[2]))) {
                 const [pairA, pairAMap] = pairItemA;
                 const [pairB, pairBMap] = pairItemB;
 
