@@ -205,15 +205,31 @@ class SolutionInfo {
 
     toString() {
         let retval = (
-            `${this.__class__.__name__}(goal=${this.goal}, `
-            +`expression=${this.expression}, grade=${this.grade}, `
-            +`form=${this.form}, seeds=${this.seeds}`
+            `SolutionInfo(${this.goal}, `
+            +`${this.expression}, ${this.grade}, `
+            +`${this.form}, ${this.seeds}`
         )
         if (this.expression !== this.encodable) {
-            retval += `, encodable=${this.encodable}`
+            retval += `, ${this.encodable}`
         }
         retval += ")"
         return retval;
     }
 
+}
+
+
+
+class Impossible {
+    grade = Infinity;
+}
+
+function default_max_num_seeds(max_num_seeds: number | null, max_: number | null = null): number {
+    if (max_num_seeds === null) {
+        max_num_seeds = 6;
+    }
+    if (max_ === null ){
+        return max_num_seeds;
+    }
+    return Math.min(max_, max_num_seeds);
 }
