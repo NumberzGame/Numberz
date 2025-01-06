@@ -6,7 +6,7 @@ import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
 import {SEEDS, takeNextN} from '../Core';
 
 
-const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
+export const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
 
 
 function opStr(a: number | string, b: number | string, symbol: string): string{
@@ -47,7 +47,7 @@ function getCombinedSolutionForm(
 
 
 
-class SolutionInfo {
+export class SolutionInfo {
     goal: Result;
     expression: string;
     grade: Grade;
@@ -608,7 +608,7 @@ function* forward_and_reverse_solutions(
 export function* find_solutions(
     nums: number[],
     goal: number,
-    number_to_seek: number | string = 1,
+    number_to_seek: number | "all" = 1,
     max_num_seeds: number | null = null,
     forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
     reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
@@ -623,9 +623,9 @@ export function* find_solutions(
         reverse_cache=reverse_cache,
         max_num_seeds=max_num_seeds,
     );
-    if (!(String(number_to_seek).toLowerCase().includes("all"))){
+    if (number_to_seek !== "all") {
         // #
         solutions = takeNextN(number_to_seek as number, solutions);
     }
-    yield* solutions
+    yield* solutions;
 }

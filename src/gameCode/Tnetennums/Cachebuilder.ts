@@ -83,9 +83,9 @@ export function addTriplesToReverseCache(
 
 
 export function makeCaches(
-    maxDepth=6,
     seeds: Seed[] = ALL_SEEDS,
     goals: GOALS_T = GOALS,
+    maxDepth: number = 6,
     forwardCache: AllDepthsCacheT = resultsAndGradesCaches.forward,
     reverseCache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
 ): [AllDepthsCacheT, AllDepthsCacheT] {

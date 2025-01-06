@@ -6,8 +6,12 @@ import { difficultyOfSum, difficultyOfProduct,
 
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP, GOAL_MIN } from './Core';
 import { MAX_SEEDS, MAX_OPS, OP_RESULT, Operand, randomPositiveInteger } from "./Core";
-import { solutions, EXPR_PATTERN } from './solverDFS';
-import { solutionAsOperand } from "./solutionEvaluator";
+// import { solutions, EXPR_PATTERN } from './solverDFS';
+import { EXPR_PATTERN } from './solverDFS';
+import { find_solutions, SOLUTION_FMT_STRING, SolutionInfo } from "./Tnetennums/Solver";
+import { makeCaches } from "./Tnetennums/Cachebuilder";
+
+import { solutionAsOperand, solutionExpr } from "./solutionEvaluator";
 
 
 
@@ -270,13 +274,17 @@ const getRedHerringIndicesWithoutMakingEasier = function(
     grade: number,
     ): number[] {
 
+
     let redHerrings;
     while (true) {
         redHerrings = getRedHerringIndices(seedIndices);
         const seedIndicesAndRedHerrings = seedIndices.concat(redHerrings);
+        
+        makeCaches(seedIndicesAndRedHerrings, [goal]);
+
         let redHerringMakesGametooEasy = false;
-        for (const solution of solutions(goal, seedIndicesAndRedHerrings.map((i) => SEEDS[i]))) {
-            if (calcGrade(solution) < grade) {
+        for (const solution of find_solutions(seedIndicesAndRedHerrings.map((i) => SEEDS[i]), goal, "all")) {
+            if (solution.grade < grade) {
                 redHerringMakesGametooEasy = true;
                 
                 // break inner for loop
@@ -415,13 +423,28 @@ export class Game{
             let easiestSolution = null;
             let easiestGrade = Infinity;
             const operands = this.currentOperandsDisplayOrder();
+            const goal = this.id.goal;
+            const form = this.id.form;
+            const seeds = this.seeds();
+            
+            let expr: string;
+
+            makeCaches(operands, [goal]);
+
+
+
             // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
             // if (this.opIndices && this.id.form !== null && operands.length === numSeedsFromForm(this.id.form!)) {
-            if (this.opIndices && this.id.form !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
-                easiestSolution = solutionAsOperand(this.id.form as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
+            if (this.opIndices && form !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
+                const ops = this.opIndices!.map((i) => OP_SYMBOLS[i])
+                // easiestSolution = solutionAsOperand(form, seeds, ops);
+                expr = solutionExpr(form, seeds, ops);
+                    // solutionAsOperand(this.id.form as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
             } else {
-                for (const solution of solutions(this.id.goal, operands)) {
-                    const grade = calcGrade(solution);
+                // for (const solution of solutions(goal, operands)) {
+                for (const solution of find_solutions(operands, goal, "all")) {
+                    // const grade = calcGrade(solution);
+                    const grade = solution.grade;
                     // We could break here on finding the first valid solution,
                     // and give the user the first hint that works,
                     // (not necessarily a hint compatible with the 
@@ -439,10 +462,11 @@ export class Game{
                     // } else {
                     // Tell user no solution found.  Prompt to select new game.
                 }
+                expr = easiestSolution.encodable
             }
 
             // console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
-            const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(easiestSolution.expr).next().value;
+            const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
             const index1 = operands.indexOf(operand1);
