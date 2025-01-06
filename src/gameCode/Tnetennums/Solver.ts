@@ -1,7 +1,9 @@
 import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         opsAndLevelsResults, ResultsAndGradesCacheT, AllDepthsCacheT,
-        combinations, enoughSeeds, resultsAndGradesCaches } from './Core';
+        combinations, enoughSeeds, resultsAndGradesCaches,
+        GOAL_MIN, GOAL_MAX } from './Core';
 
+import {SEEDS} from '../Core';
 
 
 const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
@@ -439,3 +441,136 @@ function* triple_triples_from_reverse_cache(
         }
     }
 }                
+
+
+
+function* reverse_solutions(
+    seeds: Seed[],
+    goal: Result,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+    max_num_seeds: number | null = null,
+): IterableIterator<SolutionInfo>{
+
+    max_num_seeds = default_max_num_seeds(max_num_seeds, seeds.length)
+
+    if (
+        max_num_seeds <= 4
+        || (max_num_seeds == 5 && !(goal in (reverse_cache[1] ?? {})))
+        || (
+            max_num_seeds === 6
+            && [1,2,3,4].every(i => !(goal in (reverse_cache[i] ?? {}))))
+        ) {
+        
+        console.log(`No cached solutions in reverse_caches for ${goal} and ${max_num_seeds}`);
+        return;
+    }
+    if (max_num_seeds >= 5 && GOAL_MIN <= goal && goal <= GOAL_MAX){
+        // # assert goal in reverse_caches[1]
+        const reverse_cache_1_seed = reverse_cache[1]?.[goal] ?? new Map()
+        for (let [[sub_goal, seed], symbols_and_grades] of reverse_cache_1_seed.entries()){
+            // # sub_goal symbol operand == goal, symbol in ('+', '|-|', '*', '//')
+
+            if (!SEEDS.includes(seed)){
+                [sub_goal, seed] = [seed, sub_goal];
+            }
+            if (!seeds.includes(seed)){
+                continue;
+            }
+
+            // # A list comp: [other for other in seeds if other != seed]
+            // # will filter out all repeated occurences of seed
+            // # instead of just the first
+            const other_seeds = Array.from(seeds);
+            const index = other_seeds.indexOf(seed);
+            if (index !== -1) {
+                other_seeds.splice(index, 1);
+            }
+
+            // # Search for possible quintuples from cached quadruples.
+            // # and seed-pair-pairs from pair-pairs
+            // # for sub_solution, grade, sub_form in forward_solutions(
+            for (const sub_sol of forward_solutions(
+                other_seeds,  // # len 4 || 5
+                sub_goal,
+                4,
+                forward_cache,
+                0,
+                true,
+            )){
+                yield* sub_sol.get_solutions_extended_by_seed(
+                    goal, seed, symbols_and_grades
+                )
+            }
+
+            if (max_num_seeds >= 6) {
+                // # Search for (triple op pair) op seed)s as there are too many
+                // # quintuples to cache.  Quintuples were searched already
+                // # from quadruples (and are too numerous to cache) so this
+                // # does not yield sextuples.
+                // # for sub_solution, grade, sub_form in forward_solutions(
+                for (const sub_sol of forward_solutions(
+                    other_seeds, sub_goal, 5, forward_cache, 0, true
+                )) {
+                    // # Uses "Split seeds into all non-singleton partitions:
+                    // # n = 5 -> (2,3)"
+
+                    yield* sub_sol.get_solutions_extended_by_seed(
+                        goal, seed, symbols_and_grades
+                    )
+                }
+
+                // # Find sextuples and pair-pair-op-ops from quadruples.
+                // # for (next_goal, next_seed), next_symbol_str in reverse_cache[2][sub_goal].items():
+                for (let [[next_goal, next_seed], next_symbols_and_grades] of
+                    (reverse_cache[2][sub_goal] ?? new Map()).entries()
+                ){
+                    if (!SEEDS.includes(next_seed)) {
+                        [next_goal, next_seed] = [next_seed, next_goal];
+                    }
+
+                    const last_seeds = Array.from(other_seeds);
+
+                    const index = last_seeds.indexOf(next_seed);
+                    if (index !== -1) {
+                        last_seeds.splice(index, 1);
+                    } else {
+                        continue;
+                    }
+
+                    // # for sub_solution_2, sub_grade, sub_form in forward_solutions(
+                    // # Quadruples and pair-pairs
+                    for (const sub_sol of forward_solutions(
+                        last_seeds, next_goal, 4, forward_cache, 0, true
+                    )) {
+                        for (const extended_sol of sub_sol.get_solutions_extended_by_seed(
+                            next_goal, next_seed, next_symbols_and_grades
+                        )){
+                            yield* extended_sol.get_solutions_extended_by_seed(
+                                goal, seed, symbols_and_grades
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (max_num_seeds >= 6){
+        yield* quadruple_pairs_and_pair_pair_pairs(
+            seeds,
+            goal,
+            forward_cache,
+            reverse_cache,
+        )
+    }
+
+    if (max_num_seeds >= 6){
+        yield* triple_triples_from_reverse_cache(
+            seeds,
+            goal,
+            forward_cache,
+            reverse_cache,
+        )
+    }
+}
