@@ -90,7 +90,7 @@ class SolutionInfo {
         // # if sub_sol_1.goal < sub_sol_2.goal:
         // #     sub_sol_1, sub_sol_2 = sub_sol_2, sub_sol_1
         for (const [symbol, grade_of_op] of Object.entries(symbols_and_grades)) {
-            // # Not needed, as self.get_solutions_extended_by_seed calls this
+            // # Not needed, as this.get_solutions_extended_by_seed calls this
             // # with sub_sol_2 == trivial?
             // # if sub_sol_1.form == 1 and sub_sol_2.form != 1:
             // #     sub_sol_1, sub_sol_2 = sub_sol_2, sub_sol_1
@@ -203,6 +203,17 @@ class SolutionInfo {
         }
     }
 
-
+    toString() {
+        let retval = (
+            `${this.__class__.__name__}(goal=${this.goal}, `
+            +`expression=${this.expression}, grade=${this.grade}, `
+            +`form=${this.form}, seeds=${this.seeds}`
+        )
+        if (this.expression !== this.encodable) {
+            retval += `, encodable=${this.encodable}`
+        }
+        retval += ")"
+        return retval;
+    }
 
 }
