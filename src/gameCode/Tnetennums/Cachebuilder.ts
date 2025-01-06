@@ -2,7 +2,7 @@
 import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
          OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
-         inverseOp, AllDepthsCacheT, Goal, GOALS_T
+         inverseOp, AllDepthsCacheT, Goal, GOALS_T, pairCombinations
         } from './Core';
 
 import { ALL_SEEDS } from '../Core';
@@ -101,10 +101,8 @@ export function makeCaches(
     function* seedsGen(): IterableIterator<[number, OperandT, OperandT]>{
         forwardCache[2] ??= {};
 
-        for (let i = 0; i < seeds.length-1; i++) {
-            for (let j=i+1; j < seeds.length; j++) {
-                yield [2, seeds[i], seeds[j]];
-            }
+        for (const pair of pairCombinations(seeds)) {
+            yield [2, ...pair];
         }
 
 
@@ -155,25 +153,24 @@ export function makeCaches(
                 }
             }
 
-            const pairItems = Object.entries(forwardCache[2])
-            for (let i = 0; i < pairItems.length-1; i++) {
-                const pairItemA = pairItems[i];
+            
+            for (const [pairItemA, pairItemB] of 
+                    pairCombinations(Object.entries(forwardCache[2]))) {
                 const [pairA, pairAMap] = pairItemA;
-                for (let j=i+1; j < pairItems.length; j++) {
-                    const pairItemB = pairItems[j];
-                    const [pairB, pairBMap] = pairItemB;
+                const [pairB, pairBMap] = pairItemB;
 
-                    if (pairAMap.keys().every(
-                            (operandsA) => pairBMap.keys().every(
-                                (operandsB) => !enoughSeeds(operandsA.concat(operandsB), seeds)
-                                )
+
+
+                if (pairAMap.keys().every(
+                        (operandsA) => pairBMap.keys().every(
+                            (operandsB) => !enoughSeeds(operandsA.concat(operandsB), seeds)
                             )
-                        ) {
-                        continue;
-                    }
-
-                    yield [4, parseInt(pairA), parseInt(pairB)];
+                        )
+                    ) {
+                    continue;
                 }
+
+                yield [4, parseInt(pairA), parseInt(pairB)];
             }
         }
 

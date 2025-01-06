@@ -18,6 +18,7 @@ export type Op = string;
 export type Result = number;
 export type Goal = Result;
 export type Grade = number;
+export type SolutionForm = number | [SolutionForm, SolutionForm] | [];
 export type OpFunc = (x: OperandT, y: OperandT) => OperandT | typeof INVALID_ARGS | null;
 type Counter = Record<string, number>;
 
@@ -153,5 +154,14 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op{
         // switch the order even though our ops are commutative, as above.
     } else {
         return normalInverses[symbol];
+    }
+}
+
+
+export function* pairCombinations<T>(arr: T[]): IterableIterator<[T,T]> {
+    for (let i = 0; i < arr.length-1; i++) {
+        for (let j=i+1; j < arr.length; j++) {
+            yield [arr[i], arr[j]];
+        }
     }
 }
