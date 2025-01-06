@@ -1,6 +1,6 @@
 import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         opsAndLevelsResults, ResultsAndGradesCacheT, AllDepthsCacheT,
-        combinations, enoughSeeds } from './Core';
+        combinations, enoughSeeds, resultsAndGradesCaches } from './Core';
 
 
 
@@ -345,3 +345,97 @@ function* forward_solutions(
 
 
 }
+
+
+
+function* quadruple_pairs_and_pair_pair_pairs(
+    seeds: Seed[],
+    goal: Result,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+): IterableIterator<SolutionInfo>{
+    // # from quadruples and pair-pairs.
+
+    for (let [[quad_or_pair_pair, pair], symbols_and_grades] of 
+                    (reverse_cache[2]?.[goal] ?? new Map()).entries()) {
+        if (!(pair in forward_cache[2])){
+            [quad_or_pair_pair, pair] = [pair, quad_or_pair_pair];
+        }
+        if (!(pair in forward_cache[2])){
+            continue;
+        }
+        for (const [[a, b], pair_symbols_and_grades] of (forward_cache[2]?.[pair] ?? new Map()).entries()){
+            if (!enoughSeeds([a, b], seeds)){
+                continue;
+            }
+
+            const four_seeds = Array.from(seeds);
+            for (const seed of [a,b]) {
+                const index = four_seeds.indexOf(seed);
+                if (index !== -1) {
+                    four_seeds.splice(index,1);
+                }
+            }
+            // four_seeds.remove(a)
+            // four_seeds.remove(b)
+
+            for (const sol of forward_solutions(
+                four_seeds, quad_or_pair_pair, 4, forward_cache, 0, true
+            )){
+                for (const pair_sol of SolutionInfo.get_pairs(
+                    pair, a, b, pair_symbols_and_grades
+                )){
+                    yield* sol.get_solutions_extended_by_sub_sol(
+                        goal, pair_sol, symbols_and_grades
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
+
+function* triple_triples_from_reverse_cache(
+    seeds: Seed[],
+    goal: Result,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+): IterableIterator<SolutionInfo>{
+    
+    const reverse_cache_3_seeds_items = (reverse_cache[3]?.[goal] ?? new Map()).entries()
+    for (const [[
+        triple_goal,
+        maybe_triple_goal,
+    ], symbols_and_grades] of reverse_cache_3_seeds_items){
+        if (!(maybe_triple_goal in forward_cache[3])){
+            continue;
+        }
+        for (const triple_sol of forward_solutions(
+            seeds, triple_goal, 3, forward_cache, 0, true
+        )) {
+            const seeds_left = Array.from(seeds)
+            for (const seed of triple_sol.seeds){
+                const index = seeds_left.indexOf(seed);
+                if (index !== -1) {
+                    seeds_left.splice(index,1);
+                }
+            }
+            if (seeds_left.length + 3 !== seeds.length) {
+                throw new Error(`seeds_left: ${seeds_left} should have three fewer seeds than seeds: ${seeds}`);
+            }
+
+            for (const other_triple_sol of forward_solutions(
+                seeds_left, maybe_triple_goal, 3, forward_cache, 0, true
+            )){
+                yield* SolutionInfo.getCombinedFromSubSolutions(
+                    goal,
+                    triple_sol,
+                    other_triple_sol,
+                    symbols_and_grades,
+                )
+            }
+        }
+    }
+}                
