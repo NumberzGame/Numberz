@@ -56,15 +56,15 @@ export const DIFFICULTY_CALCULATORS: DifficultyCalculators = {
     "*": difficultyOfProduct,
     "-": difficultyOfDifference,
     //  ,'//' : additional_difficulty.division.difficulty_of_long_division
-    "//": difficultyOfLongDivision,
+    "/": difficultyOfLongDivision,
 }
 
 // Normal as in unexceptional
 export const normalInverses: Record<Op, Op> = {
     "+": "-",  // we know goal >= 0 so goal == a-b == |a-b|
-    "*": "//",
+    "*": "/",
     "-": "+",
-    "//": "*",  // if a // b is not None
+    "/": "*",  // if a // b is not None
 }
 
 export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKeyT{
@@ -149,8 +149,8 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op{
     if ((symbol === "-") && (goal < operand)){
         return "-";
         // switch the order to support validation via eval.
-    } else if ((symbol === "//") && (operand % goal === 0)){
-        return "//";
+    } else if ((symbol === "/") && (operand % goal === 0)){
+        return "/";
         // switch the order even though our ops are commutative, as above.
     } else {
         return normalInverses[symbol];

@@ -1,3 +1,5 @@
+
+
 import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         opsAndLevelsResults, ResultsAndGradesCacheT, AllDepthsCacheT,
         combinations, enoughSeeds, resultsAndGradesCaches,
@@ -462,7 +464,7 @@ function* reverse_solutions(
             && [1,2,3,4].every(i => !(goal in (reverse_cache[i] ?? {}))))
         ) {
         
-        console.log(`No cached solutions in reverse_caches for ${goal} and ${max_num_seeds}`);
+        // console.log(`No cached solutions in reverse_caches for ${goal} and ${max_num_seeds}`);
         return;
     }
     if (max_num_seeds >= 5 && GOAL_MIN <= goal && goal <= GOAL_MAX){
