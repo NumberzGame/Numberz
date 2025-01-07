@@ -98,6 +98,22 @@ export function makeCaches(
     const numIterations = 1086665;
     console.log(`numIterations=${numIterations}`);
 
+    function* triple_seeds(
+        triple_operands: [OperandT, OperandT],
+    ): IterableIterator<Seed[]>{
+        let [a, b] = triple_operands;
+        if (!(b in forwardCache[2])){
+            [a, b] = [b, a];
+        }
+
+        // # TODO: If (somehow) neither of (a, b) are a known pair,
+        // # should this return [Sentinel] where Sentinel
+        // # is never in Seeds, to exclude further cache
+        // # entries based on them?
+        for (const pair_seeds of (forwardCache[2]?.[b] ?? new Map()).keys()){
+            yield [a, ...pair_seeds] as Seed[];
+        }
+    }
 
     function* seedsGen(): IterableIterator<[number, OperandT, OperandT]>{
         forwardCache[2] ??= {};
@@ -196,9 +212,14 @@ export function makeCaches(
                     const [triple, tripleMap] = tripleItem;
                     if (pairMap.keys().every(
                             (pairOperands) => tripleMap.keys().every(
-                                (tripleOperands) => !enoughSeeds(pairOperands.concat(tripleOperands), seeds)
-                            )
-                        )) {
+                                (tripleOperands) => 
+                                    Array.from(triple_seeds(tripleOperands)).every(
+                                        triple_seeds => !enoughSeeds([...pairOperands,...triple_seeds], seeds)
+                                        )
+                                
+                                )
+                            )       
+                        ) {
                         continue;
                     }
 
