@@ -173,8 +173,33 @@ export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {
 
     for (let i = 0; i < arr.length+1-n; i++) {
 
-        for (const combination of combinations(n-1, arr.slice(i+1))) {
+        for (const combination of combinations<T>(n-1, arr.slice(i+1))) {
             yield [arr[i], ...combination];
         }
     }
+}
+
+
+export function* permutations<T>(n: number, arr: T[]): IterableIterator<T[]> {
+
+    if (n > arr.length) {
+        throw new Error(`Not enough items in: ${arr} for permutations of length: ${n}.`);
+    }
+
+    if (n===1) {
+        for (const x of arr) {
+            yield [x];
+        }
+        return;
+    }
+
+    for (let i = 0; i < arr.length; i++) {
+        const first = arr[i];
+        const rest = arr.toSpliced(i,1);
+
+        for (const permutation of permutations<T>(n-1, rest)) {
+            yield [first, ...permutation];
+        }
+    }
+
 }
