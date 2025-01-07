@@ -2,7 +2,8 @@
 import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
          OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
-         inverseOp, AllDepthsCacheT, Goal, GOALS_T, combinations
+         inverseOp, AllDepthsCacheT, Goal, GOALS_T, 
+         combinations, permutations,
         } from './Core';
 
 import { ALL_SEEDS } from '../Core';
@@ -128,15 +129,26 @@ export function makeCaches(
             for (const [tripleResult, triplesMap] of Object.entries(forwardCache[3])) {
                 for (const seed of seeds) {
                     if (triplesMap.keys().every(
-                            (operands) => operands.every(
-                                (pair, i, arr) => arr.filter(
-                                    (tripleSeed) => seeds.includes(tripleSeed)
+                            (operands) => Array.from(permutations(2,operands)).filter(
+                                    ([tripleSeed, pair], i, arr) => seeds.includes(tripleSeed)
                                     ).every(
-                                        (tripleSeed) => forwardCache[2][pair].keys().every(
-                                            pairSeeds => !enoughSeeds(pairSeeds.concat([tripleSeed, seed]),seeds)
+                                        // If the pair is not in forwardCache[2],
+                                        // then it can't be made from any pair of seeds
+                                        // that we've tried to build the cache with so far.
+                                        //
+                                        // If so, only the pair that is in forwardCache[2] 
+                                        // should determine whether we skip tripleResult 
+                                        // from forwardCache[4] or not
+                                        //
+                                        // .every on an empty array defaults to true:
+                                        // > let m = new Map()
+                                        // undefined
+                                        // > m.keys().every((x) => false)
+                                        // true
+                                        ([tripleSeed, pair], i, arr) => pair in forwardCache[2] && forwardCache[2][pair].keys().every(
+                                            (pairSeeds) => !enoughSeeds(pairSeeds.concat([tripleSeed, seed]),seeds)
                                             )
                                         )
-                                )
                             )
                         ) {
                         continue;
