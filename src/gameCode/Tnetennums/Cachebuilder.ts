@@ -2,11 +2,11 @@
 import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
          OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
-         inverseOp, AllDepthsCacheT, Goal, GOALS_T, 
-         combinations, permutations,
+         inverseOp, AllDepthsCacheT, Goal, GOALS_T, Grade,
+         combinations, permutations, 
         } from './Core';
 
-import { ALL_SEEDS } from '../Core';
+import { ALL_SEEDS, HashTable } from '../Core';
 
 
 
@@ -34,7 +34,7 @@ export function addOpsResultsToCaches(
             newSymbol = symbol
         }
 
-        cache[result] ??= new Map();
+        cache[result] ??= new HashTable<OpsCacheKeyT,Record<Op,Grade>>();
 
         const resultsDict = cache[result];
         if (!resultsDict.has(key)) {
@@ -110,7 +110,7 @@ export function makeCaches(
         // # should this return [Sentinel] where Sentinel
         // # is never in Seeds, to exclude further cache
         // # entries based on them?
-        for (const pair_seeds of (forwardCache[2]?.[b] ?? new Map()).keys()){
+        for (const pair_seeds of (forwardCache[2]?.[b] ?? new HashTable<OpsCacheKeyT, OpsCacheValT>()).keys()){
             yield [a, ...pair_seeds] as Seed[];
         }
     }
@@ -157,7 +157,7 @@ export function makeCaches(
                                         // from forwardCache[4] or not
                                         //
                                         // .every on an empty array defaults to true:
-                                        // > let m = new Map()
+                                        // > let m = new HashTable<OpsCacheKeyT, OpsCacheValT>()
                                         // undefined
                                         // > m.keys().every((x) => false)
                                         // true

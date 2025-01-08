@@ -99,3 +99,36 @@ export function* takeNextN<T>(N: number, iterator: IterableIterator<T>, errorMes
       yield result.value;
     }
 }
+
+
+export class HashTable<K,V> {
+    private map: Map<string,V>;
+    constructor() {
+        this.map = new Map<string,V>()
+    }
+    makeKey(key: K): string {
+      return JSON.stringify(key);
+    }
+    get(key: K): V | undefined {
+        return this.map.get(this.makeKey(key));
+    }
+    set(key: K, val: V) {
+        this.map.set(this.makeKey(key), val);
+    }
+    has(key: K): boolean {
+      return this.map.has(this.makeKey(key));
+    }
+    size(): number {
+        return this.map.size;
+    }
+    keys(): K[] {
+        return Array.from(this.map.keys().map((s) => JSON.parse(s)));
+    }
+    entries(): [K,V][] {
+        return Array.from(this.map.entries().map(([s, v]) => [JSON.parse(s), v]));
+    }
+    values(): V[] {
+        return Array.from(this.map.values());
+    }
+
+}

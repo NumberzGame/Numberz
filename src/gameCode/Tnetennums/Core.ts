@@ -4,7 +4,7 @@ import { difficultyOfSum, difficultyOfProduct,
     difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
 
 import SYMBOLS from '../../data/symbols.json' with { type: "json" };
-import {OPS, INVALID_ARGS } from '../Core';
+import {OPS, INVALID_ARGS, HashTable } from '../Core';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -24,11 +24,11 @@ type Counter = Record<string, number>;
 
 export type OpsCacheKeyT = OperandsT;
 export type OpsCacheValT = Record<Op,[Result, Grade]>;
-export type OpsCacheT = Map<OpsCacheKeyT, OpsCacheValT>;
+export type OpsCacheT = HashTable<OpsCacheKeyT, OpsCacheValT>;
 export type DifficultyCalculator = (a: OperandT, b: OperandT) => Grade;
 export type DifficultyCalculators = Record<Op, DifficultyCalculator>;
 
-export type ResultsAndGradesCacheT = Record<Result,Map<OpsCacheKeyT,Record<Op,Grade>>>;
+export type ResultsAndGradesCacheT = Record<Result,HashTable<OpsCacheKeyT,Record<Op,Grade>>>;
 export type AllDepthsCacheT = Record<number,ResultsAndGradesCacheT>
 export type ResultsAndGradesCachesT = {"forward": AllDepthsCacheT,
                                        "reverse": AllDepthsCacheT,
@@ -47,7 +47,7 @@ export const GOALS = Object.freeze({
     "length" : GOAL_MAX - GOAL_MIN + 1,
     });
                                         
-export const opsCache: OpsCacheT = new Map();
+export const opsCache: OpsCacheT = new HashTable<OpsCacheKeyT, OpsCacheValT>();
 export const resultsAndGradesCaches: ResultsAndGradesCachesT = {"forward": {}, "reverse": {}};
 
 
