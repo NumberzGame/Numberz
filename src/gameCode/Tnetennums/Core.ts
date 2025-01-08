@@ -59,7 +59,7 @@ export const DIFFICULTY_CALCULATORS: DifficultyCalculators = {
     "/": difficultyOfLongDivision,
 }
 
-// Normal as in unexceptional
+// "Normal", as in unexceptional
 export const normalInverses: Record<Op, Op> = {
     "+": "-",  // we know goal >= 0 so goal == a-b == |a-b|
     "*": "/",
@@ -146,15 +146,29 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op{
     // symbol in our special commutative versions of (+, -, *, //)
     // in core.OPS
 
+
+    // # E.g.  if the goal (e.g. key in reverse caches[2]) is 4, and we 
+    // # also have an operand of 140, we could reach 136 == |4 - 140|as a sub goal.
+    // #  To invert this in a solution expr equal to 4 however,
+    // # Needs the order of operands swapping, and the same op, as:
+    // # 4 = |140-136|
     if ((symbol === "-") && (goal < operand)){
         return "-";
         // switch the order to support validation via eval.
-    } else if ((symbol === "/") && (operand % goal === 0)){
+    } 
+    
+    
+    // # E.g. if the goal is 2, and we have an operand of 16,
+    // # we could reach 8 == 2 -//- 16.  But the inverse op
+    // # needed to construct a sol expr for 2 then comes from
+    // # 2 == 8 -//- 16 == 16 // 8 
+    if ((symbol === "/") && (operand % goal === 0)){
         return "/";
         // switch the order even though our ops are commutative, as above.
-    } else {
-        return normalInverses[symbol];
-    }
+    } 
+    
+    return normalInverses[symbol];
+    
 }
 
 

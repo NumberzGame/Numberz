@@ -4,7 +4,7 @@
 import { argv } from "node:process";
 
 import { INVALID_ARGS, OP_SYMBOLS, OPS, takeNextN } from '../Core';
-import { SolutionForm, Seed, Op,  } from './Core';
+import { SolutionForm, Seed, Op, inverseOp, AllDepthsCacheT } from './Core';
 import { makeCaches } from "./Cachebuilder";
 import { find_solutions } from "./Solver";
 
@@ -17,6 +17,32 @@ const OPS_PATTERN = OP_SYMBOLS.map((c) => `\\${c}`).join('|');
 const OPS_REGEXP = new RegExp(OPS_PATTERN,'g');
 const DIGITS_REGEXP = new RegExp('\\d+','g');
 // "|".join(re.escape(op) for op in core.OPS)
+
+
+function investigate_140_1_1_1_1_25_10(): void {
+
+    const seeds = [25,10,1,1,1,1]
+    const goal = 140;
+
+    console.log(inverseOp('-', 13,14));
+    console.log(inverseOp('/', 10,140));
+
+    const fwd: AllDepthsCacheT = {};
+    const rev: AllDepthsCacheT = {};
+
+    makeCaches(seeds, [goal], 6, fwd, rev);
+
+    console.log(rev[1]);
+
+
+    for (const solution of find_solutions(seeds, goal, "all")) {
+        console.log(solution);
+    }
+
+}
+
+// investigate_140_1_1_1_1_25_10()
+
 
 
 function* get_op_symbols_from_encodable_sol_expr(expr: string): IterableIterator<string>{
@@ -46,10 +72,10 @@ function eval_encodable(
 
     if (typeof form === 'number') {
         let retval = seeds_it.next().value;
-        console.log(`Retval at start: ${retval}`)
+        // console.log(`Retval at start: ${retval}`)
         for (const op_symbol of takeNextN<string>(form - 1, ops_it, `Not enough Ops in ${ops}`)){
             const op = OPS[op_symbol];
-            console.log(`op: ${op}`);
+            // console.log(`op: ${op}`);
             const seed = seeds_it.next().value
             const result = op(retval, seed);
             if (result === null || result === INVALID_ARGS) {
@@ -57,7 +83,7 @@ function eval_encodable(
                     `Invalid encoded solution: result: ${String(result)}, ${form} ${seeds}, ${ops}`
                 )
             }
-            console.log(`Result: ${result} after ${op_symbol} for int form: ${retval}`);
+            // console.log(`Result: ${result} after ${op_symbol} for int form: ${retval}`);
             retval = result;
         }
         return retval;

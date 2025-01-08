@@ -69,14 +69,14 @@ export function addTriplesToReverseCache(
                 reverseCache[3],
                 goal,
                 tripleVal,
-                (op: Op) => inverseOp(op, goal, tripleVal),
+                (op: Op) => inverseOp(op, tripleVal, goal),
                 )
 
-            if (i++ % iterationsPerMessage === 0) {
-                console.log(
-                    `${i}/${numGoalTripleVals}, cached triple-triples for ${goal}, ${tripleVal}, ${Math.floor(100*i / numGoalTripleVals)}% done`
-                )
-            }
+            // if (i++ % iterationsPerMessage === 0) {
+            //     console.log(
+            //         `${i}/${numGoalTripleVals}, cached triple-triples for ${goal}, ${tripleVal}, ${Math.floor(100*i / numGoalTripleVals)}% done`
+            //     )
+            // }
         }
     }
 }
@@ -91,12 +91,12 @@ export function makeCaches(
     reverseCache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
 ): [AllDepthsCacheT, AllDepthsCacheT] {
     // # maxDepth = min(maxDepth, 4)
-    console.log(`Max depth: ${maxDepth}`);
+    // console.log(`Max depth: ${maxDepth}`);
 
 
 
     const numIterations = 1086665;
-    console.log(`numIterations=${numIterations}`);
+    // console.log(`numIterations=${numIterations}`);
 
     function* triple_seeds(
         triple_operands: [OperandT, OperandT],
@@ -269,35 +269,35 @@ export function makeCaches(
 
     for (const [depth, a, b] of seedsGen()) {
         addOpsResultsToCaches(forwardCache[depth], a, b, null);
-        if (i++ % iterationsPerMessage == 0) {
-            console.log(
-                `i=${i}, calculating depth ${depth}, [a,b]=${[a,b]}, ${Math.floor(100*i / numIterations)}% done`
-            )
-        }
+        // if (i++ % iterationsPerMessage == 0) {
+        //     console.log(
+        //         `i=${i}, calculating depth ${depth}, [a,b]=${[a,b]}, ${Math.floor(100*i / numIterations)}% done`
+        //     )
+        // }
     }
 
-    console.log(`i=${i}`);
+    // console.log(`i=${i}`);
 
 
-    console.log("Building reverse cache...");
+    // console.log("Building reverse cache...");
     let k = 0;
 
-    for (const [depth, a, b] of goalsReverseGen()) {
+    for (const [depth, goal, operand] of goalsReverseGen()) {
         addOpsResultsToCaches(
             reverseCache[depth],
-            a,
-            b,
-            (symbol) => inverseOp(symbol, a, b),
+            goal,
+            operand,
+            (symbol) => inverseOp(symbol, operand, goal),
         );
-        if (k++ % iterationsPerMessage == 0) {
-            const progress = `${Math.floor(100*k / numIterations)}`;
-            console.log(`k=${k}, depth=${depth}, [a,b]=${[a,b]}, ${progress} done`)
-        }
+        // if (k++ % iterationsPerMessage == 0) {
+        //     const progress = `${Math.floor(100*k / numIterations)}`;
+        //     console.log(`k=${k}, depth=${depth}, [goal, operand]=${[goal,operand]}, ${progress} done`)
+        // }
     }
 
-    console.log(`k=${k}`);
+    // console.log(`k=${k}`);
     if (maxDepth >= 6) {
-        console.log(`Caching reverse triples...`);
+        // console.log(`Caching reverse triples...`);
         addTriplesToReverseCache(forwardCache, reverseCache, goals)
     }
 
