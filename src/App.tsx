@@ -6,7 +6,6 @@ import {
 import { MantineProvider, createTheme, virtualColor  } from '@mantine/core';
 import { Router } from './Router';
 import { theme } from './theme';
-import { GameBoSelector } from './components/NumbersGame/GameSelector';
 
 const queryClient = new QueryClient({
   defaultOptions: {

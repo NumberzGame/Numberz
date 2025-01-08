@@ -2,7 +2,7 @@ import { useRef, useState, ReactNode } from 'react';
 import { useImmer } from "use-immer";
 
 import { useDisclosure, useFocusWithin } from '@mantine/hooks';
-import {Anchor, Center, Group, HoverCard, Button, Select,
+import {Anchor, Box, Center, Group, HoverCard, Button, Select,
         Image, Text, Slider, Modal, Stack, NumberInput, 
         SimpleGrid, TagsInput, Popover, FileInput } from '@mantine/core';
 
@@ -548,45 +548,37 @@ export function GameSelector(props: {grade: number}) {
                   {seed}
                  </Button>
       });
-      return <Group justify="center" mt="xl">
+      return <Group justify="center" mt="xs">
               <Stack justify="flex-start">
-                <div>
-                  <Group justify="space-between">
+                <Box>
+                  <Group justify="start">
                     <Text>Choose difficulty. </Text>
-                    <Button 
-                      onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
-                    >
-                    New random game
-                    </Button>
                   </Group>
                   <GradeSlider
                     initialValue={gradeObj.current}
                     onChangeEnd={gradeSliderHandler}
                   >  
                   </GradeSlider>
-                </div>
-                <div>
-                  <Group justify="space-between" mt="lg">
-                    <Text>Choose starting numbers and goal. </Text>
+                  <Group justify="end" mt ="xl">
                     <Button 
-                      onClick={() => {
-                        if (newCustomGameID.seedIndices.length === 0) {
-                          return;
-                        }
-                        setCurrentGameID(newCustomGameID);
-                        // Immer producers can also create new states 
-                        // if drafts are unmodified.
-                        // https://immerjs.github.io/immer/return
-                        setNewCustomGameIDWithImmer((draft) => new CustomGameID());
-                      }}
+                      onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
                     >
-                    New custom game
+                    New random game
                     </Button>
                   </Group>
-                  <Group mt="xs">
+                </Box>
+                <Box>
+                  <Group justify="start" >
+                    <Text>Choose starting numbers and goal. </Text>
+                  </Group>
+                  <Group 
+                    justify="space-between" 
+                    gap="xs" 
+                  >
                     <Stack
                       h={200}
-                      align="center"
+                      w="60%"
+                      align="stretch"
                       justify="flex-start"
                       gap="md"
                     >
@@ -603,18 +595,16 @@ export function GameSelector(props: {grade: number}) {
                                     }
                                  )}
                         maxTags={MAX_SEEDS}
-                        maw={280}
-                        w={280}
                         mah={200}
                       />
-                      <SimpleGrid cols = {5}>
+                      <SimpleGrid cols = {5} preventGrowOverflow={false}>
                         {seedButtons}
                       </SimpleGrid>
                     </Stack>
                     <Stack
                       h={200}
-                      align="center"
-                      justify="flex-start"
+                      align="flex-end"
+                      justify="space-between"
                       gap="md"
                     >
                       <NumberInputWithDigitsKeys 
@@ -624,22 +614,29 @@ export function GameSelector(props: {grade: number}) {
                               )}
                       >
                       </NumberInputWithDigitsKeys>
+                      <Group justify="end" mt="xs">
+                        <Button 
+                          onClick={() => {
+                            if (newCustomGameID.seedIndices.length === 0) {
+                              return;
+                            }
+                            setCurrentGameID(newCustomGameID);
+                            // Immer producers can also create new states 
+                            // if drafts are unmodified.
+                            // https://immerjs.github.io/immer/return
+                            setNewCustomGameIDWithImmer((draft) => new CustomGameID());
+                          }}
+                        >
+                        New custom game
+                        </Button>
+                      </Group>
                     </Stack>
                   </Group>
-                
-                </div>
-                <div>
-                  <Group justify="space-between">
+                  
+                </Box>
+                <Box>
+                  <Group justify="start">
                     <Text>Choose previously played game. </Text>
-                    <Button 
-                      onClick={() => {
-                        if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
-                            setCurrentGameID(historicalGames[historicalGameStr].id)
-                        };
-                      }}
-                    >
-                    Resume old game
-                    </Button>
                   </Group>
                   <Select
                     label="Game history."
@@ -721,7 +718,19 @@ export function GameSelector(props: {grade: number}) {
                     }}
                   />
                   </Group>
-                </div>
+                  
+                  <Group justify="end" mt="sm">
+                    <Button 
+                      onClick={() => {
+                        if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
+                            setCurrentGameID(historicalGames[historicalGameStr].id)
+                        };
+                      }}
+                    >
+                    Resume game
+                    </Button>
+                  </Group>
+                </Box>
               </Stack>
              </Group>
       
