@@ -62,7 +62,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
     //                             ...SEEDS.slice(12,14),
     //                            ]
 
-    if (newCustomGameID.seeds().length === 0) {
+    if (newCustomGameID.seeds().length >= 2) {
       makeCaches(
             newCustomGameID.seeds(),
             [newCustomGameID.goal],
