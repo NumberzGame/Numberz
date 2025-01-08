@@ -10,7 +10,10 @@ import {Anchor, Box, Center, Group, HoverCard, Button, Select,
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query';
 
-
+import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
+import { CustomGamePicker } from './CustomGamePicker';
+import { HistoricalGamePicker } from './HistoricalGamePicker';
+import { WinScreen } from './WinScreen';
 import { NumbersGame } from './NumbersGame';
 
 import { randomPositiveInteger, SEEDS, ALL_SEEDS, GOAL_MIN, GOAL_MAX, MAX_SEEDS } from "../../gameCode/Core";
@@ -244,49 +247,8 @@ const saveGameIDIfStorageAvailable = function(id: GameID): void {
 const GRADE: number = 22;
 
 
-interface winScreenProps {
-    opened: boolean;
-    close: () => void;
-
-}
 
 
-
-export function WinScreen(props: winScreenProps) {
-    // CC0 https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T
-    // Photographer credit: https://stocksnap.io/author/travelphotographer
-    return <Modal
-              opened = {props.opened}
-              onClose = {props.close}
-              title="You are the winner!!"
-              size="auto"
-            >
-            <Center mt="md">
-            {/* <Text size="lg">
-            </Text> */}
-                {/* <Group gap="xs" maw = "400" justify="right" mt="sm" mr="sm" >
-                  <Button size="md" onClick={}><b>X</b></Button>
-                </Group> */}
-            </Center>
-            <Group justify="center" mt="md">
-              <HoverCard shadow="md" openDelay={2000}>
-                <HoverCard.Target>
-                  <Image
-                  h={500}
-                  w="auto"
-                  src="/fireworks-background_CPLJUAMC1T.jpg"
-                  radius="lg"
-                ></Image>
-                </HoverCard.Target>
-                <HoverCard.Dropdown>
-                  <Anchor href="https://stocksnap.io/author/travelphotographer"
-                          size="sm"
-                          c="violet">Photo credit: "TravelPhotographer"</Anchor>
-                </HoverCard.Dropdown>
-              </HoverCard>
-            </Group>
-    </Modal>
-    }
 
 
 
@@ -307,47 +269,9 @@ const previouslyUnseenGradedGameID = function(minGrade: number, maxGrade: number
 }
 
 
-interface gradeSliderProps{
-    initialValue: number;
-    onChangeEnd: (val: number) => void;
-    onClick: () => void;
-}
-
-function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
-  const [grade, setGrade] = useState(props.initialValue);
-  return <>
-          <Group justify="start">
-            <Text>Choose difficulty. </Text>
-          </Group>
-          <Text size="sm">Puzzle difficulty.</Text>
-          <Slider
-            value = {grade}
-            min={1}
-            max = {246}
-            marks={[
-              {value: 1, label: '1'},
-            //   // { value: 20, label: '20%' },
-            //   // { value: 50, label: '50%' },
-            //   // { value: 80, label: '80%' },
-              {value: 246, label: '246'},
-            ]}
-            // mt = {15}
-            maw={500}
-            onChange={setGrade}
-            onChangeEnd = {props.onChangeEnd}
-          />
-          <Group justify="end" mt ="xl">
-            <Button 
-              onClick={props.onClick}
-            >
-            New random game
-            </Button>
-          </Group>
-  </>
-}
 
 
-const storedGames = function*(): IterableIterator<Game> {
+const getStoredGames = function*(): IterableIterator<Game> {
     if (!LOCAL_STORAGE_AVAILABLE) {
         return;
     }
@@ -375,130 +299,15 @@ const storedGames = function*(): IterableIterator<Game> {
 
 
 
-interface NumberInputWithDigitsKeysProps{
-    value: number;
-    onSet: (value: number) => void;
-}
-
-export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
-  const [opened, { open, close }] = useDisclosure(false);
-  const { ref, focused } = useFocusWithin({onFocus: open});
-  const [value, setValueThisState] = useState<string | number>(props.value);
-  
-  const setValue = function(value: string | number): void {
-      setValueThisState(value);
-      if (typeof value === 'number') {
-          props.onSet(value);
-      }
-  }
-
-  const makeDigitButtonClickHandler = function(i: number) {
-      const digitButtonClickHandler = function(): void{
-          if (typeof value === 'string') {
-              setValue(`${value}${i}`);  
-          } else if (typeof value === 'number') {
-              setValue(10*value+i);
-          } else {
-              throw new Error(`Value: ${value} must be a number or a string. `
-                              +`Got type: ${typeof value}`
-                            );
-          };
-      }
-      return digitButtonClickHandler
-  }
-
-  const deleteButtonClickHandler = function(): void {
-
-      if (typeof value === 'string') {
-          setValue(value.slice(0,-1));  
-      } else if (typeof value === 'number') {
-          setValue(Math.floor(value / 10) );
-      } else {
-          throw new Error(`Value: ${value} must be a number or a string. `
-                         +`Got type: ${typeof value}`
-                         );
-      };
-  }
-
-  const buttons = Array(10).fill(undefined).map((x, i) => 
-    <Button 
-       variant = "transparent"
-       key = {nanoid()}
-       onClick = {makeDigitButtonClickHandler(i)}>
-      {i}
-    </Button>
-  );
-  buttons.push(<Button variant = "transparent" onClick={deleteButtonClickHandler} key = {nanoid()}>←</Button>);
-  buttons.push(<Button variant = "transparent" onClick={close} aria-label="Close Popover" key = {nanoid()}>X</Button>);
-  return <Popover  
-              opened={opened} 
-              onClose={close}
-              trapFocus={true}
-           >
-           <Popover.Target> 
-             <NumberInput 
-                label="Goal: "
-                value={value}
-                onChange={setValue}
-                min={GOAL_MIN}
-                max={GOAL_MAX}
-                maw = {300}
-                ref={ref}
-             ></NumberInput>
-           </Popover.Target>
-           <Popover.Dropdown>
-             <SimpleGrid cols={3}>
-               {buttons}
-             </SimpleGrid>
-           </Popover.Dropdown>
-           </Popover>
-
-}
 
 
-const countXinArr = function<T>(X: T, Arr: T[]): number {
-    return Arr.filter((y) => y === X).length;          
-}
-
-
-const allOfThisSeedUsed = function(seedIndex: number, seedIndices: number[]): boolean {
-  const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
-  return countXinArr(seedIndex, seedIndices) >= maxNumSeedsAllowed;
-}
-
-const tooManyOfThisSeedUsed = function(seedIndex: number, seedIndices: number[]): boolean {
-    const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
-    return countXinArr(seedIndex, seedIndices) > maxNumSeedsAllowed;
-}
-
-const formatterOptions: Intl.DateTimeFormatOptions = {
-  timeStyle: "medium",
-  dateStyle: "medium",
-};
-const formatter = new Intl.DateTimeFormat(navigator.language, formatterOptions);
-const prettifyGame = function(game: Game): string{
-    const id: GradedGameID | CustomGameID = game.id;
-    const description = id instanceof GradedGameID ? `Grade: ${id.grade}` : "Custom";
-    return (`${formatter.format(new Date(game.timestamp_ms))}. ${description}. `
-           +`Numbers: ${game.seedsAndDecoys().map((x)=>x.toString()).join(', ')}.  `
-           +`Goal: ${game.id.goal}. `
-           )
-}
 
 export function GameSelector(props: {grade: number}) {
   const gradeObj = useRef(1); //props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(loadCurrentGameIDIfStorageAvailable);
-  const [newCustomGameID, setNewCustomGameIDWithImmer] = useImmer<CustomGameID>(new CustomGameID());
   
-  const historicalGames = Object.fromEntries(Array.from(storedGames()).map(
-    (game) => [prettifyGame(game),
-               game
-              ]
-  )); 
-  // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
-  const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(Object.keys(historicalGames).at(-1) ?? null);
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function(): void {
@@ -540,33 +349,7 @@ export function GameSelector(props: {grade: number}) {
           return <></>;
       }
 
-      const makeSeedButtonClickHandler = function(seedIndex: number): ()=>void {
-          const seedButtonClickHandler = function(): void {
-              setNewCustomGameIDWithImmer((draft: CustomGameID) => {
-                  if (!allOfThisSeedUsed(seedIndex, draft.seedIndices) && draft.seedIndices.length < MAX_SEEDS) {
-                      draft.seedIndices.push(seedIndex);
-                  } else if (draft.seedIndices.includes(seedIndex)) {
-                      // Delete seedIndex from draft.seedIndices
-                      draft.seedIndices.splice(draft.seedIndices.lastIndexOf(seedIndex), 1)
-                  }
-              });
-          }
-          return seedButtonClickHandler;
-      }
-      const seedButtons = SEEDS.map((seed, seedIndex) => {
-          const clickHandler = makeSeedButtonClickHandler(seedIndex);
-          const colour = newCustomGameID.seedIndices.includes(seedIndex) ? "pink" : "blue";
-          return <Button 
-                  variant="filled" 
-                  size="compact-sm" 
-                  radius="xl"
-                  onClick={clickHandler}                           
-                  color={colour} 
-                  key = {nanoid()}
-                 >
-                  {seed}
-                 </Button>
-      });
+
       return <Group justify="center" mt="xs">
               <Stack justify="flex-start">
                   <RandomGameOfGivenGradePicker
@@ -574,170 +357,15 @@ export function GameSelector(props: {grade: number}) {
                     onChangeEnd={gradeSliderHandler}
                     onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
                   />  
-                <Box>
-                  <Group justify="start" >
-                    <Text>Choose starting numbers and goal. </Text>
-                  </Group>
-                  <Group 
-                    justify="space-between" 
-                    gap="xs" 
-                  >
-                    <Stack
-                      h={200}
-                      w="60%"
-                      align="stretch"
-                      justify="flex-start"
-                      gap="md"
-                    >
-                      <TagsInput 
-                        label="Starting numbers."
-                        placeholder="Enter numbers."
-                        value={newCustomGameID.seedIndices.map((i) => SEEDS[i].toString())}
-                        onChange={(value) => setNewCustomGameIDWithImmer(
-                                    draft => {
-                                        const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)));
-                                        if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))){
-                                            draft.seedIndices = newSeedIndices;
-                                        }
-                                    }
-                                 )}
-                        maxTags={MAX_SEEDS}
-                        mah={200}
-                      />
-                      <SimpleGrid cols = {5}>
-                        {seedButtons}
-                      </SimpleGrid>
-                    </Stack>
-                    <Stack
-                      h={200}
-                      align="flex-end"
-                      justify="space-between"
-                      gap="md"
-                    >
-                      <NumberInputWithDigitsKeys 
-                        value = {newCustomGameID.goal}
-                        onSet={(value) => setNewCustomGameIDWithImmer(
-                                  draft => {draft.goal = value}
-                              )}
-                      >
-                      </NumberInputWithDigitsKeys>
-                      <Group justify="end" mt="xs">
-                        <Button 
-                          onClick={() => {
-                            if (newCustomGameID.seedIndices.length === 0) {
-                              return;
-                            }
-                            setCurrentGameID(newCustomGameID);
-                            // Immer producers can also create new states 
-                            // if drafts are unmodified.
-                            // https://immerjs.github.io/immer/return
-                            setNewCustomGameIDWithImmer((draft) => new CustomGameID());
-                          }}
-                        >
-                        New custom game
-                        </Button>
-                      </Group>
-                    </Stack>
-                  </Group>
-                  
-                </Box>
-                <Box>
-                  <Group justify="start">
-                    <Text>Choose previously played game. </Text>
-                  </Group>
-                  <Select
-                    label="Game history."
-                    placeholder="Select game"
-                    data={Object.keys(historicalGames).sort((a,b) =>historicalGames[b].timestamp_ms -historicalGames[a].timestamp_ms)}
-                    value={historicalGameStr}
-                    onChange={setHistoricalGameStr}
-                    withScrollArea={false}
-                    styles={{ dropdown: { maxHeight: 200, overflowY: 'auto' } }}
-                    mt="xs"
+                  <CustomGamePicker
+                    setCurrentGameID={setCurrentGameID}
+
                   />
-                  <Group justify="space-between">
-                  <Button
-                    mt="md"
-                    component="a"
-                    href={`data:text/json;charset=utf-8,${
-                            encodeURIComponent(
-                                JSON.stringify(
-                                    Object.values(historicalGames).sort(
-                                          (a, b) => b.timestamp_ms - a.timestamp_ms
-                                          ),
-                                    null,
-                                    4
-                                    )
-                                )
-                          }`
-                    }
-                    download="numberz_game_history.json"
-                    >
-                  Download game history.
-                  </Button>
-                  <FileInput
-                    aria-label="Upload game history"
-                    accept="text/json"
-                    label="Upload game history"
-                    placeholder="(Warning: overwrites existing saved games with same ID)"
-                    onChange={async (fileBlob) => {
-                        if (fileBlob === null) {
-                            return;
-                        }
-                        const jsonString = await fileBlob.text();
-                        const uploadedGameData = JSON.parse(jsonString);
-                        for (const gameData of uploadedGameData) {
-                            const moves: Move[] = [];
-                            const stateObj = gameData?.['state'] ??{};
-                            for (const moveObj of stateObj?.['moves'] ?? []) {
-                                const move = new Move(
-                                                    moveObj?.['opIndex'] ?? null,
-                                                    moveObj?.['submitted'] ?? false,
-                                                    moveObj?.['operandIndices'] ?? [],
-                                                  );
-                                moves.push(move);
-                            }
-                            const state = new GameState(stateObj['solved'], moves);
-                            let id: GameID;
-                            const idData = gameData['id'];
-                            const goal = idData['goal'];
-                            if ('seedIndices' in idData){
-                                id = new CustomGameID(goal, idData['seedIndices']);
-                            } else if ('grade' in idData && 'form' in idData && 'index' in idData) {
-                                id = new GradedGameID(
-                                            idData['grade'],
-                                            idData['goal'],
-                                            idData['form'],
-                                            idData['index']
-                                            );
-                            } else {throw new Error(`Could not form GameID from: ${idData}`);}
-                            const game = new Game(
-                                              id,
-                                              gameData['timestamp_ms'],
-                                              gameData['seedIndices'],
-                                              gameData['opIndices'],
-                                              state,
-                                              gameData['redHerrings'],
-                                              gameData['seedsDisplayOrder'],
-                                              );
-                            storeGame(game);
-                        }
-                    }}
+                  <HistoricalGamePicker
+                    getStoredGames={getStoredGames}
+                    storeGame={storeGame}
+                    setCurrentGameID={setCurrentGameID} 
                   />
-                  </Group>
-                  
-                  <Group justify="end" mt="sm">
-                    <Button 
-                      onClick={() => {
-                        if ((historicalGameStr !== null) && historicalGameStr in historicalGames) {
-                            setCurrentGameID(historicalGames[historicalGameStr].id)
-                        };
-                      }}
-                    >
-                    Resume game
-                    </Button>
-                  </Group>
-                </Box>
               </Stack>
              </Group>
       
