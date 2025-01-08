@@ -16,11 +16,12 @@ import { HistoricalGamePicker } from './HistoricalGamePicker';
 import { WinScreen } from './WinScreen';
 import { NumbersGame } from './NumbersGame';
 
-import { randomPositiveInteger, SEEDS, ALL_SEEDS, GOAL_MIN, GOAL_MAX, MAX_SEEDS } from "../../gameCode/Core";
+import { randomPositiveInteger, SEEDS, ALL_SEEDS, GOAL_MIN, GOAL_MAX, MAX_SEEDS, OP_SYMBOLS } from "../../gameCode/Core";
 import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } from '../../gameCode/Schema';
 import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
+import { easiestSolution, stringifyForm, get_op_symbols_from_encodable_sol_expr } from '../../gameCode/Tnetennums/Solver';
 
 
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
@@ -29,6 +30,7 @@ import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 
 import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
+import { identity } from '@mantine/core/lib/core/factory/factory';
 
 
 
@@ -386,19 +388,28 @@ export function GameSelector(props: {grade: number}) {
       )
   } else {
       if (currentGameID instanceof CustomGameID) {
-      
+          const solution = easiestSolution(
+            currentGameID.seeds(),
+            currentGameID.goal,
+            );
+
+          const form  = solution === null ? null : stringifyForm(solution.form);
+          const grade = solution === null ? null : solution.grade;
+          const id = new CustomGameID(
+                              currentGameID.goal,
+                              currentGameID.seedIndices,
+                              form,
+                              grade,
+                              )
           const state = new GameState();
           const datetime_ms = Date.now();
           const seedIndices = currentGameID.seedIndices;
-          const opIndices = null;
-          game = new Game(currentGameID, datetime_ms, seedIndices, opIndices, state);
-          // gameComponent = (
-          //   <NumbersGame 
-          //     game = {game}
-          //     onWin = {onWin}
-          //     store = {storeGame}
-          //     onQuit = {onQuit}
-          //   ></NumbersGame>
+          const opIndices = (solution === null 
+                            ? null
+                            : Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable)).map((op) => OP_SYMBOLS.indexOf(op))
+                            );
+          game = new Game(id, datetime_ms, seedIndices, opIndices, state);
+
       } 
       if (game === null) {
           throw new Error(` Unsupported GameID type: ${currentGameID}.  No corresponding game found`
@@ -447,7 +458,7 @@ function NewGradedGame(props: NewGradedGameProps) {
   // while (true) {
   const grade = gameID.grade;
   const goal = gameID.goal; //
-  const form = gameID.form; //
+  const form = gameID.form!; //
 
   const formStrNoCommas = form.replaceAll(', ','_');
   const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
@@ -480,7 +491,7 @@ function NewGradedGame(props: NewGradedGameProps) {
   }
 
   const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
-  const game = randomGameFromGradeGoalFormAndSols(grade, goal, form, seedsAndOpIndices);
+  const game = randomGameFromGradeGoalFormAndSols(grade!, goal, form, seedsAndOpIndices);
   props.store(game);
   // Only break if the game has not been played before.
   // (previously played games are stored in local storage).

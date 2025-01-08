@@ -3,20 +3,17 @@
 
 import { argv } from "node:process";
 
-import { INVALID_ARGS, OP_SYMBOLS, OPS, takeNextN } from '../Core';
+import { INVALID_ARGS, OPS, takeNextN } from '../Core';
 import { SolutionForm, Seed, Op, inverseOp, AllDepthsCacheT } from './Core';
 import { makeCaches } from "./Cachebuilder";
-import { find_solutions } from "./Solver";
+import { find_solutions, get_op_symbols_from_encodable_sol_expr,
+            get_seeds_from_encodable_sol_expr
+        } from "./Solver";
 
 
 import PUZZLES from './PUZZLES.json' with { type: "json" };
 
 
-// see also EXPR_PATTERN in solverDFS.ts.  They're all escaped in that.
-const OPS_PATTERN = OP_SYMBOLS.map((c) => `\\${c}`).join('|');
-const OPS_REGEXP = new RegExp(OPS_PATTERN,'g');
-const DIGITS_REGEXP = new RegExp('\\d+','g');
-// "|".join(re.escape(op) for op in core.OPS)
 
 
 function investigate_140_1_1_1_1_25_10(): void {
@@ -45,19 +42,6 @@ function investigate_140_1_1_1_1_25_10(): void {
 
 
 
-function* get_op_symbols_from_encodable_sol_expr(expr: string): IterableIterator<string>{
-    for (const match of expr.matchAll(OPS_REGEXP)) {
-        yield match[0];
-    }
-}
-
-
-function* get_seeds_from_encodable_sol_expr(expr: string): IterableIterator<number>{
-    for (const match of expr.matchAll(DIGITS_REGEXP)) {
-        const digits = match[0];
-        yield parseInt(digits);
-    }
-}
 
 
 function eval_encodable(

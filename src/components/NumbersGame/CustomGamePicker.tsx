@@ -27,10 +27,6 @@ const tooManyOfThisSeedUsed = function(seedIndex: number, seedIndices: number[])
 }
 
 
-function stringifyForm(form: SolutionForm): string {
-    return JSON.stringify(form).replace('[','(').replace(']',')');
-}
-
 
 interface CustomGamePickerProps {
     setCurrentGameID: (gameID: GameID) => void;
@@ -98,19 +94,19 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
         if (newCustomGameID.seedIndices.length === 0) {
           return;
         }
-        const solution = easiestSolution(
-                                newCustomGameID.seeds(),
-                                newCustomGameID.goal,
-                                );
+        // const solution = easiestSolution(
+        //                         newCustomGameID.seeds(),
+        //                         newCustomGameID.goal,
+        //                         );
         
-        const form  = solution === null ? null : stringifyForm(solution.form);
-        const grade = solution === null ? null : solution.grade;
-        setNewCustomGameIDWithImmer(
-            draft => {
-              draft.form = form;
-              draft.grade = grade;
-            }
-        )
+        // const form  = solution === null ? null : stringifyForm(solution.form);
+        // const grade = solution === null ? null : solution.grade;
+        // setNewCustomGameIDWithImmer(
+        //     draft => {
+        //       draft.form = form;
+        //       draft.grade = grade;
+        //     }
+        // )
         props.setCurrentGameID(newCustomGameID);
         // Immer producers can also create new states 
         // if drafts are unmodified.

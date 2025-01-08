@@ -5,12 +5,32 @@ import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         combinations, enoughSeeds, resultsAndGradesCaches,
         GOAL_MIN, GOAL_MAX, default_max_num } from './Core';
 
-import {SEEDS, takeNextN} from '../Core';
+import {SEEDS, takeNextN, OP_SYMBOLS} from '../Core';
 
 import { makeCaches } from './Cachebuilder';
 
 
 export const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
+
+// see also EXPR_PATTERN in solverDFS.ts.  They're all escaped in that.
+export const OPS_PATTERN = OP_SYMBOLS.map((c) => `\\${c}`).join('|');
+export const OPS_REGEXP = new RegExp(OPS_PATTERN,'g');
+export const DIGITS_REGEXP = new RegExp('\\d+','g');
+// "|".join(re.escape(op) for op in core.OPS)
+
+export function* get_op_symbols_from_encodable_sol_expr(expr: string): IterableIterator<string>{
+    for (const match of expr.matchAll(OPS_REGEXP)) {
+        yield match[0];
+    }
+}
+
+
+export function* get_seeds_from_encodable_sol_expr(expr: string): IterableIterator<number>{
+    for (const match of expr.matchAll(DIGITS_REGEXP)) {
+        const digits = match[0];
+        yield parseInt(digits);
+    }
+}
 
 
 function opStr(a: number | string, b: number | string, symbol: string): string{
@@ -651,5 +671,13 @@ export function easiestSolution(
             easiestSolution = solution
         }
     }
+
+    console.log(easiestSolution)
+
     return easiestSolution;
+}
+
+
+export function stringifyForm(form: SolutionForm): string {
+    return JSON.stringify(form).replace('[','(').replace(']',')');
 }

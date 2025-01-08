@@ -21,6 +21,8 @@ export const NO_OP = 0xd7fe;      // These cannot be u15s as 0xd7fd needs 16 bit
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
 const NO_MOVE = 0xd7fc;
 const GRADED_GAME_ID_PADDING = 0xd7fb;
+const NO_FORM = 0xd7fa;
+const NO_GRADE = 0xd7f9;
 
 const GRADED_GAME_ID_MIN_SIZE = 8;
 const CUSTOM_GAME_ID_MIN_SIZE = 8;
@@ -220,15 +222,15 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
     let keyData;
 
     if (gameID instanceof GradedGameID) {
-        checkFitsInChunk(gameID.grade);
+        checkFitsInChunk(gameID.grade!);
         checkFitsInChunk(gameID.goal);
 
-        const form_index = FORMS.indexOf(gameID.form);
+        const form_index = FORMS.indexOf(gameID.form!);
         checkFitsInChunk(form_index);
 
         keyData = [
             GradedGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
-            gameID.grade,
+            gameID.grade!,
             gameID.goal,
             form_index,
             ...chunkify(gameID.index, 2),

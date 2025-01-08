@@ -34,12 +34,15 @@ export class GameIDBase{
     form: string | null;
     grade: number | null;
 
-    constructor() {
+    constructor(
+        form: string | null,
+        grade: number | null,
+    ) {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
-        this.form = null;
-        this.grade = null;
+        this.form = form;
+        this.grade = grade;
     }
 
 
@@ -54,8 +57,13 @@ export class CustomGameID extends GameIDBase{
 
     
 
-    constructor(goal: number = GOAL_MIN, seedIndices: number[] = []) {
-        super();
+    constructor(
+        goal: number = GOAL_MIN,
+        seedIndices: number[] = [],
+        form: string | null = null,
+        grade: number | null = null,
+    ) {
+        super(form, grade);
         this.goal = goal;
         this.seedIndices = seedIndices
     }
@@ -69,18 +77,16 @@ export class CustomGameID extends GameIDBase{
 
 export class GradedGameID extends GameIDBase{
     [immerable] = true;
-    readonly grade: number;
+    readonly grade: number | null = null;
     // readonly form: string;
     readonly index: number;
     static readonly GAME_ID_TYPE_CODE = "G";
-    readonly form: string;
+    readonly form: string | null = null;
     readonly goal: number;
 
     constructor(grade: number, goal: number, form: string, index: number) {
-        super();
+        super(form, grade);
         this.goal = goal;
-        this.grade = grade;
-        this.form = form;
         this.index = index;
     }
   }
