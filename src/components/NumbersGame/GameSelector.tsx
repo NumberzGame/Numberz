@@ -597,7 +597,7 @@ export function GameSelector(props: {grade: number}) {
                         maxTags={MAX_SEEDS}
                         mah={200}
                       />
-                      <SimpleGrid cols = {5} preventGrowOverflow={false}>
+                      <SimpleGrid cols = {5}>
                         {seedButtons}
                       </SimpleGrid>
                     </Stack>
