@@ -10,7 +10,6 @@ import {Anchor, Box, Center, Group, HoverCard, Button, Select,
 import { nanoid } from 'nanoid';
 import { useQuery } from '@tanstack/react-query';
 
-import classes from '../../styles.css';
 
 import { NumbersGame } from './NumbersGame';
 
@@ -288,7 +287,6 @@ export function WinScreen(props: winScreenProps) {
     }
 
 
-const onQuit = function() {}
 
 
 
@@ -494,23 +492,31 @@ export function GameSelector(props: {grade: number}) {
       winScreenHandlers.open()
   }
 
-  const onClose = function(): void {
+  const selectNewGame = function(): void {
       setCurrentGameID(null);
+  }
+
+  const onClose = function(): void {
+      selectNewGame()
       winScreenHandlers.close();
   }
 
   if (winScreenOpened && currentGameID !== null) {
-    return <WinScreen opened={winScreenOpened} close = {onClose}></WinScreen>
+      return <WinScreen opened={winScreenOpened} close = {onClose}></WinScreen>
   }
 
   // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function(val: number) {
-    gradeObj.current = val;// as number;
+      gradeObj.current = val;// as number;
   }
   
   const setCurrentGameIDToPreviouslyUnseenGradedGameID = function() {
-    const gameID = previouslyUnseenGradedGameID(gradeObj.current, gradeObj.current)
-    setCurrentGameID(gameID);
+      const gameID = previouslyUnseenGradedGameID(gradeObj.current, gradeObj.current)
+      setCurrentGameID(gameID);
+  }
+
+  const onQuit = function() {  
+      selectNewGame()
   }
 
   if (currentGameID === null) {

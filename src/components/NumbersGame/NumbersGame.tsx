@@ -5,7 +5,7 @@ import { useState, ReactNode } from 'react';
 import { useImmer } from "use-immer";
 
 import { Anchor, Badge, Button, Group, Text, TextInput, Image, 
-         Slider, Box, HoverCard, Center } from '@mantine/core';
+         Slider, Box, HoverCard, Center, Stack } from '@mantine/core';
 import { nanoid } from "nanoid";
 
 import { MAX_OPERANDS, OP_SYMBOLS, MAX_MOVES } from '../../gameCode/Core';
@@ -233,25 +233,39 @@ export function NumbersGame(props: NumbersGameProps) {
 
 
     return <>
-      <Group justify="center" mt="md">
-      <Text> Make: </Text>
-      <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
-        {game.id.goal}
-      </Badge>
+      <Stack 
+      h={500}
+       justify="space-between">
+        <Stack 
+         justify="flex-start">
+          <Group justify="center" mt="md">
+          <Text> Make: </Text>
+          <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
+            {game.id.goal}
+          </Badge>
 
-      </Group>
+          </Group>
 
-      <Group justify="center" mt="md">
-        {OperandsButtons}
-      </Group>
-      <Group justify="center" mt="md">
-        {SymbolsButtons}
-      </Group>
-      <Group justify="center" mt="md">
-        <Button onClick={submitButtonHandler}>=</Button>
-        {undoButton}
-        <HintButton handler={hintButtonHandler} hintsShown={hintsShown}></HintButton>
-      </Group>
+          <Group justify="center" mt="md">
+            {OperandsButtons}
+          </Group>
+          <Group justify="center" mt="md">
+            {SymbolsButtons}
+          </Group>
+          <Group justify="center" mt="md">
+            <Button onClick={submitButtonHandler}><b>=</b></Button>
+            {undoButton}
+          </Group>
+        </Stack>
+        <Stack
+        justify="flex-end"
+        >
+          <Group justify="center" mt="md">
+            <HintButton handler={hintButtonHandler} hintsShown={hintsShown}></HintButton>
+            <Button onClick={props.onQuit}>⮾</Button>
+          </Group>
+        </Stack>
+      </Stack>
       {/* <Group justify="center" mt="md">
         <Button onClick={}>Custom Game</Button>
         <Button onClick={}>Solve Game</Button>
