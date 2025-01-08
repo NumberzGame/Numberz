@@ -54,7 +54,7 @@ function eval_encodable(
             const result = op(retval, seed);
             if (result === null || result === INVALID_ARGS) {
                 throw new Error(
-                    `Invalid encoded solution: {form=} {list(seeds)=}, {list(ops)=}`
+                    `Invalid encoded solution: result: ${String(result)}, ${form} ${seeds}, ${ops}`
                 )
             }
             console.log(`Result: ${result} after ${op_symbol} for int form: ${retval}`);
@@ -79,7 +79,8 @@ function eval_encodable(
     const result = op(sub_result_1, sub_result_2);
     if (result === null || result === INVALID_ARGS) {
         throw new Error(
-            `Invalid encoded solution, form: ${form} seeds:${seeds}, ops:${ops}`
+            `Invalid encoded solution.  Error calculating: ${op} on ${sub_result_1} ${sub_result_2}. `
+            +` Form: ${form} seeds:${seeds}, ops:${ops}`
         )
     }
     return result;
@@ -98,7 +99,14 @@ function testPUZZLESjson() {
             const encodable = solution.encodable;
             const solSeeds = get_seeds_from_encodable_sol_expr(encodable);
             const ops = get_op_symbols_from_encodable_sol_expr(encodable);
-            const result = eval_encodable(solution.form,solSeeds,ops)
+            let result;
+            try {
+                result = eval_encodable(solution.form,solSeeds,ops)
+            } catch (e) {
+                console.log(e);
+                console.log(`Error calculating: ${encodable}`);
+                throw e;
+            }
             if (result !== goal) {
                 throw new Error(`Could not validate result: ${result} !== ${goal}. Puzzle: ${seeds}, goal: ${goal}, ${solution}`); 
             }
@@ -112,6 +120,7 @@ function testPUZZLESjson() {
 function solveAndGradePuzzleFromCommandLine(): void {
     // Use with:
     // deno run --unstable-sloppy-imports Solver.test.mts 10 1 2 3 4
+    // deno run --unstable-sloppy-imports Solver.test.mts 140 1 1 1 1 10 25
     // deno run --unstable-sloppy-imports Solver.test.mts 958 75 100 25 4 8 4
     // deno run --unstable-sloppy-imports Solver.test.mts 110 10 6 1 5 2
     // deno run --unstable-sloppy-imports Solver.test.mts  386 50 100 75 6 1 3
