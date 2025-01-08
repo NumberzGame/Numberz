@@ -32,12 +32,14 @@ export class GameIDBase{
     
     [immerable] = true;
     form: string | null;
+    grade: number | null;
 
     constructor() {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
         this.form = null;
+        this.grade = null;
     }
 
 
@@ -50,11 +52,18 @@ export class CustomGameID extends GameIDBase{
     goal: number;
     
 
+    
+
     constructor(goal: number = GOAL_MIN, seedIndices: number[] = []) {
         super();
         this.goal = goal;
         this.seedIndices = seedIndices
     }
+
+    seeds(): number[] {
+        return Array.from(this.seedIndices.map((seedIndex) =>SEEDS[seedIndex]));
+    }
+
 }
 
 

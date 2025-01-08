@@ -4,7 +4,7 @@ import { difficultyOfSum, difficultyOfProduct,
     difficultyOfDifference, difficultyOfLongDivision } from "additional_difficulty";
 
 import SYMBOLS from '../../data/symbols.json' with { type: "json" };
-import {OPS, INVALID_ARGS, HashTable } from '../Core';
+import {OPS, INVALID_ARGS, HashTable, MAX_SEEDS } from '../Core';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -171,6 +171,16 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op{
     
 }
 
+
+export function default_max_num(max_num: number | null, max_: number | null = null): number {
+    if (max_num === null) {
+        max_num = MAX_SEEDS;
+    }
+    if (max_ === null ){
+        return max_num;
+    }
+    return Math.min(max_, max_num);
+}
 
 export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {
 

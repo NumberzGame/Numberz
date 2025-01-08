@@ -3,7 +3,7 @@ import { enoughSeeds, opsAndLevelsResults, resultsAndGradesCaches,
          opsCacheKey, OpsCacheKeyT, OpsCacheT, OpsCacheValT, 
          OperandT, Op, Seed, Result, ResultsAndGradesCacheT, GOALS,
          inverseOp, AllDepthsCacheT, Goal, GOALS_T, Grade,
-         combinations, permutations, 
+         combinations, permutations, default_max_num
         } from './Core';
 
 import { ALL_SEEDS, HashTable } from '../Core';
@@ -86,14 +86,14 @@ export function addTriplesToReverseCache(
 export function makeCaches(
     seeds: Seed[] = ALL_SEEDS,
     goals: GOALS_T = GOALS,
-    maxDepth: number = 6,
+    maxSeeds: number | null = null,
     forwardCache: AllDepthsCacheT = resultsAndGradesCaches.forward,
     reverseCache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
 ): [AllDepthsCacheT, AllDepthsCacheT] {
     // # maxDepth = min(maxDepth, 4)
     // console.log(`Max depth: ${maxDepth}`);
 
-
+    const maxDepth = default_max_num(maxSeeds, seeds.length);
 
     const numIterations = 1086665;
     // console.log(`numIterations=${numIterations}`);

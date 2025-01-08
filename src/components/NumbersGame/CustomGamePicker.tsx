@@ -6,8 +6,10 @@ import {nanoid} from 'nanoid';
 import { NumberInputWithDigitsKeys } from './NumberInputwithDigitsKeys';
 
 import { SEEDS, ALL_SEEDS, MAX_SEEDS, GOAL_MIN, GOAL_MAX } from '../../gameCode/Core';
-import {GameID, CustomGameID} from '../../gameCode/Classes'
+import { GameID, CustomGameID } from '../../gameCode/Classes'
 import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
+import { easiestSolution } from '../../gameCode/Tnetennums/Solver';
+import { SolutionForm} from '../../gameCode/Tnetennums/Core';
 
 const countXinArr = function<T>(X: T, Arr: T[]): number {
     return Arr.filter((y) => y === X).length;          
@@ -23,6 +25,12 @@ const tooManyOfThisSeedUsed = function(seedIndex: number, seedIndices: number[])
     const maxNumSeedsAllowed = countXinArr(SEEDS[seedIndex], ALL_SEEDS);
     return countXinArr(seedIndex, seedIndices) > maxNumSeedsAllowed;
 }
+
+
+function stringifyForm(form: SolutionForm): string {
+    return JSON.stringify(form).replace('[','(').replace(']',')');
+}
+
 
 interface CustomGamePickerProps {
     setCurrentGameID: (gameID: GameID) => void;
@@ -53,6 +61,14 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
     //                             ...SEEDS.slice(5,10),
     //                             ...SEEDS.slice(12,14),
     //                            ]
+
+    if (newCustomGameID.seeds().length === 0) {
+      makeCaches(
+            newCustomGameID.seeds(),
+            [newCustomGameID.goal],
+            )
+    }
+            
     const seedButtons = SEEDS.map((seed, seedIndex) => {
         const clickHandler = makeSeedButtonClickHandler(seedIndex);
         const colour = newCustomGameID.seedIndices.includes(seedIndex) ? "pink" : "blue";
@@ -122,6 +138,18 @@ return         <Box>
                           onClick={() => {
                             if (newCustomGameID.seedIndices.length === 0) {
                               return;
+                            }
+                            const solution = easiestSolution(
+                                                    newCustomGameID.seeds(),
+                                                    newCustomGameID.goal,
+                                                    );
+                            if (solution !== null) {
+                              setNewCustomGameIDWithImmer(
+                                  draft => {
+                                    draft.form = stringifyForm(solution.form);
+                                    draft.grade = solution.grade
+                                  }
+                              )
                             }
                             props.setCurrentGameID(newCustomGameID);
                             // Immer producers can also create new states 

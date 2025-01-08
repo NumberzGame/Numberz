@@ -3,7 +3,7 @@
 import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
         opsAndLevelsResults, ResultsAndGradesCacheT, AllDepthsCacheT,
         combinations, enoughSeeds, resultsAndGradesCaches,
-        GOAL_MIN, GOAL_MAX } from './Core';
+        GOAL_MIN, GOAL_MAX, default_max_num } from './Core';
 
 import {SEEDS, takeNextN} from '../Core';
 
@@ -229,15 +229,6 @@ class Impossible {
     grade = Infinity;
 }
 
-function default_max_num_seeds(max_num_seeds: number | null, max_: number | null = null): number {
-    if (max_num_seeds === null) {
-        max_num_seeds = 6;
-    }
-    if (max_ === null ){
-        return max_num_seeds;
-    }
-    return Math.min(max_, max_num_seeds);
-}
 
 
 function* forward_solutions(
@@ -456,7 +447,7 @@ function* reverse_solutions(
     max_num_seeds: number | null = null,
 ): IterableIterator<SolutionInfo>{
 
-    max_num_seeds = default_max_num_seeds(max_num_seeds, seeds.length)
+    max_num_seeds = default_max_num(max_num_seeds, seeds.length)
 
     if (
         max_num_seeds <= 4
@@ -588,7 +579,7 @@ function* forward_and_reverse_solutions(
     max_num_seeds: number | null = null,
 ): IterableIterator<SolutionInfo> {
 
-    max_num_seeds = default_max_num_seeds(max_num_seeds, seeds.length);
+    max_num_seeds = default_max_num(max_num_seeds, seeds.length);
 
     for (const nStr of ["1", ...Object.keys(forward_cache)]){
         const n = parseInt(nStr)
@@ -618,7 +609,7 @@ export function* find_solutions(
     reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
 ): IterableIterator<SolutionInfo> {
 
-    max_num_seeds = default_max_num_seeds(max_num_seeds, nums.length)
+    max_num_seeds = default_max_num(max_num_seeds, nums.length)
 
     if (Object.keys(forward_cache).length === 0 || Object.keys(reverse_cache).length === 0) {
         makeCaches(nums, [goal], max_num_seeds, forward_cache, reverse_cache);
