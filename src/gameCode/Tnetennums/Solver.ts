@@ -637,3 +637,28 @@ export function* find_solutions(
     }
     yield* solutions;
 }
+
+
+export function easiestSolution(
+    nums: number[],
+    goal: number,
+    forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+    reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+    ): SolutionInfo | null {
+
+    let easiestSolution = null;
+    const solutions = find_solutions(
+                            nums,
+                            goal,
+                            "all",
+                            null,
+                            forward_cache,
+                            reverse_cache,
+                            );
+    for (const solution of solutions) {
+        if (easiestSolution === null || solution.grade < easiestSolution.grade) {
+            easiestSolution = solution
+        }
+    }
+    return easiestSolution;
+}

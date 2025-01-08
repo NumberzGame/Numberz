@@ -19,6 +19,8 @@ import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../.
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
 
+import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
+
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
@@ -293,7 +295,7 @@ export function WinScreen(props: winScreenProps) {
 const previouslyUnseenGradedGameID = function(minGrade: number, maxGrade: number): GradedGameID {
   let gameID: GradedGameID;
   do {      
-      const grade = minGrade + randomPositiveInteger(1+maxGrade-minGrade);
+      const grade = minGrade + randomPositiveInteger(1 + maxGrade - minGrade);
       const goal = randomGoal(grade); //
       const [form, formIndex] = randomFormAndIndex(grade, goal); //
       // localStorage.getItem returns null if the key is not found
@@ -308,11 +310,15 @@ const previouslyUnseenGradedGameID = function(minGrade: number, maxGrade: number
 interface gradeSliderProps{
     initialValue: number;
     onChangeEnd: (val: number) => void;
+    onClick: () => void;
 }
 
-function GradeSlider(props: gradeSliderProps) {
+function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
   const [grade, setGrade] = useState(props.initialValue);
   return <>
+          <Group justify="start">
+            <Text>Choose difficulty. </Text>
+          </Group>
           <Text size="sm">Puzzle difficulty.</Text>
           <Slider
             value = {grade}
@@ -330,6 +336,13 @@ function GradeSlider(props: gradeSliderProps) {
             onChange={setGrade}
             onChangeEnd = {props.onChangeEnd}
           />
+          <Group justify="end" mt ="xl">
+            <Button 
+              onClick={props.onClick}
+            >
+            New random game
+            </Button>
+          </Group>
   </>
 }
 
@@ -556,23 +569,11 @@ export function GameSelector(props: {grade: number}) {
       });
       return <Group justify="center" mt="xs">
               <Stack justify="flex-start">
-                <Box>
-                  <Group justify="start">
-                    <Text>Choose difficulty. </Text>
-                  </Group>
-                  <GradeSlider
+                  <RandomGameOfGivenGradePicker
                     initialValue={gradeObj.current}
                     onChangeEnd={gradeSliderHandler}
-                  >  
-                  </GradeSlider>
-                  <Group justify="end" mt ="xl">
-                    <Button 
-                      onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
-                    >
-                    New random game
-                    </Button>
-                  </Group>
-                </Box>
+                    onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
+                  />  
                 <Box>
                   <Group justify="start" >
                     <Text>Choose starting numbers and goal. </Text>
@@ -749,12 +750,12 @@ export function GameSelector(props: {grade: number}) {
   let gameComponent: ReactNode;
   if (game === null && currentGameID instanceof GradedGameID) {
       gameComponent = (
-        <NewGradedGameWithNewID 
+        <NewGradedGame 
           gameID = {currentGameID}
           onWin = {onWin}
           store = {storeGame}
           onQuit = {onQuit}
-        ></NewGradedGameWithNewID>
+        ></NewGradedGame>
       )
   } else {
       if (currentGameID instanceof CustomGameID) {
@@ -800,7 +801,7 @@ export function GameSelector(props: {grade: number}) {
 }
 
 
-interface NewGradedGameNewIDProps {
+interface NewGradedGameProps {
   gameID: GradedGameID;
   onWin: () => void;
   store: (game: Game) => void;
@@ -810,7 +811,7 @@ interface NewGradedGameNewIDProps {
 
 
 
-function NewGradedGameWithNewID(props: NewGradedGameNewIDProps) {
+function NewGradedGame(props: NewGradedGameProps) {
   // This sub component contains all the Tan Query stuff
   // needed to look up game solutions from the cache, that
   // shouldn't cause rerendeing of the Game selection menu.
