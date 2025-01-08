@@ -83,6 +83,41 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
                 {seed}
                 </Button>
     });
+
+    function seedTagsInputOnChange(value: string[]): void {
+      return setNewCustomGameIDWithImmer(
+        draft => {
+            const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)));
+            if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))){
+                draft.seedIndices = newSeedIndices;
+            }
+        }
+     )}
+
+    function newGameClickHandler(): void {
+        if (newCustomGameID.seedIndices.length === 0) {
+          return;
+        }
+        const solution = easiestSolution(
+                                newCustomGameID.seeds(),
+                                newCustomGameID.goal,
+                                );
+        
+        const form  = solution === null ? null : stringifyForm(solution.form);
+        const grade = solution === null ? null : solution.grade;
+        setNewCustomGameIDWithImmer(
+            draft => {
+              draft.form = form;
+              draft.grade = grade;
+            }
+        )
+        props.setCurrentGameID(newCustomGameID);
+        // Immer producers can also create new states 
+        // if drafts are unmodified.
+        // https://immerjs.github.io/immer/return
+        setNewCustomGameIDWithImmer((draft) => new CustomGameID());
+    }
+
 return         <Box>
                   <Group justify="start" >
                     <Text>Choose starting numbers and goal. </Text>
@@ -103,14 +138,7 @@ return         <Box>
                         label="Starting numbers."
                         placeholder="Enter numbers."
                         value={newCustomGameID.seedIndices.map((i) => SEEDS[i].toString())}
-                        onChange={(value) => setNewCustomGameIDWithImmer(
-                                    draft => {
-                                        const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)));
-                                        if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))){
-                                            draft.seedIndices = newSeedIndices;
-                                        }
-                                    }
-                                 )}
+                        onChange={seedTagsInputOnChange}
                         maxTags={MAX_SEEDS}
                         mah={200}
                       />
@@ -135,28 +163,7 @@ return         <Box>
                       </NumberInputWithDigitsKeys>
                       <Group justify="end" mt="xs">
                         <Button 
-                          onClick={() => {
-                            if (newCustomGameID.seedIndices.length === 0) {
-                              return;
-                            }
-                            const solution = easiestSolution(
-                                                    newCustomGameID.seeds(),
-                                                    newCustomGameID.goal,
-                                                    );
-                            if (solution !== null) {
-                              setNewCustomGameIDWithImmer(
-                                  draft => {
-                                    draft.form = stringifyForm(solution.form);
-                                    draft.grade = solution.grade
-                                  }
-                              )
-                            }
-                            props.setCurrentGameID(newCustomGameID);
-                            // Immer producers can also create new states 
-                            // if drafts are unmodified.
-                            // https://immerjs.github.io/immer/return
-                            setNewCustomGameIDWithImmer((draft) => new CustomGameID());
-                          }}
+                          onClick={newGameClickHandler}
                         >
                         New custom game
                         </Button>

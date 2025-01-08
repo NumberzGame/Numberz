@@ -237,12 +237,25 @@ export function NumbersGame(props: NumbersGameProps) {
       h={500}
        justify="space-between">
         <Stack 
-         justify="flex-start">
-          <Group justify="center" mt="md">
-          <Text> Make: </Text>
-          <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
-            {game.id.goal}
-          </Badge>
+         justify="flex-start"
+         align="center">
+          <Group 
+            justify="space-between" 
+            mt="md"
+            w = {400}
+            >
+            <Group>
+              <Text> Grade: </Text>
+              <Badge variant="filled" color="pink" size="lg">
+                {game.id.grade ?? "Impossible!" }
+              </Badge>
+            </Group>
+            <Group>
+              <Text> Make: </Text>
+              <Badge variant="gradient" gradient={GOAL_GRADIENT} size="xl">
+                {game.id.goal}
+              </Badge>
+            </Group>
 
           </Group>
 
@@ -266,16 +279,6 @@ export function NumbersGame(props: NumbersGameProps) {
           </Group>
         </Stack>
       </Stack>
-      {/* <Group justify="center" mt="md">
-        <Button onClick={}>Custom Game</Button>
-        <Button onClick={}>Solve Game</Button>
-        <Button onClick={}>Load Game</Button>
-        <Button onClick={}>New Game</Button> *
-        <Slider>Difficulty</Slider>
-      </Group> */}
-      {/* <Group justify="center" mt="md">
-        <Button onClick={}>Download Game History Game</Button>
-        <Button onClick={}>Load Game History Game</Button>
-      </Group> */}
+
     </>
 }
