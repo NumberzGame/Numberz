@@ -15,7 +15,7 @@ import PUZZLES from './PUZZLES.json' with { type: "json" };
 // see also EXPR_PATTERN in solverDFS.ts.  They're all escaped in that.
 const OPS_PATTERN = OP_SYMBOLS.map((c) => `\\${c}`).join('|');
 const OPS_REGEXP = new RegExp(OPS_PATTERN,'g');
-const DIGITS_REGEXP = new RegExp('\d+','g');
+const DIGITS_REGEXP = new RegExp('\\d+','g');
 // "|".join(re.escape(op) for op in core.OPS)
 
 
@@ -46,14 +46,18 @@ function eval_encodable(
 
     if (typeof form === 'number') {
         let retval = seeds_it.next().value;
+        console.log(`Retval at start: ${retval}`)
         for (const op_symbol of takeNextN<string>(form - 1, ops_it, `Not enough Ops in ${ops}`)){
             const op = OPS[op_symbol];
-            const result = op(retval, seeds_it.next().value);
+            console.log(`op: ${op}`);
+            const seed = seeds_it.next().value
+            const result = op(retval, seed);
             if (result === null || result === INVALID_ARGS) {
                 throw new Error(
                     `Invalid encoded solution: {form=} {list(seeds)=}, {list(ops)=}`
                 )
             }
+            console.log(`Result: ${result} after ${op_symbol} for int form: ${retval}`);
             retval = result;
         }
         return retval;
@@ -84,9 +88,9 @@ function eval_encodable(
 
 function testPUZZLESjson() {
 
-    for (const [seeds, goal] of PUZZLES) {
+    for (const [seeds, goal] of PUZZLES.slice(2)) {
         console.log(`Testing: ${seeds}, goal: ${goal}`);
-        const solutions = Array.from(find_solutions(seeds as number[], goal as number, "all"));
+        const solutions = Array.from(find_solutions(seeds as number[], goal as number, "all", null, {}, {}));
         if (solutions.length === 0) {
             console.log('No sols found :( ');
         }
