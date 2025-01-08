@@ -22,7 +22,6 @@ import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../.
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
 
-import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
 
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';

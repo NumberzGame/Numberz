@@ -7,6 +7,7 @@ import { NumberInputWithDigitsKeys } from './NumberInputwithDigitsKeys';
 
 import { SEEDS, ALL_SEEDS, MAX_SEEDS, GOAL_MIN, GOAL_MAX } from '../../gameCode/Core';
 import {GameID, CustomGameID} from '../../gameCode/Classes'
+import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
 
 const countXinArr = function<T>(X: T, Arr: T[]): number {
     return Arr.filter((y) => y === X).length;          
@@ -47,6 +48,11 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
         }
         return seedButtonClickHandler;
     }
+    // const BUTTON_ORDER_SEEDS = [...SEEDS.slice(0,5),
+    //                             ...SEEDS.slice(10,12),
+    //                             ...SEEDS.slice(5,10),
+    //                             ...SEEDS.slice(12,14),
+    //                            ]
     const seedButtons = SEEDS.map((seed, seedIndex) => {
         const clickHandler = makeSeedButtonClickHandler(seedIndex);
         const colour = newCustomGameID.seedIndices.includes(seedIndex) ? "pink" : "blue";
@@ -71,7 +77,8 @@ return         <Box>
                   >
                     <Stack
                       h={200}
-                      w="60%"
+                      w="68%"
+                      maw={340}
                       align="stretch"
                       justify="flex-start"
                       gap="md"
@@ -91,14 +98,14 @@ return         <Box>
                         maxTags={MAX_SEEDS}
                         mah={200}
                       />
-                      <SimpleGrid cols = {5}>
+                      <SimpleGrid cols={5}>
                         {seedButtons}
                       </SimpleGrid>
                     </Stack>
                     <Stack
                       h={200}
                       align="flex-end"
-                      justify="space-between"
+                      justify="flex-start"
                       gap="md"
                     >
                       <NumberInputWithDigitsKeys 

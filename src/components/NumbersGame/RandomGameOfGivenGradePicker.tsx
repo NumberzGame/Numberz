@@ -28,7 +28,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
               {value: 246, label: '246'},
             ]}
             // mt = {15}
-            maw={500}
+            maw={590}
             onChange={setGrade}
             onChangeEnd = {props.onChangeEnd}
           />
