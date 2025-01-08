@@ -7,6 +7,8 @@ import {Grade, Op, OperandT, OperandsT, Result, Seed, SolutionForm,
 
 import {SEEDS, takeNextN} from '../Core';
 
+import { makeCaches } from './Cachebuilder';
+
 
 export const SOLUTION_FMT_STRING = "([arg_1] [op_symbol] [arg_2])"
 
@@ -615,8 +617,12 @@ export function* find_solutions(
     forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
     reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
 ): IterableIterator<SolutionInfo> {
+
     max_num_seeds = default_max_num_seeds(max_num_seeds, nums.length)
 
+    if (Object.keys(forward_cache).length === 0 || Object.keys(reverse_cache).length === 0) {
+        makeCaches(nums, [goal], max_num_seeds, forward_cache, reverse_cache);
+    }
 
     let solutions = forward_and_reverse_solutions(
         nums,
