@@ -679,5 +679,5 @@ export function easiestSolution(
 
 
 export function stringifyForm(form: SolutionForm): string {
-    return JSON.stringify(form).replace('[','(').replace(']',')');
+    return JSON.stringify(form).replaceAll('[','(').replaceAll(']',')');
 }
