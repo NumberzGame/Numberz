@@ -228,42 +228,44 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
     let keyData: number[]
     let formIndex: number;
 
-    if (gameID instanceof GradedGameID) {
-        checkFitsInChunk(gameID.grade!);
-        checkFitsInChunk(gameID.goal);
+    if (gameID.typeCode === GradedGameID.GAME_ID_TYPE_CODE) {
+        const gradedGameID = gameID as GradedGameID;
+        checkFitsInChunk(gradedGameID.grade!);
+        checkFitsInChunk(gradedGameID.goal);
 
-        formIndex = FORMS.indexOf(gameID.form!);
+        formIndex = FORMS.indexOf(gradedGameID.form!);
         checkFitsInChunk(formIndex);
 
         keyData = [
             GradedGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
-            gameID.grade!,
-            gameID.goal,
+            gradedGameID.grade,
+            gradedGameID.goal,
             formIndex,
-            ...chunkify(gameID.index, 2),
+            ...chunkify(gradedGameID.index, 2),
             GRADED_GAME_ID_PADDING,
             GRADED_GAME_ID_PADDING,
         ];
         //index_top_15_bits, index_bottom_15_bits];
 
-    } else if (gameID instanceof CustomGameID) {
+    } else if (gameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
+        const customGameID = gameID as CustomGameID;
 
-        checkFitsInChunk(gameID.goal);
-        gameID.seedIndices.forEach(checkFitsInChunk);
+        checkFitsInChunk(customGameID.goal);
+        customGameID.seedIndices.forEach(checkFitsInChunk);
 
         const checkedPaddedSeedIndices = checkItemsFitAndPadIterable(
-                                                gameID.seedIndices,
+                                                customGameID.seedIndices,
                                                 MAX_SEEDS,
                                                 NO_SEED,
                                             )
 
-        formIndex = gameID.form === null ? NO_FORM : FORMS.indexOf(gameID.form);
+        formIndex = customGameID.form === null ? NO_FORM : FORMS.indexOf(customGameID.form);
 
         keyData = [
             CustomGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
-            gameID.goal,
+            customGameID.goal,
             ...checkedPaddedSeedIndices,
-            gameID.grade ?? NO_GRADE,
+            customGameID.grade ?? NO_GRADE,
             formIndex,
         ];
     } else {

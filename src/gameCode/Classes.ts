@@ -30,6 +30,7 @@ const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, 
 
 export class GameIDBase{
     [immerable] = true;
+    typeCode: string = "";
     constructor(
     ) {
         if (this.constructor === GameIDBase) {
@@ -54,6 +55,7 @@ export class CustomGameID extends GameIDBase{
         form: string | null = null,
     ) {
         super();
+        this.typeCode = CustomGameID.GAME_ID_TYPE_CODE;
         this.goal = goal;
         this.seedIndices = seedIndices
         this.grade = grade;
@@ -78,6 +80,7 @@ export class GradedGameID extends GameIDBase{
 
     constructor(grade: number, goal: number, form: string, index: number) {
         super();
+        this.typeCode = GradedGameID.GAME_ID_TYPE_CODE;
         this.grade = grade;
         this.goal = goal;
         this.form = form;
@@ -478,6 +481,8 @@ export class Game{
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
+            console.log(`operands: ${operands}, operand1: ${operand1}, operand2: ${operand2}`);
+            console.log(`subExpr: ${subExpr}, val: ${val}, opSymbol: ${opSymbol}, subGrade: ${subGrade}`);
             const index1 = operands.indexOf(operand1);
             const index2 = operands.lastIndexOf(operand2);
             return new MoveData(opIndex, [index1, index2]);
