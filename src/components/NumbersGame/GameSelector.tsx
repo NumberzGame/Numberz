@@ -21,7 +21,8 @@ import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } fr
 import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
-import { easiestSolution, stringifyForm, get_op_symbols_from_encodable_sol_expr } from '../../gameCode/Tnetennums/Solver';
+import { easiestSolution, stringifyForm, 
+         get_op_symbols_from_encodable_sol_expr, get_seeds_from_encodable_sol_expr } from '../../gameCode/Tnetennums/Solver';
 
 
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
@@ -413,7 +414,7 @@ export function GameSelector(props: {grade: number}) {
               const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
               // console.log(`ops: ${ops}`);
               opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
-              seedIndices = solution.seeds.map((seed) => SEEDS.indexOf(seed));
+              seedIndices = Array.from(get_seeds_from_encodable_sol_expr(solution.encodable)).map((seed) => SEEDS.indexOf(seed));
           }
           const id = new CustomGameID(
                               customGameID.goal,
@@ -431,7 +432,7 @@ export function GameSelector(props: {grade: number}) {
           throw new Error(` Unsupported GameID type: ${currentGameID}.  No corresponding game found`
                           +` in localstorage for it.  Was the browser's localstorage cleared or were keys`
                           +` deleted from it, immediately after the gameID was retrieved from localstorage? `
-          );
+                          );
       }
 
       // write stringifed game to local storage under its (stringified) game ID
