@@ -43,7 +43,7 @@ test('for all positiveintegers, chunkify should roundtrip with deChunkify', () =
 
 test('for each GradedGameID, stringifyGameID should roundtrip with destringifyGameID', () => {
   fc.assert(
-    fc.property(fc.integer({min: 1, max: 223}),
+    fc.property(fc.integer({min: 1, max: 246}),
                 fc.integer({min: GOAL_MIN, max: GOAL_MAX}),
                 fc.constantFrom(...FORMS),
                 fc.nat({max: 781176}),
@@ -60,8 +60,10 @@ test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGa
     fc.assert(
       fc.property(fc.integer({min: GOAL_MIN, max: GOAL_MAX}),
                   fc.array(seedIndex(), {maxLength: MAX_SEEDS }),
-                  (goal, seedIndices) => {
-        const gameID = new CustomGameID(goal, seedIndices);
+                  fc.option(fc.integer({min: 1, max: 246})),
+                  fc.option(fc.constantFrom(...FORMS)),
+                  (goal, seedIndices, grade, form) => {
+        const gameID = new CustomGameID(goal, seedIndices, grade, form);
         const stringified = stringifyGameID(gameID);
         const destringifiedGameID = destringifyGameID(stringified);
         expect(gameID).toStrictEqual(destringifiedGameID);
@@ -76,7 +78,7 @@ const operand = () => fc.nat({max: SEEDS.length-1 });
 
 test('for each Game with a Graded GameID, stringifyGame should roundtrip with destringifyGame', () => {
   fc.assert(
-    fc.property(fc.integer({min: 1, max: 223}),
+    fc.property(fc.integer({min: 1, max: 246}),
                 fc.integer({min: GOAL_MIN, max: GOAL_MAX}),
                 fc.constantFrom(...FORMS),
                 fc.nat({max: 781176}),

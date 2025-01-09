@@ -29,19 +29,15 @@ const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, 
 
 
 export class GameIDBase{
-    
     [immerable] = true;
-
     constructor(
     ) {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
-
     }
-
-
 }
+
 
 export class CustomGameID extends GameIDBase{
     [immerable] = true;
@@ -50,8 +46,6 @@ export class CustomGameID extends GameIDBase{
     seedIndices: number[];
     grade: number | null;
     form: string | null;
-
-    
 
     constructor(
         goal: number = GOAL_MIN,

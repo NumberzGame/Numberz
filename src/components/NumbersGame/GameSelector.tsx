@@ -398,8 +398,8 @@ export function GameSelector(props: {grade: number}) {
           const id = new CustomGameID(
                               currentGameID.goal,
                               currentGameID.seedIndices,
-                              form,
                               grade,
+                              form,
                               )
           const state = new GameState();
           const datetime_ms = Date.now();
