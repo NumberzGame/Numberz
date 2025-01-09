@@ -394,6 +394,13 @@ export function GameSelector(props: {grade: number}) {
           const solution = easiestSolution(
             customGameID.seeds(),
             customGameID.goal,
+            // Keeping the cache from previous custom games, slows
+            // down solving future games unnecessarily,
+            // as all possible operands in the caches are checked.
+            // So we provide new empty forward and reverse caches
+            // for each call:
+            {},
+            {},
             );
 
           console.log(solution)
