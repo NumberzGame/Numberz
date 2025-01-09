@@ -2,7 +2,7 @@
 // ## After test failures:
 // ```
 // cd src\components\NumbersGame
-// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=Schema.tsx
+// deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=Schema.ts
 // ```
 
 import { expect, test } from 'vitest'

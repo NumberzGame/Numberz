@@ -1,6 +1,5 @@
 
-import { instanceOf } from 'prop-types';
-import { GameID, GradedGameID, CustomGameID, GameIDBase ,
+import { GameID, GradedGameID, CustomGameID, GameIDBase,
          Game, GameState, Move } from './Classes';
 import {ALL_SEEDS, SEEDS, OP_SYMBOLS, GOAL_MIN, GOAL_MAX, FORMS,
         MAX_SEEDS, MAX_OPS, MAX_OPERANDS, MAX_MOVES, 
@@ -186,7 +185,8 @@ const destringifyCustomGameID = function(key: string): CustomGameID {
     
     const seedIndices = Array.from(seedsFromDestringified(takeNextN(MAX_SEEDS)));;
 
-    const grade = next();
+    let grade: number | null = next(); 
+    grade = (grade === NO_GRADE ? null : grade);
     const formIndex = next();
     const form = formIndex === NO_FORM ? null : FORMS[formIndex];
 
