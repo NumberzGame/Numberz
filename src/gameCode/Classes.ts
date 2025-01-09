@@ -450,10 +450,13 @@ export class Game{
             if (this.opIndices && form !== null && this.state.moves.findLastIndex((move) => move.submitted) === -1) {
                 const ops = this.opIndices!.map((i) => OP_SYMBOLS[i])
                 // easiestSolution = solutionAsOperand(form, seeds, ops);
+                console.log('Decoding sol expr from game (ops and form are known)');
+                console.log(`form: ${form}, seeds: ${seeds}, ops: ${ops}, seed indices: ${this.seedIndices}`);
                 expr = solutionExpr(form, seeds, ops);
                     // solutionAsOperand(this.id.form as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
             } else {
                 // for (const solution of solutions(goal, operands)) {
+                // console.log('Calculating solutions expr from game');
                 for (const solution of find_solutions(operands, goal, "all")) {
                     // const grade = calcGrade(solution);
                     const grade = solution.grade;
@@ -481,8 +484,9 @@ export class Game{
             const [subExpr, val, operand1, operand2, opSymbol, subGrade] = getHintsAndGrades(expr).next().value;
 
             const opIndex = OP_SYMBOLS.indexOf(opSymbol);
-            console.log(`operands: ${operands}, operand1: ${operand1}, operand2: ${operand2}`);
-            console.log(`subExpr: ${subExpr}, val: ${val}, opSymbol: ${opSymbol}, subGrade: ${subGrade}`);
+            // console.log(`expr: ${expr}`);
+            // console.log(`operands: ${operands}, operand1: ${operand1}, operand2: ${operand2}`);
+            // console.log(`subExpr: ${subExpr}, val: ${val}, opSymbol: ${opSymbol}, subGrade: ${subGrade}`);
             const index1 = operands.indexOf(operand1);
             const index2 = operands.lastIndexOf(operand2);
             return new MoveData(opIndex, [index1, index2]);

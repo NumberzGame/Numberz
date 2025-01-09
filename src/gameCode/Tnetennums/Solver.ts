@@ -672,7 +672,6 @@ export function easiestSolution(
         }
     }
 
-    console.log(easiestSolution)
 
     return easiestSolution;
 }

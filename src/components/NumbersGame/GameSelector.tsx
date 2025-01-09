@@ -377,37 +377,53 @@ export function GameSelector(props: {grade: number}) {
 
   let game = loadStoredGame(currentGameID);
   let gameComponent: ReactNode;
-  if (game === null && currentGameID instanceof GradedGameID) {
+  if (game === null && currentGameID.typeCode === GradedGameID.GAME_ID_TYPE_CODE) {
+      const gradedGameID = currentGameID as GradedGameID;
       gameComponent = (
         <NewGradedGame 
-          gameID = {currentGameID}
+          gameID = {gradedGameID}
           onWin = {onWin}
           store = {storeGame}
           onQuit = {onQuit}
         ></NewGradedGame>
       )
   } else {
-      if (currentGameID instanceof CustomGameID) {
+      if (currentGameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
+          const customGameID = currentGameID as CustomGameID;
           const solution = easiestSolution(
-            currentGameID.seeds(),
-            currentGameID.goal,
+            customGameID.seeds(),
+            customGameID.goal,
             );
 
-          const form  = solution === null ? null : stringifyForm(solution.form);
-          const grade = solution === null ? null : solution.grade;
+          console.log(solution)
+          
+          let form: string | null;
+          let grade: number | null;
+          let opIndices: number[] | null;
+          let seedIndices: number[];
+
+          if (solution === null) {
+              form = null;
+              grade = null;
+              opIndices = null;
+              seedIndices = customGameID.seedIndices;
+          } else {
+              form = stringifyForm(solution.form);
+              grade = solution.grade;
+              const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
+              // console.log(`ops: ${ops}`);
+              opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
+              seedIndices = solution.seeds.map((seed) => SEEDS.indexOf(seed));
+          }
           const id = new CustomGameID(
-                              currentGameID.goal,
-                              currentGameID.seedIndices,
+                              customGameID.goal,
+                              customGameID.seedIndices,
                               grade,
                               form,
                               )
           const state = new GameState();
           const datetime_ms = Date.now();
-          const seedIndices = currentGameID.seedIndices;
-          const opIndices = (solution === null 
-                            ? null
-                            : Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable)).map((op) => OP_SYMBOLS.indexOf(op))
-                            );
+          // console.log(`opIndices: ${opIndices}`);
           game = new Game(id, datetime_ms, seedIndices, opIndices, state);
 
       } 
