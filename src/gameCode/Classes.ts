@@ -45,25 +45,25 @@ export class GameIDBase{
 
 export class CustomGameID extends GameIDBase{
     [immerable] = true;
-    seedIndices: number[];
     static readonly GAME_ID_TYPE_CODE = "C";
     goal: number;
-    form: string | null;
+    seedIndices: number[];
     grade: number | null;
+    form: string | null;
 
     
 
     constructor(
         goal: number = GOAL_MIN,
         seedIndices: number[] = [],
-        form: string | null = null,
         grade: number | null = null,
+        form: string | null = null,
     ) {
         super();
-        this.grade = grade;
         this.goal = goal;
-        this.form = form;
         this.seedIndices = seedIndices
+        this.grade = grade;
+        this.form = form;
     }
 
     seeds(): number[] {

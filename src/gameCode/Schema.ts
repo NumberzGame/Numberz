@@ -186,7 +186,13 @@ const destringifyCustomGameID = function(key: string): CustomGameID {
     
     const seedIndices = Array.from(seedsFromDestringified(takeNextN(MAX_SEEDS)));;
 
-    return new CustomGameID(goal, seedIndices);
+    const grade = next();
+    const formIndex = next();
+    const form = formIndex === NO_FORM ? null : FORMS[formIndex];
+
+
+
+    return new CustomGameID(goal, seedIndices, grade, form);
 }
 
 
@@ -219,20 +225,21 @@ export function stringifyGameID(gameID: CustomGameID): string
 export function stringifyGameID(gameID: GradedGameID | CustomGameID): string
 export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
 
-    let keyData;
+    let keyData: number[]
+    let formIndex: number;
 
     if (gameID instanceof GradedGameID) {
         checkFitsInChunk(gameID.grade!);
         checkFitsInChunk(gameID.goal);
 
-        const form_index = FORMS.indexOf(gameID.form!);
-        checkFitsInChunk(form_index);
+        formIndex = FORMS.indexOf(gameID.form!);
+        checkFitsInChunk(formIndex);
 
         keyData = [
             GradedGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
             gameID.grade!,
             gameID.goal,
-            form_index,
+            formIndex,
             ...chunkify(gameID.index, 2),
             GRADED_GAME_ID_PADDING,
             GRADED_GAME_ID_PADDING,
@@ -250,10 +257,14 @@ export function stringifyGameID(gameID: GradedGameID | CustomGameID): string {
                                                 NO_SEED,
                                             )
 
+        formIndex = gameID.form === null ? NO_FORM : FORMS.indexOf(gameID.form);
+
         keyData = [
             CustomGameID.GAME_ID_TYPE_CODE.charCodeAt(0),
             gameID.goal,
             ...checkedPaddedSeedIndices,
+            gameID.grade ?? NO_GRADE,
+            formIndex,
         ];
     } else {
         throw new Error(`Unsupported gameID type: ${gameID}`);
