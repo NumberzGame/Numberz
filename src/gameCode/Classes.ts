@@ -31,18 +31,13 @@ const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, 
 export class GameIDBase{
     
     [immerable] = true;
-    form: string | null;
-    grade: number | null;
 
     constructor(
-        form: string | null,
-        grade: number | null,
     ) {
         if (this.constructor === GameIDBase) {
             throw new Error("Not enough info to identify a game uniquely.");
         }
-        this.form = form;
-        this.grade = grade;
+
     }
 
 
@@ -53,7 +48,8 @@ export class CustomGameID extends GameIDBase{
     seedIndices: number[];
     static readonly GAME_ID_TYPE_CODE = "C";
     goal: number;
-    
+    form: string | null;
+    grade: number | null;
 
     
 
@@ -63,8 +59,10 @@ export class CustomGameID extends GameIDBase{
         form: string | null = null,
         grade: number | null = null,
     ) {
-        super(form, grade);
+        super();
+        this.grade = grade;
         this.goal = goal;
+        this.form = form;
         this.seedIndices = seedIndices
     }
 
@@ -77,16 +75,18 @@ export class CustomGameID extends GameIDBase{
 
 export class GradedGameID extends GameIDBase{
     [immerable] = true;
-    readonly grade: number | null = null;
+    readonly grade: number;
     // readonly form: string;
     readonly index: number;
     static readonly GAME_ID_TYPE_CODE = "G";
-    readonly form: string | null = null;
+    readonly form: string;
     readonly goal: number;
 
     constructor(grade: number, goal: number, form: string, index: number) {
-        super(form, grade);
+        super();
+        this.grade = grade;
         this.goal = goal;
+        this.form = form;
         this.index = index;
     }
   }
