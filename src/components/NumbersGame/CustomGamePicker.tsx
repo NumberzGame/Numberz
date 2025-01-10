@@ -8,8 +8,6 @@ import { NumberInputWithDigitsKeys } from './NumberInputwithDigitsKeys';
 import { SEEDS, ALL_SEEDS, MAX_SEEDS, GOAL_MIN, GOAL_MAX } from '../../gameCode/Core';
 import { GameID, CustomGameID } from '../../gameCode/Classes'
 import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
-import { easiestSolution } from '../../gameCode/Tnetennums/Solver';
-import { SolutionForm} from '../../gameCode/Tnetennums/Core';
 
 const countXinArr = function<T>(X: T, Arr: T[]): number {
     return Arr.filter((y) => y === X).length;          

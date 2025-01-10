@@ -6,9 +6,9 @@ import { argv } from "node:process";
 import { INVALID_ARGS, OPS, takeNextN } from '../Core';
 import { SolutionForm, Seed, Op, inverseOp, AllDepthsCacheT } from './Core';
 import { makeCaches } from "./Cachebuilder";
-import { find_solutions, get_op_symbols_from_encodable_sol_expr,
-            get_seeds_from_encodable_sol_expr
-        } from "./Solver";
+import { find_solutions } from "./Solver";
+import {  get_op_symbols_from_encodable_sol_expr, get_seeds_from_encodable_sol_expr,
+       } from "./SolutionInfo";
 
 
 import PUZZLES from './PUZZLES.json' with { type: "json" };

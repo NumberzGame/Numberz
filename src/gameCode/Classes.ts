@@ -7,8 +7,9 @@ import { difficultyOfSum, difficultyOfProduct,
 import { ALL_SEEDS, SEEDS, OP_SYMBOLS, OPS, INVALID_ARGS, NUM_REQUIRED_OPERANDS, BINARY_OP, GOAL_MIN } from './Core';
 import { MAX_SEEDS, MAX_OPS, OP_RESULT, Operand, randomPositiveInteger } from "./Core";
 // import { solutions, EXPR_PATTERN } from './solverDFS';
-import { EXPR_PATTERN } from './solverDFS';
-import { find_solutions, SOLUTION_FMT_STRING, SolutionInfo } from "./Tnetennums/Solver";
+import { EXPR_PATTERN, } from './solverDFS';
+import { find_solutions,  } from "./Tnetennums/Solver";
+import { SOLUTION_FMT_STRING, SolutionInfo, } from "./Tnetennums/SolutionInfo";
 import { makeCaches } from "./Tnetennums/Cachebuilder";
 
 import { solutionAsOperand, solutionExpr } from "./solutionEvaluator";

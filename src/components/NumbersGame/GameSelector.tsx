@@ -21,8 +21,8 @@ import { stringifyGameID, destringifyGameID, stringifyGame, destringifyGame } fr
 import { GameID, Game, GradedGameID, CustomGameID, GameState, Move, } from '../../gameCode/Classes';
 import { spacer, FormsAndFreqs } from '../../gameCode/SuperMiniIndexStr/IndexCodec';
 import { decodeSolsFromGoalFormAndBinaryData, randomGameFromGradeGoalFormAndSols } from '../../gameCode/gameDecoder';
-import { easiestSolution, stringifyForm, 
-         get_op_symbols_from_encodable_sol_expr, get_seeds_from_encodable_sol_expr } from '../../gameCode/Tnetennums/Solver';
+import { easiestSolution, stringifyForm, } from '../../gameCode/Tnetennums/Solver';
+import { get_op_symbols_from_encodable_sol_expr, get_seeds_from_encodable_sol_expr } from '../../gameCode/Tnetennums/SolutionInfo';
 
 
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
