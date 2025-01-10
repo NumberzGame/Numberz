@@ -282,8 +282,8 @@ function* forward_solutions(
         // # doesn't account for multiplicities
         if ((n == 2 || !strict) && enoughSeeds([a, b], seeds)){
 
-            const sol_a = SolutionInfo.get_trivial(a)
-            yield* sol_a.get_solutions_extended_by_seed(goal, b, symbols_and_grades)
+            const sol_a = SolutionInfo.get_trivial(a);
+            yield* sol_a.get_solutions_extended_by_seed(goal, b, symbols_and_grades);
 
         } else if ((seeds.includes(a) || seeds.includes(b)) && n >= 3) {
 
