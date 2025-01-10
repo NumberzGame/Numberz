@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - '**'
+  workflow-dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -17,10 +18,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
       - name: Install dependencies
-        run: yarn
+        run: npm install
       - name: Run build
         run: npm run build
       - name: Run tests
