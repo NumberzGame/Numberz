@@ -83,7 +83,7 @@ export function addTriplesToReverseCache(
 
 
 
-export function makeCaches(
+export function makeCachesExceptTripleTriples(
     seeds: Seed[] = ALL_SEEDS,
     goals: GOALS_T = GOALS,
     maxSeeds: number | null = null,
@@ -294,6 +294,21 @@ export function makeCaches(
         //     console.log(`k=${k}, depth=${depth}, [goal, operand]=${[goal,operand]}, ${progress} done`)
         // }
     }
+
+    return [forwardCache, reverseCache];
+}
+
+export function makeCaches(
+        seeds: Seed[] = ALL_SEEDS,
+        goals: GOALS_T = GOALS,
+        maxSeeds: number | null = null,
+        forwardCache: AllDepthsCacheT = resultsAndGradesCaches.forward,
+        reverseCache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
+    ): [AllDepthsCacheT, AllDepthsCacheT] {
+
+    const maxDepth = default_max_num(maxSeeds, seeds.length);
+
+    makeCachesExceptTripleTriples(seeds, goals, maxDepth, forwardCache, reverseCache);
 
     // console.log(`k=${k}`);
     if (maxDepth >= 6) {

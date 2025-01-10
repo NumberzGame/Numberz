@@ -369,9 +369,9 @@ function* forward_and_reverse_solutions(
     max_num_seeds = default_max_num(max_num_seeds, seeds.length);
 
     for (const nStr of ["1", ...Object.keys(forward_cache)]){
-        const n = parseInt(nStr)
+        const n = parseInt(nStr);
         if (n <= max_num_seeds) {
-            yield* forward_solutions(seeds, goal, n, forward_cache, 0, true)
+            yield* forward_solutions(seeds, goal, n, forward_cache, 0, true);
         }
             // # caches[5] contains (triple op pair)s
     }
@@ -382,7 +382,7 @@ function* forward_and_reverse_solutions(
         forward_cache,
         reverse_cache,
         max_num_seeds,
-    )
+    );
 }
 
 
