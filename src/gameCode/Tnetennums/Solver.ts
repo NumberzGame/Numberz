@@ -317,6 +317,8 @@ function* forward_solutions(
             // # will remove all occurences of a.  We want to only remove the first.
 
         } else if ((4 <= n) && (n <= 5)) {
+            // Neither a, nor b is in seeds
+
             // # for partition_size in range(n // 2, n - 1):
             for (let partition_size = Math.ceil(n / 2); partition_size < n - 1; partition_size++) {
                 // # Split seeds into all non-singleton partitions:
