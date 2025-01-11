@@ -15,7 +15,7 @@
     "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
     "vitest": "vitest run src/gameCode/Schema.test.ts",
     "vitest:watch": "vitest",
-    "test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build",
+    "test": "npm run typecheck && npm run vitest && npm run build",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build"
   },

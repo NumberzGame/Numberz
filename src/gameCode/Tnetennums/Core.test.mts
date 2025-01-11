@@ -1783,15 +1783,9 @@ for (const [actual, expected] of [
   [actualCombs, expectedCombs],
   [actualPerms, expectedPerms],
 ]) {
-  console.log(JSON.stringify(actual) === JSON.stringify(expected));
-  // const diffAct = actual.difference(expected);
-  // if (diffAct.size >= 1) {
-  //     throw new Error(`Unexpected items (in actual but not in expected): ${Array.from(diffAct)}`);
-  // }
-  // const diffExp = expected.difference(actual);
-  // if (diffExp.size >= 1) {
-  //     throw new Error(`Missing required items (in expected, but not in actual): ${Array.from(diffExp)}`);
-  // }
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`Actual: ${actual} !== Expected: ${expected}`);
+  }
 }
 
-// console.log('Passed!  :)');
+console.log('Passed!  :)');
