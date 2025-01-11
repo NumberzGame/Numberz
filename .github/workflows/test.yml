@@ -50,5 +50,6 @@ jobs:
       - name: Run build
         run: npm run build
       
+      # Needs sub_byte latest version, and additional_difficulty
       - name: Run tests
         run: npm run test
