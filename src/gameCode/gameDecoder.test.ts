@@ -8,7 +8,7 @@ import { FORMS, GOAL_MAX, GOAL_MIN } from './Core';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
 
-const SOLS_DIR = '../../public/grades_goals_forms_solutions';
+const SOLS_DIR = '../../public/grade_22_goals_forms_solutions';
 
 const gradesGoalDirsGoalsForms = function* (): IterableIterator<[number, string, number, string]> {
   // for (let grade = 1; grade <= 246; grade++) {
@@ -61,6 +61,9 @@ for (const [grade, goalDir, goal, form] of gradesGoalDirsGoalsForms()) {
     }
   }
   if (broken) {
+    console.error(
+      `Error! Could not decode solutions with grade: ${grade}, goal: ${goal} of form: ${form}! Num sols : ${i + 1}`
+    );
     break;
   } else {
     console.log(
