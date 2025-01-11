@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - '**'
-  workflow-dispatch:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
