@@ -1,0 +1,52 @@
+name: test
+
+on:
+  pull_request:
+    branches:
+      - '**'
+  workflow-dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  ad_hoc_tests_with_Deno:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      # Needs example solution files.
+      # - name: Test GameDecoder
+      #   working-directory: src/gameCode/gameDecoder
+      #   run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
+
+      - name: Test Tnetennums Core
+        working-directory: src/gameCode/Tnetennums
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env Core.test.mts
+
+      - name: Test Tnetennums Solver
+        working-directory: src/gameCode/Tnetennums
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
+
+  test_with_npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
+      
+      - name: Run tests
+        run: npm run test
