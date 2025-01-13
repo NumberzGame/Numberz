@@ -26,15 +26,13 @@ jobs:
       #   working-directory: src/gameCode/gameDecoder
       #   run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
 
-      # Needs additional_difficulty
-      # - name: Test Tnetennums Core
-      #   working-directory: src/gameCode/Tnetennums
-      #   run: deno run --unstable-sloppy-imports --allow-read --allow-env Core.test.mts
+      - name: Test Tnetennums Core
+        working-directory: src/gameCode/Tnetennums
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env Core.test.mts
 
-      # Needs additional_difficulty
-      # - name: Test Tnetennums Solver
-      #   working-directory: src/gameCode/Tnetennums
-      #   run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
+      - name: Test Tnetennums Solver
+        working-directory: src/gameCode/Tnetennums
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
 
   test_with_npm:
     runs-on: ubuntu-latest
