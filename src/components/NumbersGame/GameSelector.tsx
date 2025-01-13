@@ -71,15 +71,15 @@ const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(
 function randomGrade(): number {
   return 22;
   const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
-  let index = randomPositiveInteger(numSolsAllGrades);
+  const index = randomPositiveInteger(numSolsAllGrades);
 
   let numSols = 0;
   for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) =>
-    parseInt(k)
+    parseInt(k, 10)
   )) {
     numSols += value;
     if (index < numSols) {
-      return parseInt(grade) as number;
+      return parseInt(grade, 10) as number;
     }
   }
   throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
@@ -97,13 +97,13 @@ function randomGoal(
     ] ?? {};
 
   const numSolsOfGrade = sumValues(gradesObj);
-  let index = randomPositiveInteger(numSolsOfGrade);
+  const index = randomPositiveInteger(numSolsOfGrade);
 
   let numSolsSoFar = 0;
-  for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k))) {
+  for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k, 10))) {
     numSolsSoFar += numSols;
     if (index < numSolsSoFar) {
-      return parseInt(goal);
+      return parseInt(goal, 10);
     }
   }
 
@@ -321,7 +321,7 @@ export function GameSelector(props: { grade: number }) {
   };
 
   if (winScreenOpened && currentGameID !== null) {
-    return <WinScreen opened={winScreenOpened} close={onClose}></WinScreen>;
+    return <WinScreen opened={winScreenOpened} close={onClose} />;
   }
 
   // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
@@ -378,7 +378,7 @@ export function GameSelector(props: { grade: number }) {
         onWin={onWin}
         store={storeGame}
         onQuit={onQuit}
-      ></NewGradedGame>
+       />
     );
   } else {
     if (currentGameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
@@ -435,7 +435,7 @@ export function GameSelector(props: { grade: number }) {
     storeGame(game);
 
     gameComponent = (
-      <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit}></NumbersGame>
+      <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />
     );
   }
 
@@ -483,7 +483,7 @@ function NewGradedGame(props: NewGradedGameProps) {
   }
 
   if (error) {
-    return 'An error has occurred: ' + error.message;
+    return `An error has occurred: ${  error.message}`;
   }
 
   if (isFetching) {
@@ -516,7 +516,7 @@ function NewGradedGame(props: NewGradedGameProps) {
         onWin={props.onWin}
         store={props.store}
         onQuit={props.onQuit}
-      ></NumbersGame>
+       />
     </>
   );
 }

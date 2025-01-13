@@ -56,9 +56,9 @@ export function HintButton(props: HintButtonProps) {
         Hide hint
       </Button>
     );
-  } else {
+  } 
     return <Button onClick={props.handler}>Show hint</Button>;
-  }
+  
 }
 
 export interface NumbersGameProps {
@@ -263,7 +263,7 @@ export function NumbersGame(props: NumbersGameProps) {
         </Stack>
         <Stack justify="flex-end">
           <Group justify="center" mt="md">
-            <HintButton handler={hintButtonHandler} hintsShown={hintsShown}></HintButton>
+            <HintButton handler={hintButtonHandler} hintsShown={hintsShown} />
             <Button onClick={props.onQuit}>⮾</Button>
           </Group>
         </Stack>

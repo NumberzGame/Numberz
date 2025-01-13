@@ -18,12 +18,14 @@ export function* get_op_symbols_from_encodable_sol_expr(expr: string): IterableI
 export function* get_seeds_from_encodable_sol_expr(expr: string): IterableIterator<number> {
   for (const match of expr.matchAll(DIGITS_REGEXP)) {
     const digits = match[0];
-    yield parseInt(digits);
+    yield parseInt(digits, 10);
   }
 }
 
 function opStr(a: number | string, b: number | string, symbol: string): string {
   if (typeof a === 'number' && typeof b === 'number' && a < b) {
+    
+  // eslint-disable-next-line no-param-reassign
     [a, b] = [b, a];
   }
   return SOLUTION_FMT_STRING.replace('[arg_1]', `${a}`)
@@ -188,7 +190,7 @@ export class SolutionInfo {
       }
       const other_seed = other_seed_list[0];
       const [pair_seed_a, pair_seed_b] = two_seeds;
-      for (const [pair_symbol, [pair_result, pair_level]] of Object.entries(
+      for (const [_pair_symbol, [pair_result, pair_level]] of Object.entries(
         opsAndLevelsResults(pair_seed_a, pair_seed_b)
       )) {
         //# pair = op(*two_seeds)
@@ -196,7 +198,7 @@ export class SolutionInfo {
           pair_symbol: pair_level,
         }).next().value!;
 
-        for (const [triple_symbol, [triple_result, triple_level]] of Object.entries(
+        for (const [_triple_symbol, [triple_result, triple_level]] of Object.entries(
           opsAndLevelsResults(other_seed, pair_result)
         )) {
           yield* pair_sol.get_solutions_extended_by_seed(triple_result, other_seed, {
@@ -220,6 +222,8 @@ export class SolutionInfo {
   }
 }
 
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Impossible {
   grade = Infinity;
 }

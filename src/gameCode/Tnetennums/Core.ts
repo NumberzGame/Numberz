@@ -9,8 +9,8 @@ import { HashTable, INVALID_ARGS, MAX_SEEDS, OPS } from '../Core';
 
 export type ValueOf<T> = T[keyof T];
 
-export const GOAL_MIN = SYMBOLS['GOAL_MIN'];
-export const GOAL_MAX = SYMBOLS['GOAL_MAX'];
+export const GOAL_MIN = SYMBOLS.GOAL_MIN;
+export const GOAL_MAX = SYMBOLS.GOAL_MAX;
 
 export type Seed = number;
 export type OperandT = number;

@@ -69,10 +69,10 @@ export function addTriplesToReverseCache(
   const numMessages = 5;
   const numGoalTripleVals = goals.length * Object.entries(forwardCache[3]!).length;
   const iterationsPerMessage = Math.max(numGoalTripleVals / numMessages, 1);
-  let i = 0;
+  const i = 0;
 
   for (const goal of goals) {
-    for (const tripleVal of Object.keys(forwardCache[3]).map((k) => parseInt(k))) {
+    for (const tripleVal of Object.keys(forwardCache[3]).map((k) => parseInt(k, 10))) {
       addOpsResultsToCaches(reverseCache[3], goal, tripleVal, (op: Op) =>
         inverseOp(op, tripleVal, goal)
       );
@@ -134,7 +134,7 @@ export function makeCachesExceptTripleTriples(
           if (pairsMap.keys().every((operands) => !enoughSeeds(operands.concat(seed), seeds))) {
             continue;
           }
-          yield [3, parseInt(pairResult), seed];
+          yield [3, parseInt(pairResult, 10), seed];
         }
       }
     }
@@ -183,7 +183,7 @@ export function makeCachesExceptTripleTriples(
           // )) {
           //     continue;
           // }
-          yield [4, parseInt(tripleResult), seed];
+          yield [4, parseInt(tripleResult, 10), seed];
         }
       }
 
@@ -201,7 +201,7 @@ export function makeCachesExceptTripleTriples(
           continue;
         }
 
-        yield [4, parseInt(pairA), parseInt(pairB)];
+        yield [4, parseInt(pairA, 10), parseInt(pairB, 10)];
       }
     }
 
@@ -227,7 +227,7 @@ export function makeCachesExceptTripleTriples(
             continue;
           }
 
-          yield [5, parseInt(triple), parseInt(pair)];
+          yield [5, parseInt(triple, 10), parseInt(pair, 10)];
         }
       }
     }
@@ -260,7 +260,7 @@ export function makeCachesExceptTripleTriples(
       }
       for (const goal of goals) {
         for (const pair of Object.keys(forwardCache[2])) {
-          yield [2, goal, parseInt(pair)];
+          yield [2, goal, parseInt(pair, 10)];
         }
       }
     }
@@ -268,7 +268,7 @@ export function makeCachesExceptTripleTriples(
 
   const numMessages = 10;
   const iterationsPerMessage = Math.max(numIterations / numMessages, 1);
-  let i = 0;
+  const i = 0;
 
   for (const [depth, a, b] of seedsGen()) {
     addOpsResultsToCaches(forwardCache[depth], a, b, null);
@@ -282,7 +282,7 @@ export function makeCachesExceptTripleTriples(
   // console.log(`i=${i}`);
 
   // console.log("Building reverse cache...");
-  let k = 0;
+  const k = 0;
 
   for (const [depth, goal, operand] of goalsReverseGen()) {
     addOpsResultsToCaches(reverseCache[depth], goal, operand, (symbol) =>

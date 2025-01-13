@@ -67,7 +67,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
     </Button>
   );
   return (
-    <Popover opened={opened} onClose={close} trapFocus={true}>
+    <Popover opened={opened} onClose={close} trapFocus>
       <Popover.Target>
         <NumberInput
           label="Goal: "
@@ -77,7 +77,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           max={props.max}
           maw={300}
           ref={ref}
-        ></NumberInput>
+         />
       </Popover.Target>
       <Popover.Dropdown>
         <SimpleGrid cols={3}>{buttons}</SimpleGrid>

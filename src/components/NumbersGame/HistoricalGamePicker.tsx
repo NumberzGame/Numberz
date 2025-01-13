@@ -80,39 +80,39 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
             const uploadedGameData = JSON.parse(jsonString);
             for (const gameData of uploadedGameData) {
               const moves: Move[] = [];
-              const stateObj = gameData?.['state'] ?? {};
-              for (const moveObj of stateObj?.['moves'] ?? []) {
+              const stateObj = gameData?.state ?? {};
+              for (const moveObj of stateObj?.moves ?? []) {
                 const move = new Move(
-                  moveObj?.['opIndex'] ?? null,
-                  moveObj?.['submitted'] ?? false,
-                  moveObj?.['operandIndices'] ?? []
+                  moveObj?.opIndex ?? null,
+                  moveObj?.submitted ?? false,
+                  moveObj?.operandIndices ?? []
                 );
                 moves.push(move);
               }
-              const state = new GameState(stateObj['solved'], moves);
+              const state = new GameState(stateObj.solved, moves);
               let id: GameID;
-              const idData = gameData['id'];
-              const goal = idData['goal'];
+              const idData = gameData.id;
+              const goal = idData.goal;
               if ('seedIndices' in idData) {
-                id = new CustomGameID(goal, idData['seedIndices']);
+                id = new CustomGameID(goal, idData.seedIndices);
               } else if ('grade' in idData && 'form' in idData && 'index' in idData) {
                 id = new GradedGameID(
-                  idData['grade'],
-                  idData['goal'],
-                  idData['form'],
-                  idData['index']
+                  idData.grade,
+                  idData.goal,
+                  idData.form,
+                  idData.index
                 );
               } else {
                 throw new Error(`Could not form GameID from: ${idData}`);
               }
               const game = new Game(
                 id,
-                gameData['timestamp_ms'],
-                gameData['seedIndices'],
-                gameData['opIndices'],
+                gameData.timestamp_ms,
+                gameData.seedIndices,
+                gameData.opIndices,
                 state,
-                gameData['redHerrings'],
-                gameData['seedsDisplayOrder']
+                gameData.redHerrings,
+                gameData.seedsDisplayOrder
               );
               props.storeGame(game);
             }

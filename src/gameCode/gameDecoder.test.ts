@@ -3,8 +3,6 @@
 // \22\224\solutions_224_6_grade_22.dat
 
 import { existsSync, readFileSync } from 'node:fs';
-import { argv } from 'node:process';
-import { FORMS, GOAL_MAX, GOAL_MIN } from './Core';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
 
@@ -43,7 +41,7 @@ for (const [grade, goalDir, goal, form] of gradesGoalDirsGoalsForms()) {
 
   const data = readFileSync(filePath);
 
-  const [indices, symbols, solExprs] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
+  const [_indices, symbols, solExprs] = decodeSolsFromGoalFormAndBinaryData(goal, form, data);
 
   let i = 0;
 

@@ -35,7 +35,7 @@ const CUSTOM_GAME_ID_MIN_SIZE = 8;
 export const MIN_GAME_SIZE = 26;
 
 const fitsIn_u15 = function (x: number): boolean {
-  return 0 <= x && x <= MAX_U15;
+  return x >= 0 && x <= MAX_U15;
 };
 
 export const checkFitsInChunk = function (x: number) {
@@ -117,7 +117,7 @@ const seedsFromDestringified = function* (
   for (const seedIndex of destringified) {
     if (seedIndex === NO_SEED) {
       continue;
-    } else if (0 <= seedIndex && seedIndex < SEEDS.length) {
+    } else if (seedIndex >= 0 && seedIndex < SEEDS.length) {
       yield seedIndex;
     } else {
       throw new Error(
@@ -303,7 +303,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   for (const opIndex of takeNextN(MAX_OPS)) {
     if (opIndex === NO_OP) {
       continue;
-    } else if (0 <= opIndex && opIndex <= SEEDS.length) {
+    } else if (opIndex >= 0 && opIndex <= SEEDS.length) {
       opIndices.push(opIndex);
     } else {
       throw new Error(
@@ -316,15 +316,15 @@ export const destringifyGame = function (s: string, id: GameID): Game {
 
   const moves = [];
 
-  let allSubmitted = true;
+  const allSubmitted = true;
 
   for (const opIndex of takeNextN(MAX_MOVES)) {
-    const submitted = 1 === next();
+    const submitted = next() === 1;
     const operandIndices = [];
     for (const operandIndex of takeNextN(MAX_OPERANDS)) {
       if (operandIndex === NO_OPERAND) {
         continue;
-      } else if (0 <= operandIndex && operandIndex < MAX_SEEDS) {
+      } else if (operandIndex >= 0 && operandIndex < MAX_SEEDS) {
         operandIndices.push(operandIndex);
       } else {
         throw new Error(
@@ -339,7 +339,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
       continue;
     } else if (opIndex === NO_OP) {
       move = new Move(null, submitted, operandIndices);
-    } else if (0 <= opIndex && opIndex < OP_SYMBOLS.length) {
+    } else if (opIndex >= 0 && opIndex < OP_SYMBOLS.length) {
       move = new Move(opIndex, submitted, operandIndices);
     } else {
       throw new Error(
@@ -355,7 +355,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   for (const seedIndex of takeNextN(MAX_SEEDS)) {
     if (seedIndex === NO_SEED) {
       continue;
-    } else if (0 <= seedIndex && seedIndex < SEEDS.length) {
+    } else if (seedIndex >= 0 && seedIndex < SEEDS.length) {
       redHerrings.push(seedIndex);
     } else {
       throw new Error(
@@ -370,7 +370,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   for (const indexOfIndex of takeNextN(MAX_SEEDS)) {
     if (indexOfIndex === NO_SEED) {
       continue;
-    } else if (0 <= indexOfIndex && indexOfIndex < MAX_SEEDS) {
+    } else if (indexOfIndex >= 0 && indexOfIndex < MAX_SEEDS) {
       seedsDisplayOrder.push(indexOfIndex);
     } else {
       throw new Error(

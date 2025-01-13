@@ -31,12 +31,12 @@ export const MAX_OPERANDS = 2;
 //     GOAL_MAX : 999
 //    };
 
-export const ALL_SEEDS: number[] = SYMBOLS['SEEDS'];
+export const ALL_SEEDS: number[] = SYMBOLS.SEEDS;
 export const SEEDS = Array.from(new Set(ALL_SEEDS));
-export const OP_SYMBOLS: string[] = SYMBOLS['OPS'];
-export const GOAL_MIN = SYMBOLS['GOAL_MIN'];
-export const GOAL_MAX = SYMBOLS['GOAL_MAX'];
-export const FORMS = SYMBOLS['FORMS'];
+export const OP_SYMBOLS: string[] = SYMBOLS.OPS;
+export const GOAL_MIN = SYMBOLS.GOAL_MIN;
+export const GOAL_MAX = SYMBOLS.GOAL_MAX;
+export const FORMS = SYMBOLS.FORMS;
 
 export const NUM_REQUIRED_OPERANDS = Object.freeze(
   Object.fromEntries(OP_SYMBOLS.map((op) => [op, 2]))

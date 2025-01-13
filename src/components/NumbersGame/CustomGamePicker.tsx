@@ -72,7 +72,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
 
   function seedTagsInputOnChange(value: string[]): void {
     return setNewCustomGameIDWithImmer((draft) => {
-      const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str)));
+      const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str), 10));
       if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))) {
         draft.seedIndices = newSeedIndices;
       }
@@ -130,7 +130,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
             }
             min={GOAL_MIN}
             max={GOAL_MAX}
-          ></NumberInputWithDigitsKeys>
+           />
           <Group justify="end" mt="xs">
             <Button onClick={newGameClickHandler}>New custom game</Button>
           </Group>

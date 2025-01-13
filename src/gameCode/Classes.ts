@@ -236,9 +236,9 @@ export const getHintsAndGrades = function* (
     if (!match?.groups) {
       continue;
     }
-    const seed1 = parseInt(match!.groups['seed1']);
-    const seed2 = parseInt(match!.groups['seed2']);
-    const opSymbol = match!.groups['op'];
+    const seed1 = parseInt(match!.groups.seed1, 10);
+    const seed2 = parseInt(match!.groups.seed2, 10);
+    const opSymbol = match!.groups.op;
 
     const op = OPS[opSymbol];
     const val = op(seed1, seed2);
@@ -304,7 +304,7 @@ const getRedHerringIndicesWithoutMakingEasier = function (
 export const numSeedsFromForm = function (form: string): number {
   let total = 0;
   for (const match of form.matchAll(/\d+/g)) {
-    total += parseInt(match[0]);
+    total += parseInt(match[0], 10);
   }
   return total;
 };

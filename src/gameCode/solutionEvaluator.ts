@@ -39,9 +39,12 @@ export const evalSolution = function (
   //                      }
 
   const evalSolutionFromIterators = function (
-    valSoFar: number | null = null,
+    current: number | null = null,
     until: string = ''
   ): number | null {
+
+    let valSoFar = current;
+
     for (const char of formCharsIterator) {
       // Ignore whitespace, 0s and underscores.
       if (!char.trim() || '_0'.includes(char)) {
@@ -74,7 +77,7 @@ export const evalSolution = function (
           outerOp = nextOp();
         }
 
-        let num = parseInt(char);
+        const num = parseInt(char, 10);
 
         let valOfStraight = nextSeed();
 

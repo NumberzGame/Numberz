@@ -68,7 +68,7 @@ export class FormsAndFreqs {
     // Generator's return method, closing it.
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of#description
     while (true) {
-      let result = uintIterator.next();
+      const result = uintIterator.next();
       if (result.done) {
         break;
       }

@@ -23,7 +23,7 @@ function makeSubSolExpr(x: Operand, y: Operand, op: string): string {
 }
 
 // TODO: Construct \+|\*|\-|\/ from RegExp.escape and OPS.keys
-export const EXPR_PATTERN = /\((?<seed1>\d+)\s*(?<op>\+|\*|\-|\/)\s*(?<seed2>\d+)\)/g;
+export const EXPR_PATTERN = /\((?<seed1>\d+)\s*(?<op>\+|\*|-|\/)\s*(?<seed2>\d+)\)/g;
 
 function makeValidSubSolExpr(x: Operand, y: Operand, op: string): string {
   // Ensure x >= y for abs (x - y) and /

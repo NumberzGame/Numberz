@@ -9,9 +9,9 @@ const bitWidthsFromNumSeeds = function (numSeeds: number): number[] {
   const seedsValueSets = Array(numSeeds).fill(ALL_SEEDS);
   const opsValueSets = Array(numOps).fill(OP_SYMBOLS);
 
-  const [seedsBitWidths, seedsEncodings, seedsDecodings] =
+  const [seedsBitWidths, _seedsEncodings, _seedsDecodings] =
     getBitWidthsEncodingsAndDecodings(seedsValueSets);
-  const [opsBitWidths, opsEncodings, opsDecodings] =
+  const [opsBitWidths, _opsEncodings, _opsDecodings] =
     getBitWidthsEncodingsAndDecodings(opsValueSets);
 
   return seedsBitWidths.concat(opsBitWidths);

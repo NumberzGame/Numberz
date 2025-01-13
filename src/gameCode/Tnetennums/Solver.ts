@@ -1,4 +1,4 @@
-import { OP_SYMBOLS, SEEDS, takeNextN } from '../Core';
+import { SEEDS, takeNextN } from '../Core';
 import { makeCaches } from './Cachebuilder';
 import {
   AllDepthsCacheT,
@@ -40,11 +40,11 @@ function* forward_solutions(
   if (!(goal in (forward_cache[n] ?? {}))) {
     return;
   }
-
+  // eslint-disable-next-line prefer-const
   for (let [[a, b], symbols_and_grades] of (forward_cache[n]?.[goal] ?? new Map()).entries()) {
     // # can't use a in core.SEEDS and b in core.SEEDS as this
     // # doesn't account for multiplicities
-    if ((n == 2 || !strict) && enoughSeeds([a, b], seeds)) {
+    if ((n === 2 || !strict) && enoughSeeds([a, b], seeds)) {
       const sol_a = SolutionInfo.get_trivial(a);
       yield* sol_a.get_solutions_extended_by_seed(goal, b, symbols_and_grades);
     } else if ((seeds.includes(a) || seeds.includes(b)) && n >= 3) {
@@ -79,7 +79,7 @@ function* forward_solutions(
       // #
       // # A List comprehension [seed for seed in seeds if seed != a]
       // # will remove all occurences of a.  We want to only remove the first.
-    } else if (4 <= n && n <= 5) {
+    } else if (n >= 4 && n <= 5) {
       // Neither a, nor b is in seeds
 
       // # for partition_size in range(n // 2, n - 1):
@@ -132,6 +132,7 @@ function* quadruple_pairs_and_pair_pair_pairs(
 ): IterableIterator<SolutionInfo> {
   // # from quadruples and pair-pairs.
 
+  // eslint-disable-next-line prefer-const
   for (let [[quad_or_pair_pair, pair], symbols_and_grades] of (
     reverse_cache[2]?.[goal] ?? new Map()
   ).entries()) {
@@ -226,13 +227,13 @@ function* reverse_solutions(
   goal: Result,
   forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
   reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
-  max_num_seeds: number | null = null
+  max_num_seeds_cap: number | null = null
 ): IterableIterator<SolutionInfo> {
-  max_num_seeds = default_max_num(max_num_seeds, seeds.length);
+  const max_num_seeds = default_max_num(max_num_seeds_cap, seeds.length);
 
   if (
     max_num_seeds <= 4 ||
-    (max_num_seeds == 5 && !(goal in (reverse_cache[1] ?? {}))) ||
+    (max_num_seeds === 5 && !(goal in (reverse_cache[1] ?? {}))) ||
     (max_num_seeds === 6 && [1, 2, 3, 4].every((i) => !(goal in (reverse_cache[i] ?? {}))))
   ) {
     // console.log(`No cached solutions in reverse_caches for ${goal} and ${max_num_seeds}`);
@@ -241,6 +242,7 @@ function* reverse_solutions(
   if (max_num_seeds >= 5 && GOAL_MIN <= goal && goal <= GOAL_MAX) {
     // # assert goal in reverse_caches[1]
     const reverse_cache_1_seed = reverse_cache[1]?.[goal] ?? new Map();
+    // eslint-disable-next-line prefer-const
     for (let [[sub_goal, seed], symbols_and_grades] of reverse_cache_1_seed.entries()) {
       // # sub_goal symbol operand == goal, symbol in ('+', '|-|', '*', '//')
 
@@ -289,6 +291,8 @@ function* reverse_solutions(
 
         // # Find sextuples and pair-pair-op-ops from quadruples.
         // # for (next_goal, next_seed), next_symbol_str in reverse_cache[2][sub_goal].items():
+        
+        // eslint-disable-next-line prefer-const
         for (let [[next_goal, next_seed], next_symbols_and_grades] of (
           reverse_cache[2][sub_goal] ?? new Map()
         ).entries()) {
@@ -342,12 +346,12 @@ function* forward_and_reverse_solutions(
   goal: Result,
   forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
   reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse,
-  max_num_seeds: number | null = null
+  max_num_seeds_cap: number | null = null
 ): IterableIterator<SolutionInfo> {
-  max_num_seeds = default_max_num(max_num_seeds, seeds.length);
+  const max_num_seeds = default_max_num(max_num_seeds_cap, seeds.length);
 
   for (const nStr of ['1', ...Object.keys(forward_cache)]) {
-    const n = parseInt(nStr);
+    const n = parseInt(nStr, 10);
     if (n <= max_num_seeds) {
       yield* forward_solutions(seeds, goal, n, forward_cache, 0, true);
     }
@@ -361,11 +365,11 @@ export function* find_solutions(
   nums: number[],
   goal: number,
   number_to_seek: number | 'all' = 1,
-  max_num_seeds: number | null = null,
+  max_num_seeds_cap: number | null = null,
   forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
   reverse_cache: AllDepthsCacheT = resultsAndGradesCaches.reverse
 ): IterableIterator<SolutionInfo> {
-  max_num_seeds = default_max_num(max_num_seeds, nums.length);
+  const max_num_seeds = default_max_num(max_num_seeds_cap, nums.length);
 
   if (Object.keys(forward_cache).length === 0 || Object.keys(reverse_cache).length === 0) {
     makeCaches(nums, [goal], max_num_seeds, forward_cache, reverse_cache);
@@ -374,9 +378,9 @@ export function* find_solutions(
   let solutions = forward_and_reverse_solutions(
     nums,
     goal,
-    (forward_cache = forward_cache),
-    (reverse_cache = reverse_cache),
-    (max_num_seeds = max_num_seeds)
+    forward_cache,
+    reverse_cache,
+    max_num_seeds
   );
   if (number_to_seek !== 'all') {
     // #

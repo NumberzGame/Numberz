@@ -11,6 +11,7 @@ import {
 } from './SolutionInfo';
 import { find_solutions } from './Solver';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function investigate_140_1_1_1_1_25_10(): void {
   const seeds = [25, 10, 1, 1, 1, 1];
   const goal = 140;
@@ -122,7 +123,7 @@ function solveAndGradePuzzleFromCommandLine(): void {
   // deno run --unstable-sloppy-imports Solver.test.mts 958 75 100 25 4 8 4
   // deno run --unstable-sloppy-imports Solver.test.mts 110 10 6 1 5 2
   // deno run --unstable-sloppy-imports Solver.test.mts  386 50 100 75 6 1 3
-  const [goal, ...seeds] = argv.slice(2).map((s) => parseInt(s));
+  const [goal, ...seeds] = argv.slice(2).map((s) => parseInt(s, 10));
 
   makeCaches(seeds, [goal], seeds.length);
 
