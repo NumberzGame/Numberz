@@ -49,9 +49,10 @@ min: (27B, 5MB limit => 10 per day for 55 years)
 
       key u38 6B (3 UTF-16 BMP single code units)   
                 (does storage space for keys matter if they're hashed?....
-                  A: It does - localstorge is implemented using levelDB 
+                  A: It does - localstorge can iterate through its keys by index. 
+                    It is implemented using levelDB 
                     in Chrome, and sqllite in Firefox.  Both are more than 
-                    simple hash tables.
+                    simple hash tables.  
                 )      
 
       grade, 1,...,228 u8
