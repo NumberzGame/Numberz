@@ -48,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Needs num_of_sols_of_each_grade_and_goal.json & SuperMiniIndexStr.json
+      #  Error: src/components/NumbersGame/GameSelector.tsx(29,45): error TS2307: Cannot find module '../../data/num_of_sols_of_each_grade_and_goal.json' or its corresponding type declarations.
+      # Error: src/components/NumbersGame/GameSelector.tsx(30,52): error TS2307: Cannot find module '../../data/SuperMiniIndexStr.json'
       - name: Run build
         run: npm run build
       
