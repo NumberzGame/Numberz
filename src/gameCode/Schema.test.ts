@@ -16,7 +16,6 @@ import {
   MAX_OPS,
   MAX_SEEDS,
   OP_SYMBOLS,
-  OPS,
   SEEDS,
 } from './Core';
 import {
@@ -90,7 +89,7 @@ test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGa
 
 const opIndex = () => fc.nat({ max: OP_SYMBOLS.length - 1 });
 const seedIndex = () => fc.nat({ max: SEEDS.length - 1 });
-const operand = () => fc.nat({ max: SEEDS.length - 1 });
+// const operand = () => fc.nat({ max: SEEDS.length - 1 });
 
 test('for each Game with a Graded GameID, stringifyGame should roundtrip with destringifyGame', () => {
   fc.assert(

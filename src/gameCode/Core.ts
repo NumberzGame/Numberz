@@ -82,13 +82,14 @@ export function* takeNextN<T>(
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/take
   // const NResults = codeUnitsIterator.take(N);
 
-  errorMessage ??=
+  const errorStr =
+    errorMessage ??
     `iterator: ${iterator} exhausted. ` + `Too few items yielded for required number: N=${N}`;
 
   for (let i = 0; i < N; i++) {
     const result = iterator.next();
     if (result.done) {
-      throw new Error(errorMessage);
+      throw new Error(errorStr);
     }
     yield result.value;
   }

@@ -72,7 +72,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
 
   function seedTagsInputOnChange(value: string[]): void {
     return setNewCustomGameIDWithImmer((draft) => {
-      const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str), 10));
+      const newSeedIndices = value.map((str) => SEEDS.indexOf(parseInt(str, 10)));
       if (newSeedIndices.every((index) => !tooManyOfThisSeedUsed(index, newSeedIndices))) {
         draft.seedIndices = newSeedIndices;
       }
@@ -100,6 +100,8 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
     // Immer producers can also create new states
     // if drafts are unmodified.
     // https://immerjs.github.io/immer/return
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setNewCustomGameIDWithImmer((draft) => new CustomGameID());
   }
 
@@ -130,7 +132,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
             }
             min={GOAL_MIN}
             max={GOAL_MAX}
-           />
+          />
           <Group justify="end" mt="xs">
             <Button onClick={newGameClickHandler}>New custom game</Button>
           </Group>

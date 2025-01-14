@@ -4,7 +4,6 @@ import {
   combinations,
   default_max_num,
   enoughSeeds,
-  Goal,
   GOALS,
   GOALS_T,
   Grade,
@@ -14,7 +13,6 @@ import {
   opsAndLevelsResults,
   opsCacheKey,
   OpsCacheKeyT,
-  OpsCacheT,
   OpsCacheValT,
   permutations,
   Result,
@@ -31,6 +29,7 @@ export function addOpsResultsToCaches(
 ): void {
   const resultsAndLevels = opsAndLevelsResults(a, b);
 
+  // eslint-disable-next-line prefer-const
   for (let [symbol, [result, level]] of Object.entries(resultsAndLevels)) {
     let key: OpsCacheKeyT;
     let newSymbol;
@@ -66,10 +65,10 @@ export function addTriplesToReverseCache(
 ): void {
   reverseCache[3] ??= {};
 
-  const numMessages = 5;
-  const numGoalTripleVals = goals.length * Object.entries(forwardCache[3]!).length;
-  const iterationsPerMessage = Math.max(numGoalTripleVals / numMessages, 1);
-  const i = 0;
+  // const numMessages = 5;
+  // const numGoalTripleVals = goals.length * Object.entries(forwardCache[3]!).length;
+  // const iterationsPerMessage = Math.max(numGoalTripleVals / numMessages, 1);
+  // const i = 0;
 
   for (const goal of goals) {
     for (const tripleVal of Object.keys(forwardCache[3]).map((k) => parseInt(k, 10))) {
@@ -98,7 +97,7 @@ export function makeCachesExceptTripleTriples(
 
   const maxDepth = default_max_num(maxSeeds, seeds.length);
 
-  const numIterations = 1086665;
+  // const numIterations = 1086665;
   // console.log(`numIterations=${numIterations}`);
 
   function* triple_seeds(triple_operands: [OperandT, OperandT]): IterableIterator<Seed[]> {
@@ -147,7 +146,7 @@ export function makeCachesExceptTripleTriples(
           if (
             triplesMap.keys().every((operands) =>
               Array.from(permutations(2, operands))
-                .filter(([tripleSeed, pair], i, arr) => seeds.includes(tripleSeed))
+                .filter(([tripleSeed, _pair], _i, _arr) => seeds.includes(tripleSeed))
                 .every(
                   // If the pair is not in forwardCache[2],
                   // then it can't be made from any pair of seeds
@@ -162,7 +161,7 @@ export function makeCachesExceptTripleTriples(
                   // undefined
                   // > m.keys().every((x) => false)
                   // true
-                  ([tripleSeed, pair], i, arr) =>
+                  ([tripleSeed, pair], _i, _arr) =>
                     pair in forwardCache[2] &&
                     forwardCache[2][pair]
                       .keys()
@@ -245,7 +244,7 @@ export function makeCachesExceptTripleTriples(
 
     if (maxDepth >= 6) {
       reverseCache[2] ??= {};
-      for (const [goal, goalMap] of Object.entries(reverseCache[1])) {
+      for (const [_goal, goalMap] of Object.entries(reverseCache[1])) {
         for (let [subGoal, seed] of goalMap.keys()) {
           if (!seeds.includes(seed)) {
             [subGoal, seed] = [seed, subGoal];
@@ -266,9 +265,9 @@ export function makeCachesExceptTripleTriples(
     }
   }
 
-  const numMessages = 10;
-  const iterationsPerMessage = Math.max(numIterations / numMessages, 1);
-  const i = 0;
+  // const numMessages = 10;
+  // const iterationsPerMessage = Math.max(numIterations / numMessages, 1);
+  // const i = 0;
 
   for (const [depth, a, b] of seedsGen()) {
     addOpsResultsToCaches(forwardCache[depth], a, b, null);
@@ -282,7 +281,7 @@ export function makeCachesExceptTripleTriples(
   // console.log(`i=${i}`);
 
   // console.log("Building reverse cache...");
-  const k = 0;
+  // const k = 0;
 
   for (const [depth, goal, operand] of goalsReverseGen()) {
     addOpsResultsToCaches(reverseCache[depth], goal, operand, (symbol) =>

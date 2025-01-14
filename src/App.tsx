@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createTheme, MantineProvider, virtualColor } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';
 import { theme } from './theme';
 

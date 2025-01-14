@@ -2,9 +2,8 @@ import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeTo
 import { GameSelector } from '../components/NumbersGame/GameSelector';
 import { Welcome } from '../components/Welcome/Welcome';
 
-
 export function HomePage() {
-  const INITIAL_GRADE = 17;
+  const INITIAL_GRADE = 1;
 
   // const grade = 22;
   // const goal = 224;

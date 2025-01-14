@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import { Button, NumberInput, Popover, SimpleGrid } from '@mantine/core';
-import { useDisclosure, useFocusWithin } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 
 interface NumberInputWithDigitsKeysProps {
   value: number;
@@ -11,8 +11,9 @@ interface NumberInputWithDigitsKeysProps {
 }
 
 export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [opened, { open, close }] = useDisclosure(false);
-  const { ref, focused } = useFocusWithin({ onFocus: open });
+  // const { ref, focused } = useFocusWithin({ onFocus: open });
   const [value, setValueThisState] = useState<string | number>(props.value);
 
   const setValue = function (value: string | number): void {
@@ -51,7 +52,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
 
   const buttons = Array(10)
     .fill(undefined)
-    .map((x, i) => (
+    .map((_x, i) => (
       <Button variant="transparent" key={nanoid()} onClick={makeDigitButtonClickHandler(i)}>
         {i}
       </Button>
@@ -76,8 +77,8 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           min={props.min}
           max={props.max}
           maw={300}
-          ref={ref}
-         />
+          // ref={ref}
+        />
       </Popover.Target>
       <Popover.Dropdown>
         <SimpleGrid cols={3}>{buttons}</SimpleGrid>

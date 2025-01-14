@@ -1,39 +1,11 @@
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { nanoid } from 'nanoid';
 // import { useLocalStorage } from '@mantine/hooks';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from 'use-immer';
-import {
-  Anchor,
-  Badge,
-  Box,
-  Button,
-  Center,
-  Group,
-  HoverCard,
-  Image,
-  Slider,
-  Stack,
-  Text,
-  TextInput,
-} from '@mantine/core';
-import {
-  CustomGameID,
-  Game,
-  GameID,
-  GameState,
-  GradedGameID,
-  HINT_UNDO,
-  Move,
-} from '../../gameCode/Classes';
+import { Badge, Button, Group, Stack, Text } from '@mantine/core';
+import { Game, HINT_UNDO, Move } from '../../gameCode/Classes';
 import { MAX_MOVES, MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
-import {
-  destringifyCodeUnits,
-  destringifyGame,
-  destringifyGameID,
-  stringifyGame,
-  stringifyGameID,
-} from '../../gameCode/Schema';
 
 const overrideSymbolText = function (s: string): string {
   if (s === '//') {
@@ -56,9 +28,8 @@ export function HintButton(props: HintButtonProps) {
         Hide hint
       </Button>
     );
-  } 
-    return <Button onClick={props.handler}>Show hint</Button>;
-  
+  }
+  return <Button onClick={props.handler}>Show hint</Button>;
 }
 
 export interface NumbersGameProps {
@@ -123,7 +94,7 @@ export function NumbersGame(props: NumbersGameProps) {
     );
   });
 
-  const makeOperandButtonClickHandler = function (val: number, operandIndex: number): () => void {
+  const makeOperandButtonClickHandler = function (_val: number, operandIndex: number): () => void {
     const operandButtonClickHandler = function () {
       setGameUsingImmerProducerAndStore((draft: Game) => {
         // const move = draft.state.moves.at(-1)!;

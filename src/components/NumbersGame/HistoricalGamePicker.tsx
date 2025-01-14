@@ -96,12 +96,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
               if ('seedIndices' in idData) {
                 id = new CustomGameID(goal, idData.seedIndices);
               } else if ('grade' in idData && 'form' in idData && 'index' in idData) {
-                id = new GradedGameID(
-                  idData.grade,
-                  idData.goal,
-                  idData.form,
-                  idData.index
-                );
+                id = new GradedGameID(idData.grade, idData.goal, idData.form, idData.index);
               } else {
                 throw new Error(`Could not form GameID from: ${idData}`);
               }

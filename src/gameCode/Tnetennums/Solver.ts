@@ -291,7 +291,7 @@ function* reverse_solutions(
 
         // # Find sextuples and pair-pair-op-ops from quadruples.
         // # for (next_goal, next_seed), next_symbol_str in reverse_cache[2][sub_goal].items():
-        
+
         // eslint-disable-next-line prefer-const
         for (let [[next_goal, next_seed], next_symbols_and_grades] of (
           reverse_cache[2][sub_goal] ?? new Map()

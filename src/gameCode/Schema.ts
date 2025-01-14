@@ -1,9 +1,6 @@
-import { CustomGameID, Game, GameID, GameIDBase, GameState, GradedGameID, Move } from './Classes';
+import { CustomGameID, Game, GameID, GameState, GradedGameID, Move } from './Classes';
 import {
-  ALL_SEEDS,
   FORMS,
-  GOAL_MAX,
-  GOAL_MIN,
   MAX_MOVES,
   MAX_OPERANDS,
   MAX_OPS,
@@ -316,8 +313,6 @@ export const destringifyGame = function (s: string, id: GameID): Game {
 
   const moves = [];
 
-  const allSubmitted = true;
-
   for (const opIndex of takeNextN(MAX_MOVES)) {
     const submitted = next() === 1;
     const operandIndices = [];
@@ -455,7 +450,7 @@ export const gameDataCodeUnits = function* (game: Game): IterableIterator<number
     yield move.submitted ? 1 : 0;
     const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
     for (const operandIndex of operandIndices) {
-      if (operandIndex != NO_OPERAND) {
+      if (operandIndex !== NO_OPERAND) {
         checkFitsInChunk(operandIndex);
       }
       yield operandIndex;

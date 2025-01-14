@@ -2,31 +2,7 @@
 // or:
 // deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=RoundtripStringifyGame.tsx
 import { Game, GameState, GradedGameID, Move } from './Classes';
-import {
-  GOAL_MAX,
-  GOAL_MIN,
-  MAX_MOVES,
-  MAX_OPERANDS,
-  MAX_OPS,
-  MAX_SEEDS,
-  OPS,
-  SEEDS,
-} from './Core';
-import {
-  checkFitsInChunk,
-  checkItemsFitAndPadIterable,
-  CHUNK_SIZE,
-  chunkify,
-  deChunkify,
-  destringifyCodeUnits,
-  destringifyGame,
-  destringifyGameID,
-  gameDataCodeUnits,
-  NO_OP,
-  stringifyCodeUnits,
-  stringifyGame,
-  stringifyGameID,
-} from './Schema';
+import { destringifyGame, stringifyGame } from './Schema';
 
 const [grade, goal, form, index, date, solved, seedIndices, opIndices, moves_data] = [
   1,
@@ -56,10 +32,12 @@ const state = new GameState(solved, moves);
 
 const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
 
+// eslint-disable-next-line no-console
 console.log(game);
 const stringified = stringifyGame(game);
 const destringifiedGame = destringifyGame(stringified, gameID);
 
+// eslint-disable-next-line no-console
 console.log(destringifiedGame);
 
 // console.log(Array.from(checkItemsFitAndPadIterable([0], MAX_OPS, NO_OP)));

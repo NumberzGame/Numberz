@@ -42,7 +42,6 @@ export const evalSolution = function (
     current: number | null = null,
     until: string = ''
   ): number | null {
-
     let valSoFar = current;
 
     for (const char of formCharsIterator) {

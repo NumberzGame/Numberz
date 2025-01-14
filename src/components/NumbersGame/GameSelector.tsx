@@ -1,43 +1,14 @@
 import { ReactNode, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { nanoid } from 'nanoid';
-import { useImmer } from 'use-immer';
-import {
-  Anchor,
-  Box,
-  Button,
-  Center,
-  FileInput,
-  Group,
-  HoverCard,
-  Image,
-  Modal,
-  NumberInput,
-  Popover,
-  Select,
-  SimpleGrid,
-  Slider,
-  Stack,
-  TagsInput,
-  Text,
-} from '@mantine/core';
-import { identity } from '@mantine/core/lib/core/factory/factory';
-import { useDisclosure, useFocusWithin } from '@mantine/hooks';
+import { Group, Stack } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
-import { CustomGameID, Game, GameID, GameState, GradedGameID, Move } from '../../gameCode/Classes';
-import {
-  ALL_SEEDS,
-  GOAL_MAX,
-  GOAL_MIN,
-  MAX_SEEDS,
-  OP_SYMBOLS,
-  randomPositiveInteger,
-  SEEDS,
-} from '../../gameCode/Core';
+import { CustomGameID, Game, GameID, GameState, GradedGameID } from '../../gameCode/Classes';
+import { GOAL_MIN, OP_SYMBOLS, randomPositiveInteger, SEEDS } from '../../gameCode/Core';
 import {
   decodeSolsFromGoalFormAndBinaryData,
   randomGameFromGradeGoalFormAndSols,
@@ -68,13 +39,14 @@ const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(
   Object.entries(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map(([k, v]) => [k, sumValues(v)])
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function randomGrade(): number {
   return 22;
   const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
   const index = randomPositiveInteger(numSolsAllGrades);
 
   let numSols = 0;
-  for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, v]) =>
+  for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, _v]) =>
     parseInt(k, 10)
   )) {
     numSols += value;
@@ -100,7 +72,7 @@ function randomGoal(
   const index = randomPositiveInteger(numSolsOfGrade);
 
   let numSolsSoFar = 0;
-  for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, v]) => parseInt(k, 10))) {
+  for (const [goal, numSols] of Object.entries(gradesObj).sort(([k, _v]) => parseInt(k, 10))) {
     numSolsSoFar += numSols;
     if (index < numSolsSoFar) {
       return parseInt(goal, 10);
@@ -159,7 +131,7 @@ function randomFormAndIndex(
   // const formIndex = 7; // "6"
   // return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex][1])];
 
-  const totalSols = formsAndFreqs.map(([form, freq]) => freq).reduce((a, c) => a + c);
+  const totalSols = formsAndFreqs.map(([_form, freq]) => freq).reduce((a, c) => a + c);
 
   if (totalSols !== totalNumSolsOfGradeAndGoal) {
     throw new Error(
@@ -213,8 +185,11 @@ if (LOCAL_STORAGE_AVAILABLE) {
   getFromLocalStorageIfAvailable = (k: string) => localStorage.getItem(k);
   getKeyFromLocalStorageIfAvailable = (i: number) => localStorage.key(i);
 } else {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   storeInLocalStorageIfAvailable = (k: string, v: string) => undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getFromLocalStorageIfAvailable = (k: string) => null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getKeyFromLocalStorageIfAvailable = (i: number) => null;
 }
 
@@ -258,8 +233,6 @@ const saveGameIDIfStorageAvailable = function (id: GameID): void {
   storeInLocalStorageIfAvailable('currentGame', stringifiedID);
 };
 
-const GRADE: number = 22;
-
 const previouslyUnseenGradedGameID = function (minGrade: number, maxGrade: number): GradedGameID {
   let gameID: GradedGameID;
   do {
@@ -298,7 +271,7 @@ const getStoredGames = function* (): IterableIterator<Game> {
 };
 
 export function GameSelector(props: { grade: number }) {
-  const gradeObj = useRef(1); //props.grade);
+  const gradeObj = useRef(props.grade);
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(
@@ -373,12 +346,7 @@ export function GameSelector(props: { grade: number }) {
   if (game === null && currentGameID.typeCode === GradedGameID.GAME_ID_TYPE_CODE) {
     const gradedGameID = currentGameID as GradedGameID;
     gameComponent = (
-      <NewGradedGame
-        gameID={gradedGameID}
-        onWin={onWin}
-        store={storeGame}
-        onQuit={onQuit}
-       />
+      <NewGradedGame gameID={gradedGameID} onWin={onWin} store={storeGame} onQuit={onQuit} />
     );
   } else {
     if (currentGameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
@@ -395,7 +363,7 @@ export function GameSelector(props: { grade: number }) {
         {}
       );
 
-      console.log(solution);
+      // console.log(solution);
 
       let form: string | null;
       let grade: number | null;
@@ -434,9 +402,7 @@ export function GameSelector(props: { grade: number }) {
     // write stringifed game to local storage under its (stringified) game ID
     storeGame(game);
 
-    gameComponent = (
-      <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />
-    );
+    gameComponent = <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />;
   }
 
   return <>{gameComponent}</>;
@@ -483,40 +449,24 @@ function NewGradedGame(props: NewGradedGameProps) {
   }
 
   if (error) {
-    return `An error has occurred: ${  error.message}`;
+    return `An error has occurred: ${error.message}`;
   }
 
   if (isFetching) {
     return 'Fetching game... ';
   }
 
-  const [seedsAndOpIndices, seedsAndOps, solStrings] = decodeSolsFromGoalFormAndBinaryData(
+  const [seedsAndOpIndices, _seedsAndOps, _solStrings] = decodeSolsFromGoalFormAndBinaryData(
     goal,
     form,
     data
   );
   const game = randomGameFromGradeGoalFormAndSols(grade!, goal, form, seedsAndOpIndices);
   props.store(game);
-  // Only break if the game has not been played before.
-  // (previously played games are stored in local storage).
-  // const prevGame = loadStoredGame(game.id);
-  // console.log(prevGame);
-  // if (prevGame === null) {
-  //   break;
-  // }
-  //   break;
-  // }
-  //
-  // <Text>Form: {gameID.form}</Text>
 
   return (
     <>
-      <NumbersGame
-        game={game}
-        onWin={props.onWin}
-        store={props.store}
-        onQuit={props.onQuit}
-       />
+      <NumbersGame game={game} onWin={props.onWin} store={props.store} onQuit={props.onQuit} />
     </>
   );
 }

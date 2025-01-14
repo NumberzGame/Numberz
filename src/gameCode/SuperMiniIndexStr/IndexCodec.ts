@@ -61,7 +61,8 @@ export class FormsAndFreqs {
       this.bitWidths()
     );
 
-    this.totalNumForms = this.numFormsToGo = next(uintIterator);
+    this.numFormsToGo = next(uintIterator);
+    this.totalNumForms = this.numFormsToGo;
     // This while loop is needed instead of a for/of, as we wish to resume
     // iteration of uintIterator in a later loop.
     // Breaking out of a for/of loop, over a Generator, calls the

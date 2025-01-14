@@ -24,8 +24,7 @@ export function* get_seeds_from_encodable_sol_expr(expr: string): IterableIterat
 
 function opStr(a: number | string, b: number | string, symbol: string): string {
   if (typeof a === 'number' && typeof b === 'number' && a < b) {
-    
-  // eslint-disable-next-line no-param-reassign
+    // eslint-disable-next-line no-param-reassign
     [a, b] = [b, a];
   }
   return SOLUTION_FMT_STRING.replace('[arg_1]', `${a}`)
@@ -222,8 +221,7 @@ export class SolutionInfo {
   }
 }
 
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Impossible {
   grade = Infinity;
 }

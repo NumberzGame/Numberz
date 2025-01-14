@@ -72,7 +72,7 @@ export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKeyT {
   return a <= b ? [a, b] : [b, a];
 }
 
-function makeCounter<T>(arr: OperandT[]): Counter {
+function makeCounter(arr: OperandT[]): Counter {
   const obj: Counter = {};
   arr.forEach((x) => {
     const s = x.toString();
@@ -162,13 +162,14 @@ export function inverseOp(symbol: Op, operand: OperandT, goal: Result): Op {
 }
 
 export function default_max_num(max_num: number | null, max_: number | null = null): number {
-  if (max_num === null) {
-    max_num = MAX_SEEDS;
+  let cap = max_num;
+  if (cap === null) {
+    cap = MAX_SEEDS;
   }
   if (max_ === null) {
-    return max_num;
+    return cap;
   }
-  return Math.min(max_, max_num);
+  return Math.min(max_, cap);
 }
 
 export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {

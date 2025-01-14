@@ -20,11 +20,10 @@ import {
   randomPositiveInteger,
   SEEDS,
 } from './Core';
-import { solutionAsOperand, solutionExpr } from './solutionEvaluator';
+import { solutionExpr } from './solutionEvaluator';
 // import { solutions, EXPR_PATTERN } from './solverDFS';
 import { EXPR_PATTERN } from './solverDFS';
 import { makeCaches } from './Tnetennums/Cachebuilder';
-import { SOLUTION_FMT_STRING, SolutionInfo } from './Tnetennums/SolutionInfo';
 import { find_solutions } from './Tnetennums/Solver';
 
 type GRADER = (x: number, y: number, r?: number, c?: number) => number;
@@ -194,7 +193,7 @@ export class GameState {
 const randomlyOrderedIndices = function (num: number): number[] {
   const indices = Array(num)
     .fill(undefined)
-    .map((x, i) => i);
+    .map((_x, i) => i);
   const retval = [];
   while (indices.length) {
     const indexOfIndex = randomPositiveInteger(indices.length);
@@ -229,8 +228,9 @@ function getRedHerringIndices(seedIndices: number[]): number[] {
 }
 
 export const getHintsAndGrades = function* (
-  expr: string
+  expression: string
 ): IterableIterator<[string, number, number, number, string, number]> {
+  let expr = expression;
   const matches = expr.matchAll(EXPR_PATTERN);
   for (const match of matches) {
     if (!match?.groups) {
@@ -258,7 +258,7 @@ export const calcGrade = function (solution: Operand): number {
   let expr = solution.expr;
 
   for (let i = 0; i < MAX_OPS; i++) {
-    for (const [subExpr, val, seed1, seed2, opSymbol, subGrade] of getHintsAndGrades(expr)) {
+    for (const [subExpr, val, _seed1, _seed2, _opSymbol, subGrade] of getHintsAndGrades(expr)) {
       expr = expr.replace(subExpr, val.toString(10));
 
       grade += subGrade;
@@ -268,6 +268,7 @@ export const calcGrade = function (solution: Operand): number {
   return grade;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRedHerringIndicesWithoutMakingEasier = function (
   seedIndices: number[],
   goal: number,
@@ -430,8 +431,8 @@ export class Game {
     ) {
       const ops = this.opIndices!.map((i) => OP_SYMBOLS[i]);
       // easiestSolution = solutionAsOperand(form, seeds, ops);
-      console.log('Decoding sol expr from game (ops and form are known)');
-      console.log(`form: ${form}, seeds: ${seeds}, ops: ${ops}, seed indices: ${this.seedIndices}`);
+      // console.log('Decoding sol expr from game (ops and form are known)');
+      // console.log(`form: ${form}, seeds: ${seeds}, ops: ${ops}, seed indices: ${this.seedIndices}`);
       expr = solutionExpr(form, seeds, ops);
       // solutionAsOperand(this.id.form as string, this.seeds(), this.opIndices!.map((i) => OP_SYMBOLS[i]));
     } else {
@@ -461,7 +462,7 @@ export class Game {
     }
 
     // console.log(`easiestSolution: ${easiestSolution?.expr ?? "Null"}`);
-    const [subExpr, val, operand1, operand2, opSymbol, subGrade] =
+    const [_subExpr, _val, operand1, operand2, opSymbol, _subGrade] =
       getHintsAndGrades(expr).next().value;
 
     const opIndex = OP_SYMBOLS.indexOf(opSymbol);
