@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
-import { Button, FocusTrap, NumberInput, Popover, SimpleGrid } from '@mantine/core';
-import { useDisclosure, useFocusWithin } from '@mantine/hooks';
+import { Button, NumberInput, Popover, SimpleGrid } from '@mantine/core';
+import { useDisclosure, useFocusWithin, useClickOutside } from '@mantine/hooks';
 import { useHotkeys } from '@mantine/hooks';
 
 interface NumberInputWithDigitsKeysProps {
@@ -13,11 +13,15 @@ interface NumberInputWithDigitsKeysProps {
 
 export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
   
-  // const [opened, setOpened] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
+  const clickOutsideRef = useClickOutside(close);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ref, focused } = useFocusWithin({ onFocus: open });
   const [value, setValueThisState] = useState<string | number>(props.value);
+
+  useHotkeys([
+    ["Enter", close],
+  ]);
 
   const setValue = function (value: string | number): void {
     setValueThisState(value);
@@ -74,9 +78,9 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
     <Popover 
      opened={opened}
     //  onChange={setOpened}
-     onClose={close}
+    //  onClose={close}
     //  closeOnClickOutside={true}
-     trapFocus>
+     >
       <Popover.Target
       >
         <NumberInput
@@ -86,11 +90,12 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           min={props.min}
           max={props.max}
           maw={300}
-          // ref={ref}
-          data-autofocus 
+          ref={ref}
+          onKeyDown={(event) => { event.key === 'Enter' && close() }} 
         />
       </Popover.Target>
-      <Popover.Dropdown>
+      <Popover.Dropdown
+       ref={clickOutsideRef}>
         <SimpleGrid cols={3}>{buttons}</SimpleGrid>
       </Popover.Dropdown>
     </Popover>
