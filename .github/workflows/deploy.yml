@@ -8,3 +8,4 @@ jobs:
   deploy_to_Github_Pages:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
