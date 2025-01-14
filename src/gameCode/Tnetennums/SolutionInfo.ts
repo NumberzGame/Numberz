@@ -45,9 +45,7 @@ function getCombinedSolutionForm(subForm1: SolutionForm, subForm2: SolutionForm)
     }
 
     if (subForm1 <= 0 || subForm2 <= 0) {
-      throw new Error(
-        `Integer sub solution forms must be >= 1. Got: ${subForm1}, ${subForm2}`
-      );
+      throw new Error(`Integer sub solution forms must be >= 1. Got: ${subForm1}, ${subForm2}`);
     }
   }
 

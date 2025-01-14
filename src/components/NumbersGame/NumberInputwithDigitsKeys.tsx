@@ -1,51 +1,22 @@
-import { useState } from 'react';
+import { ReactElement, useState } from 'react';
 import { nanoid } from 'nanoid';
 import { Button, NumberInput, Popover, SimpleGrid } from '@mantine/core';
-import { useDisclosure, useFocusWithin, useClickOutside } from '@mantine/hooks';
-import { useHotkeys } from '@mantine/hooks';
+import { useClickOutside, useDisclosure, useFocusWithin, useHotkeys } from '@mantine/hooks';
 
+export type Value = number | string;
 
-export class ButtonData {
-    value: number;
-    glyph: string;
-    constructor(value: number, glyph?: string, radix?: number) {
-        this.value = value;
-        this.glyph = glyph ?? value.toString(radix ?? 10);
-    }
-}
-
-
-interface NumberInputWithDigitsKeysProps {
-  initialValue: number;
-  buttonData: ButtonData[];
-  onSet: (value: number) => void;
-  min: number;
-  max: number;
+export interface NumberInputPopOverButtonsProps {
+  value: Value;
+  setValue: (value: Value) => void;
+  close: () => void;
   radix?: number;
-  numCols?: number;
 }
 
-export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
-  
-  const [opened, { open, close }] = useDisclosure(false);
-  const clickOutsideRef = useClickOutside(close);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ref, focused } = useFocusWithin({ onFocus: open });
-  const [value, setValueThisState] = useState<string | number>(props.initialValue);
-
+function defaultNumberInputPopOverButtons(props: NumberInputPopOverButtonsProps) {
+  const value = props.value;
+  const setValue = props.setValue;
+  const close = props.close;
   const radix = props.radix ?? 10;
-  const numCols = props.numCols ?? 3;
-
-  useHotkeys([
-    ["Enter", close],
-  ]);
-
-  const setValue = function (value: string | number): void {
-    setValueThisState(value);
-    if (typeof value === 'number') {
-      props.onSet(value);
-    }
-  };
 
   const makeDigitButtonClickHandler = function (i: number) {
     const digitButtonClickHandler = function (): void {
@@ -54,9 +25,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
       } else if (typeof value === 'number') {
         setValue(radix * value + i);
       } else {
-        throw new Error(
-          `Value: ${value} must be a number or a string. Got type: ${typeof value}`
-        );
+        throw new Error(`Value: ${value} must be a number or a string. Got type: ${typeof value}`);
       }
     };
     return digitButtonClickHandler;
@@ -68,17 +37,15 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
     } else if (typeof value === 'number') {
       setValue(Math.floor(value / radix));
     } else {
-      throw new Error(
-        `Value: ${value} must be a number or a string. Got type: ${typeof value}`
-      );
+      throw new Error(`Value: ${value} must be a number or a string. Got type: ${typeof value}`);
     }
   };
 
-  const buttons = props.buttonData.map((data) => (
-      <Button variant="transparent" key={nanoid()} onClick={makeDigitButtonClickHandler(data.value)}>
-        {data.glyph}
-      </Button>
-    ));
+  const buttons = new Array(10).fill(undefined).map((_x, i) => (
+    <Button variant="transparent" key={nanoid()} onClick={makeDigitButtonClickHandler(i)}>
+      {i}
+    </Button>
+  ));
   buttons.push(
     <Button variant="transparent" onClick={deleteButtonClickHandler} key={nanoid()}>
       ←
@@ -89,12 +56,44 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
       X
     </Button>
   );
+
+  return buttons;
+}
+
+interface NumberInputWithDigitsKeysProps {
+  initialValue: Value;
+  onSet: (value: number) => void;
+  min: number;
+  max: number;
+  renderButtons?: () => ReactElement<NumberInputPopOverButtonsProps>;
+  numCols?: number;
+}
+
+export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
+  const [opened, { open, close }] = useDisclosure(false);
+  const clickOutsideRef = useClickOutside(close);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { ref, focused } = useFocusWithin({ onFocus: open });
+  const [value, setValueThisState] = useState<Value>(props.initialValue);
+
+  const numCols = props.numCols ?? 3;
+
+  useHotkeys([['Enter', close]]);
+
+  const setValue = function (value: Value): void {
+    setValueThisState(value);
+    if (typeof value === 'number') {
+      props.onSet(value);
+    }
+  };
+
+  const buttonsFactory = props.renderButtons ?? defaultNumberInputPopOverButtons;
+
+  const buttons = buttonsFactory({ value, setValue, close });
+
   return (
-    <Popover 
-     opened={opened}
-     >
-      <Popover.Target
-      >
+    <Popover opened={opened}>
+      <Popover.Target>
         <NumberInput
           label="Goal: "
           value={value}
@@ -103,11 +102,12 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           max={props.max}
           maw={300}
           ref={ref}
-          onKeyDown={(event) => { event.key === 'Enter' && close() }} 
+          onKeyDown={(event) => {
+            event.key === 'Enter' && close();
+          }}
         />
       </Popover.Target>
-      <Popover.Dropdown
-       ref={clickOutsideRef}>
+      <Popover.Dropdown ref={clickOutsideRef}>
         <SimpleGrid cols={numCols}>{buttons}</SimpleGrid>
       </Popover.Dropdown>
     </Popover>

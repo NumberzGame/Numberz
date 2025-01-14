@@ -273,9 +273,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   }
 
   if (s.length < MIN_GAME_SIZE) {
-    throw new Error(
-      `Need ${MIN_GAME_SIZE} code-units to encode a Game.  Got: ${s.length}, s=${s}`
-    );
+    throw new Error(`Need ${MIN_GAME_SIZE} code-units to encode a Game.  Got: ${s.length}, s=${s}`);
   }
 
   const [next, takeNextN] = makeTakeNextNDestringified(s);
