@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
-import { Button, NumberInput, Popover, SimpleGrid } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Button, FocusTrap, NumberInput, Popover, SimpleGrid } from '@mantine/core';
+import { useDisclosure, useFocusWithin } from '@mantine/hooks';
+import { useHotkeys } from '@mantine/hooks';
 
 interface NumberInputWithDigitsKeysProps {
   value: number;
@@ -11,9 +12,11 @@ interface NumberInputWithDigitsKeysProps {
 }
 
 export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
+  // const [opened, setOpened] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
-  // const { ref, focused } = useFocusWithin({ onFocus: open });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { ref, focused } = useFocusWithin({ onFocus: open });
   const [value, setValueThisState] = useState<string | number>(props.value);
 
   const setValue = function (value: string | number): void {
@@ -68,8 +71,14 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
     </Button>
   );
   return (
-    <Popover opened={opened} onClose={close} trapFocus>
-      <Popover.Target>
+    <Popover 
+     opened={opened}
+    //  onChange={setOpened}
+     onClose={close}
+    //  closeOnClickOutside={true}
+     trapFocus>
+      <Popover.Target
+      >
         <NumberInput
           label="Goal: "
           value={value}
@@ -78,6 +87,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           max={props.max}
           maw={300}
           // ref={ref}
+          data-autofocus 
         />
       </Popover.Target>
       <Popover.Dropdown>
