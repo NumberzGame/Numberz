@@ -151,7 +151,7 @@ function randomFormAndIndex(
   }
 
   throw new Error(
-    `No form found for grade: ${grade} with index: ${solutionIndex} ` + `in SuperMiniIndexStr.json`
+    `No form found for grade: ${grade} with index: ${solutionIndex} in SuperMiniIndexStr.json`
   );
 }
 

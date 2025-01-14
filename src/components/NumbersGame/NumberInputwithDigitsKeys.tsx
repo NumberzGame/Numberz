@@ -4,11 +4,25 @@ import { Button, NumberInput, Popover, SimpleGrid } from '@mantine/core';
 import { useDisclosure, useFocusWithin, useClickOutside } from '@mantine/hooks';
 import { useHotkeys } from '@mantine/hooks';
 
+
+export class ButtonData {
+    value: number;
+    glyph: string;
+    constructor(value: number, glyph?: string, radix?: number) {
+        this.value = value;
+        this.glyph = glyph ?? value.toString(radix ?? 10);
+    }
+}
+
+
 interface NumberInputWithDigitsKeysProps {
-  value: number;
+  initialValue: number;
+  buttonData: ButtonData[];
   onSet: (value: number) => void;
   min: number;
   max: number;
+  radix?: number;
+  numCols?: number;
 }
 
 export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps) {
@@ -17,7 +31,10 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
   const clickOutsideRef = useClickOutside(close);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ref, focused } = useFocusWithin({ onFocus: open });
-  const [value, setValueThisState] = useState<string | number>(props.value);
+  const [value, setValueThisState] = useState<string | number>(props.initialValue);
+
+  const radix = props.radix ?? 10;
+  const numCols = props.numCols ?? 3;
 
   useHotkeys([
     ["Enter", close],
@@ -35,10 +52,10 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
       if (typeof value === 'string') {
         setValue(`${value}${i}`);
       } else if (typeof value === 'number') {
-        setValue(10 * value + i);
+        setValue(radix * value + i);
       } else {
         throw new Error(
-          `Value: ${value} must be a number or a string. ` + `Got type: ${typeof value}`
+          `Value: ${value} must be a number or a string. Got type: ${typeof value}`
         );
       }
     };
@@ -49,19 +66,17 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
     if (typeof value === 'string') {
       setValue(value.slice(0, -1));
     } else if (typeof value === 'number') {
-      setValue(Math.floor(value / 10));
+      setValue(Math.floor(value / radix));
     } else {
       throw new Error(
-        `Value: ${value} must be a number or a string. ` + `Got type: ${typeof value}`
+        `Value: ${value} must be a number or a string. Got type: ${typeof value}`
       );
     }
   };
 
-  const buttons = Array(10)
-    .fill(undefined)
-    .map((_x, i) => (
-      <Button variant="transparent" key={nanoid()} onClick={makeDigitButtonClickHandler(i)}>
-        {i}
+  const buttons = props.buttonData.map((data) => (
+      <Button variant="transparent" key={nanoid()} onClick={makeDigitButtonClickHandler(data.value)}>
+        {data.glyph}
       </Button>
     ));
   buttons.push(
@@ -77,9 +92,6 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
   return (
     <Popover 
      opened={opened}
-    //  onChange={setOpened}
-    //  onClose={close}
-    //  closeOnClickOutside={true}
      >
       <Popover.Target
       >
@@ -96,7 +108,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
       </Popover.Target>
       <Popover.Dropdown
        ref={clickOutsideRef}>
-        <SimpleGrid cols={3}>{buttons}</SimpleGrid>
+        <SimpleGrid cols={numCols}>{buttons}</SimpleGrid>
       </Popover.Dropdown>
     </Popover>
   );

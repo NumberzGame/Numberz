@@ -4,7 +4,7 @@ import { Box, Button, Group, SimpleGrid, Stack, TagsInput, Text } from '@mantine
 import { CustomGameID, GameID } from '../../gameCode/Classes';
 import { ALL_SEEDS, GOAL_MAX, GOAL_MIN, MAX_SEEDS, SEEDS } from '../../gameCode/Core';
 import { makeCaches } from '../../gameCode/Tnetennums/Cachebuilder';
-import { NumberInputWithDigitsKeys } from './NumberInputwithDigitsKeys';
+import { NumberInputWithDigitsKeys, ButtonData } from './NumberInputwithDigitsKeys';
 
 const countXinArr = function <T>(X: T, Arr: T[]): number {
   return Arr.filter((y) => y === X).length;
@@ -23,6 +23,10 @@ const tooManyOfThisSeedUsed = function (seedIndex: number, seedIndices: number[]
 interface CustomGamePickerProps {
   setCurrentGameID: (gameID: GameID) => void;
 }
+
+
+const goalInputPopOverDigitButtons = new Array(10).fill(undefined).map((i) => new ButtonData(i));
+
 
 export function CustomGamePicker(props: CustomGamePickerProps) {
   const [newCustomGameID, setNewCustomGameIDWithImmer] = useImmer<CustomGameID>(new CustomGameID());
@@ -124,7 +128,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
         </Stack>
         <Stack h={200} align="flex-end" justify="flex-start" gap="md">
           <NumberInputWithDigitsKeys
-            value={newCustomGameID.goal}
+            initialValue={newCustomGameID.goal}
             onSet={(value) =>
               setNewCustomGameIDWithImmer((draft) => {
                 draft.goal = value;
@@ -132,6 +136,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
             }
             min={GOAL_MIN}
             max={GOAL_MAX}
+            buttonData={goalInputPopOverDigitButtons}
           />
           <Group justify="end" mt="xs">
             <Button onClick={newGameClickHandler}>New custom game</Button>

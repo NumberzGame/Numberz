@@ -84,7 +84,7 @@ export function* takeNextN<T>(
 
   const errorStr =
     errorMessage ??
-    `iterator: ${iterator} exhausted. ` + `Too few items yielded for required number: N=${N}`;
+    `iterator: ${iterator} exhausted. Too few items yielded for required number: N=${N}`;
 
   for (let i = 0; i < N; i++) {
     const result = iterator.next();

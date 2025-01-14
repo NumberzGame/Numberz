@@ -154,7 +154,7 @@ const destringifyGradedGameID = function (key: string): GradedGameID {
   for (const codeUnit of takeNextN(2)) {
     if (codeUnit !== GRADED_GAME_ID_PADDING) {
       throw new Error(
-        `Invalid padding code-unit.  ` + `Expected:  ${takeNextN(MAX_SEEDS)}.  Got ${codeUnit}`
+        `Invalid padding code-unit.  Expected:  ${takeNextN(MAX_SEEDS)}.  Got ${codeUnit}`
       );
     }
   }
@@ -274,7 +274,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
 
   if (s.length < MIN_GAME_SIZE) {
     throw new Error(
-      `Need ${MIN_GAME_SIZE} code-units to encode a Game. ` + ` Got: ${s.length}, s=${s}`
+      `Need ${MIN_GAME_SIZE} code-units to encode a Game.  Got: ${s.length}, s=${s}`
     );
   }
 
