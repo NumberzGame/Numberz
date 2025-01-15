@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
+  base: "",
   plugins: [react(), tsconfigPaths()],
   test: {
     globals: true,
@@ -16,5 +17,6 @@ export default defineConfig({
     '/all_grades_goals_forms_solutions/*/*/*.*',
     '/grade_22_goals_forms_solutions/*/*/*.*',
     '/grade_goals_forms_solutions/*/*/*.*',
+    '*.jpg',
   ],
 });
