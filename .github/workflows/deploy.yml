@@ -1,4 +1,13 @@
-name: Deploy static content and upload cache files to Pages
+# Note:  This workflow is currently set up  
+# (along with base: "/", in vite.config.mjs)
+# to be run from a Github pages organisation or user repo 
+# (https://github.com/<organization_or_user>/<organization_or_user>.github.io), 
+# not a project one (https://<organization>.github.io/<REPO>/)
+# such as the one that is this file's primary residence. 
+# https://vite.dev/guide/static-deploy.html#github-pages
+# https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#types-of-github-pages-sites
+#
+name: Deploy Numberz to Github Pages, including win screen jpg and solutions cache files.
 
 on:
   # push:
@@ -6,6 +15,7 @@ on:
   # Currently deployed from https://www.github.com/NumberzGame/NumberzGame.github.io
   # (to avoid having to append /Numberz to the url).
   workflow_dispatch:
+
 
 permissions:
   contents: read
@@ -21,10 +31,16 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
+
+      # To allow possibly including other content on this home 
+      # page in future as well, we pull in Numberz
+      # from its sister repo home, into this mostly empty repo.   
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          repository: NumberzGame/Numberz
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -37,24 +53,32 @@ jobs:
 
       - name: Build
         run: npm run build
+        
+      # This is a bit of a hack of Vite and Github pages, but if manually moving in
+      # static content, the Vite build done in the previous step must be done before
+      # the steps (e.g. those below) adding anything into ./dist (or outDir).
+      # I'm not sure exactly why, but the static assets 404 if the order is otherwise.
 
-      - name: Download solutions
-        run: curl -L https://github.com/NumberzGame/Solutions/releases/download/v0.0.0/grades_goals_forms_solutions.tar.xz -o grades_goals_forms_solutions.tar.xz
+      - name: Download pictures
+        run: curl -L https://github.com/NumberzGame/NumberzGame.github.io/releases/download/v0.0.0/pictures.zip -o pictures.zip
 
-      - name: Unzip solutions
-        run: tar xJf grades_goals_forms_solutions.tar.xz
+      - name: Unzip pictures
+        run: unzip pictures.zip
 
-      - name: Move solutions to dist
+      - name: Move pictures to dist
         run: |
           mkdir -p ./dist/
-          mv grades_goals_forms_solutions ./dist/
-
-      - name: Download Winscreen picture
-        run: curl -L https://cdn.stocksnap.io/img-thumbs/960w/fireworks-background_CPLJUAMC1T.jpg -o fireworks-background_CPLJUAMC1T.jpg
-
-      - name: Move Winscreen picture
-        run: mv *.jpg ./dist/
-         
+          mv *.jpg ./dist/
+          
+      - name: Download solutions
+        run: curl -L https://github.com/NumberzGame/Solutions/releases/download/v0.0.0/grades_goals_forms_solutions.tar.xz -o grades_goals_forms_solutions.tar.xz
+        
+      - name: Unzip solutions
+        run: tar xJf grades_goals_forms_solutions.tar.xz
+        
+      - name: Move solutions to dist
+        run: mv grades_goals_forms_solutions ./dist/
+        
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
