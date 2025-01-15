@@ -1,9 +1,10 @@
 name: Deploy static content and upload cache files to Pages
 
 on:
-  push:
-    branches: ['main']
-
+  # push:
+  #   branches: ['main']
+  # Currently deployed from https://www.github.com/NumberzGame/NumberzGame.github.io
+  # (to avoid having to append /Numberz to the url).
   workflow_dispatch:
 
 permissions:
