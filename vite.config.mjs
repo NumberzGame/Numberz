@@ -15,5 +15,6 @@ export default defineConfig({
   assetsInclude: [
     '/all_grades_goals_forms_solutions/*/*/*.*',
     '/grade_22_goals_forms_solutions/*/*/*.*',
+    '/grade_goals_forms_solutions/*/*/*.*',
   ],
 });
