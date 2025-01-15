@@ -20,11 +20,11 @@ export function WinScreen(props: winScreenProps) {
       <Group justify="center" mt="md">
         <HoverCard shadow="md" openDelay={2000}>
           <HoverCard.Target>
-            <Image h={500} w="auto" src="fireworks-background_CPLJUAMC1T.jpg" radius="lg" />
+            <Image h={500} w="auto" src="fireworks-city.jpg" radius="lg" />
           </HoverCard.Target>
           <HoverCard.Dropdown>
-            <Anchor href="https://stocksnap.io/author/travelphotographer" size="sm" c="violet">
-              Photo credit: "TravelPhotographer"
+            <Anchor href="https://stocksnap.io/photo/fireworks-background-CPLJUAMC1T" size="sm" c="violet">
+              Photo credit: "Travel Photographer"
             </Anchor>
           </HoverCard.Dropdown>
         </HoverCard>
