@@ -5,7 +5,7 @@ import { useDisclosure } from '@mantine/hooks';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
-import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
+import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/superMiniIndexStr.json';
 import { CustomGameID, Game, GameID, GameState, GradedGameID } from '../../gameCode/Classes';
 import { GOAL_MIN, OP_SYMBOLS, randomPositiveInteger, SEEDS } from '../../gameCode/Core';
 import {
