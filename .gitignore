@@ -133,8 +133,6 @@ dist
 /public/grades_goals_solutions_forms
 public/fireworks-background_CPLJUAMC1T.jpg
 
-src/data/num*.json
-src/data/superMiniIndexStr.json
 /public/grades_goals_forms_solutions
 /public/all_grades_goals_forms_solutions
 /public

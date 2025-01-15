@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Group, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
-// import NUM_SOLS_OF_ALL_GRADES from '../../data/num_sols_of_each_grade.json';
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
 import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/SuperMiniIndexStr.json';
@@ -35,27 +34,8 @@ function sumValues(obj: Record<string, number>): number {
   return Object.values(obj).reduce((x, y) => x + y);
 }
 
-const NUM_SOLS_OF_ALL_GRADES = Object.fromEntries(
-  Object.entries(NUM_SOLS_OF_EACH_GRADE_AND_GOAL).map(([k, v]) => [k, sumValues(v)])
-);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function randomGrade(): number {
-  return 22;
-  const numSolsAllGrades = sumValues(NUM_SOLS_OF_ALL_GRADES);
-  const index = randomPositiveInteger(numSolsAllGrades);
 
-  let numSols = 0;
-  for (const [grade, value] of Object.entries(NUM_SOLS_OF_ALL_GRADES).sort(([k, _v]) =>
-    parseInt(k, 10)
-  )) {
-    numSols += value;
-    if (index < numSols) {
-      return parseInt(grade, 10) as number;
-    }
-  }
-  throw new Error(`No grade found for index: ${index} in num_sols_of_each_grade.json`);
-}
 
 function randomGoal(
   grade: number // keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
