@@ -412,8 +412,8 @@ function NewGradedGame(props: NewGradedGameProps) {
     queryKey: [grade, goal, form],
     queryFn: async () => {
       const response = await fetch(
-        // `./all_grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
-        `./grade_22_goals_forms_solutions/${grade}/${goal}/${fileName}`
+        `./grades_goals_forms_solutions/${grade}/${goal}/${fileName}`,
+        // `./grade_22_goals_forms_solutions/${grade}/${goal}/${fileName}`
       );
       if (!response.ok) {
         throw new Error(
