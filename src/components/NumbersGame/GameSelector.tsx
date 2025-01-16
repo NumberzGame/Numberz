@@ -213,6 +213,21 @@ const saveGameIDIfStorageAvailable = function (id: GameID): void {
   storeInLocalStorageIfAvailable('currentGame', stringifiedID);
 };
 
+
+const loadChosenGradeOfNewGameIfStorageAvailable = function() : number | null {
+    const stringified = getFromLocalStorageIfAvailable('newGameChosenGrade');
+    if (stringified === null) {
+        return null;
+    }
+    return parseInt(stringified, 10);
+}
+
+const saveChosenGradeOfNewGameIfStorageAvailable = function (grade: number): void {
+  const stringified = grade.toString(10);
+  storeInLocalStorageIfAvailable('currentGame', stringified);
+};
+
+
 const previouslyUnseenGradedGameID = function (minGrade: number, maxGrade: number): GradedGameID {
   let gameID: GradedGameID;
   do {
@@ -251,7 +266,9 @@ const getStoredGames = function* (): IterableIterator<Game> {
 };
 
 export function GameSelector(props: { grade: number }) {
-  const gradeObj = useRef(props.grade);
+  const [newGameChosenGrade, setNewGameChosenGrade] = useState<number>(
+    () => loadChosenGradeOfNewGameIfStorageAvailable() ?? props.grade
+  );
 
   // load gameID/key from localstorage; null if storage unavailable.
   const [currentGameID, setCurrentGameID] = useState<GameID | null>(
@@ -279,11 +296,12 @@ export function GameSelector(props: { grade: number }) {
 
   // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function (val: number) {
-    gradeObj.current = val; // as number;
+    saveChosenGradeOfNewGameIfStorageAvailable(val);
+    setNewGameChosenGrade(val);
   };
 
   const setCurrentGameIDToPreviouslyUnseenGradedGameID = function () {
-    const gameID = previouslyUnseenGradedGameID(gradeObj.current, gradeObj.current);
+    const gameID = previouslyUnseenGradedGameID(newGameChosenGrade, newGameChosenGrade);
     setCurrentGameID(gameID);
   };
 
@@ -303,7 +321,7 @@ export function GameSelector(props: { grade: number }) {
       <Group justify="center" mt="xs">
         <Stack justify="flex-start">
           <RandomGameOfGivenGradePicker
-            initialValue={gradeObj.current}
+            initialValue={newGameChosenGrade}
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
           />

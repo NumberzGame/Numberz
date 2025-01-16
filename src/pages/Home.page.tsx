@@ -3,6 +3,10 @@ import { GameSelector } from '../components/NumbersGame/GameSelector';
 import { Welcome } from '../components/Welcome/Welcome';
 
 export function HomePage() {
+  
+  // Return easiest grade by default.
+  // If storage is unavailable, so are 
+  // the historical games and current score.
   const INITIAL_GRADE = 1;
 
   // const grade = 22;
