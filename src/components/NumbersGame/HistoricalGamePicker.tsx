@@ -68,7 +68,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
           Download game history.
         </Button>
         <FileInput
-          aria-label="Upload game history"
+          aria-label="Load game history from file ('upload' into browser's localstorage)"
           accept="text/json"
           label="Upload game history"
           placeholder="(Warning: overwrites existing saved games with same ID)"

@@ -438,7 +438,13 @@ function NewGradedGame(props: NewGradedGameProps) {
           `Something went wrong fetching grade: ${grade}, goal: ${goal}, form: ${form}`
         );
       }
-      return await response.bytes();
+      // As of 16th Jan 2015, not implemented on Chromium browsers (Chrome and Edge),
+      // just Firefox and Brave:
+      // return await response.bytes();
+      const arrBuff = await response.arrayBuffer();
+      const bytes = new Uint8Array(arrBuff);
+      return bytes
+
     },
   });
 
