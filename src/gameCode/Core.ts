@@ -96,6 +96,11 @@ export function* takeNextN<T>(
 }
 
 export class HashTable<K, V> {
+  // A wrapper for Map, that behaves like a Python dict (that supports 
+  // non-hashable keys as we don't have tuples in JS).
+  // i.e. hashTable([1,2]) === hashTable([1,2])
+  // Otherwise in JS, map([1,2]) != map([1,2]), due to the SameValueZero 
+  // implementation (Sets have a similar gotcha with non-primitives).
   private map: Map<string, V>;
   constructor() {
     this.map = new Map<string, V>();
