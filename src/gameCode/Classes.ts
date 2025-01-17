@@ -103,10 +103,16 @@ class MoveData {
   [immerable] = true;
   opIndex: number | null;
   operandIndices: number[];
+  submitted: boolean;
 
-  constructor(opIndex: number | null = null, operandIndices: number[] = []) {
+  constructor(
+    opIndex: number | null = null,
+    operandIndices: number[] = [],
+    submitted: boolean = false,
+    ) {
     this.opIndex = opIndex;
     this.operandIndices = operandIndices;
+    this.submitted = submitted;
   }
 
   opSymbol(): string | null {
@@ -118,7 +124,6 @@ class MoveData {
 }
 
 export class Move extends MoveData {
-  submitted: boolean;
 
   constructor(
     opIndex: number | null = null,
@@ -132,8 +137,7 @@ export class Move extends MoveData {
           `operandIndices: ${operandIndices}. `
       );
     }
-    super(opIndex, operandIndices);
-    this.submitted = submitted;
+    super(opIndex, operandIndices, submitted);
   }
 
   op(): BINARY_OP | null {
