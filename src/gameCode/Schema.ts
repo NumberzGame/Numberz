@@ -194,13 +194,17 @@ const destringifyCustomGameID = function (key: string): CustomGameID {
 export const getStringifiedGameIDClass = function (
   stringified: string
 ): typeof GradedGameID | typeof CustomGameID {
-  switch (stringified[0]) {
+  const gameIDTypeCode = stringified[0]
+  switch (gameIDTypeCode) {
     case GradedGameID.GAME_ID_TYPE_CODE:
       return GradedGameID;
     case CustomGameID.GAME_ID_TYPE_CODE:
       return CustomGameID;
     default:
-      throw new Error(`Could not find GameID for: ${stringified}`);
+      throw new Error(`GameID type code: ${gameIDTypeCode} not supported.  `
+                     +`Must be  in [${GradedGameID.GAME_ID_TYPE_CODE},${CustomGameID.GAME_ID_TYPE_CODE}].  `
+                     +`Stringified: ${stringified}`
+      );
   }
 };
 

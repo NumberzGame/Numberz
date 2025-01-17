@@ -10,9 +10,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './vitest.setup.mjs',
   },
-  // build: {
-  //   copyPublicDir: false,
-  // },
+  build: {
+    copyPublicDir: false,
+  },
   assetsInclude: [
     '/all_grades_goals_forms_solutions/*/*/*.*',
     '/grade_22_goals_forms_solutions/*/*/*.*',

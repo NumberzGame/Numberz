@@ -224,7 +224,7 @@ const loadChosenGradeOfNewGameIfStorageAvailable = function() : number | null {
 
 const saveChosenGradeOfNewGameIfStorageAvailable = function (grade: number): void {
   const stringified = grade.toString(10);
-  storeInLocalStorageIfAvailable('currentGame', stringified);
+  storeInLocalStorageIfAvailable('newGameChosenGrade', stringified);
 };
 
 
