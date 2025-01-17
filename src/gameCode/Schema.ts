@@ -429,6 +429,24 @@ export const checkItemsFitAndPadIterable = function* (
   }
 };
 
+
+function* moveDataCodeUnits(moves: Move[]): IterableIterator<number> {
+    const movesPadValue = new Move(NO_MOVE, false, Array(MAX_OPERANDS).fill(NO_OPERAND));
+    
+    for (const move of checkAndPadIterable(moves, MAX_MOVES, movesPadValue)) {
+      yield move.opIndex ?? NO_OP;
+      yield move.submitted ? 1 : 0;
+      const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
+      for (const operandIndex of operandIndices) {
+        if (operandIndex !== NO_OPERAND) {
+          checkFitsInChunk(operandIndex);
+        }
+        yield operandIndex;
+      }
+    }
+}
+
+
 export const gameDataCodeUnits = function* (game: Game): IterableIterator<number> {
   for (const chunk of chunkify(game.timestamp_ms, 3)) {
     yield chunk;
@@ -445,19 +463,8 @@ export const gameDataCodeUnits = function* (game: Game): IterableIterator<number
     yield opIndex;
   }
 
-  const movesPadValue = new Move(NO_MOVE, false, Array(MAX_OPERANDS).fill(NO_OPERAND));
 
-  for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, movesPadValue)) {
-    yield move.opIndex ?? NO_OP;
-    yield move.submitted ? 1 : 0;
-    const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
-    for (const operandIndex of operandIndices) {
-      if (operandIndex !== NO_OPERAND) {
-        checkFitsInChunk(operandIndex);
-      }
-      yield operandIndex;
-    }
-  }
+  yield* moveDataCodeUnits(game.state.moves);
 
   for (const seedIndex of checkItemsFitAndPadIterable(game.redHerrings, MAX_SEEDS, NO_SEED)) {
     yield seedIndex;
