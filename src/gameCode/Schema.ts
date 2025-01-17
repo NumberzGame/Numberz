@@ -11,7 +11,7 @@ import {
 } from './Core';
 
 const SCHEMA_CODE = 'S';
-export const CHUNK_SIZE = 15;
+export const CHUNK_SIZE = 15; // bits
 
 const MAX_U15 = (1 << CHUNK_SIZE) - 1; //32767, 0b111111111111111 === 0x7fff
 // highest number of bits that don't
@@ -49,10 +49,10 @@ export const chunkify = function (x: number, num_chunks: number): number[] {
   // and has >> as well as >>>.  This function
   // supports larger unsigned integers using bit strings.
   const chunks = [];
-  const target_length = num_chunks * CHUNK_SIZE;
+  const targetLengthBits = num_chunks * CHUNK_SIZE;
   const minNumBits = x.toString(2).length;
 
-  if (minNumBits > target_length) {
+  if (minNumBits > targetLengthBits) {
     throw new Error(
       `Number: ${x} is too large ` +
         `to fit into ${num_chunks} x ${CHUNK_SIZE}-bit chunks.  ` +
@@ -60,9 +60,9 @@ export const chunkify = function (x: number, num_chunks: number): number[] {
     );
   }
 
-  const bits = x.toString(2).padStart(target_length, '0');
+  const bits = x.toString(2).padStart(targetLengthBits, '0');
 
-  for (let i = 0; i < target_length; i += CHUNK_SIZE) {
+  for (let i = 0; i < targetLengthBits; i += CHUNK_SIZE) {
     const chunk = parseInt(bits.slice(i, i + CHUNK_SIZE), 2);
     checkFitsInChunk(chunk);
     chunks.push(chunk);

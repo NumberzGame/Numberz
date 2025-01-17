@@ -5,6 +5,7 @@ interface gradeSliderProps {
   initialValue: number;
   onChangeEnd: (val: number) => void;
   onClick: () => void;
+  max: number;
 }
 
 export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
@@ -18,7 +19,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         label={`${grade}`}
         value={grade}
         min={1}
-        max={246}
+        max={props.max}
         marks={[
           { value: 1, label: '1' },
           //   // { value: 20, label: '20%' },

@@ -324,6 +324,7 @@ export function GameSelector(props: { grade: number }) {
             initialValue={newGameChosenGrade}
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
+            max={246}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
