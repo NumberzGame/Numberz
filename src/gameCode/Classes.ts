@@ -422,7 +422,7 @@ export class Game {
     return operands.includes(this.id.goal);
   }
 
-  getHints(): MoveData | typeof HINT_UNDO {
+  newHint(): MoveData | typeof HINT_UNDO {
     let easiestSolution = null;
     let easiestGrade = Infinity;
     const operands = this.currentOperandsDisplayOrder();
@@ -439,7 +439,7 @@ export class Game {
     if (
       this.opIndices &&
       form !== null &&
-      this.state.moves.findLastIndex((move) => move.submitted) === -1
+      this.numberMovesSubmitted() === 0
     ) {
       const ops = this.opIndices!.map((i) => OP_SYMBOLS[i]);
       // easiestSolution = solutionAsOperand(form, seeds, ops);
@@ -484,6 +484,21 @@ export class Game {
     const index1 = operands.indexOf(operand1);
     const index2 = operands.lastIndexOf(operand2);
     return new MoveData(opIndex, [index1, index2]);
+  }
+
+  getHints(): MoveData | typeof HINT_UNDO {
+
+    const hints = this.state.hints;
+
+    if (hints.length  < 1 + this.numberMovesSubmitted()) {
+        const newHint = this.newHint();
+        if (newHint === HINT_UNDO) {
+          return HINT_UNDO;
+        }
+        hints.push(newHint);
+    }
+
+    return hints.at(-1)!;
   }
 
   lastMove(): Move {
