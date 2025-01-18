@@ -4,8 +4,8 @@ import { nanoid } from 'nanoid';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from 'use-immer';
 import { Badge, Button, Group, Stack, Text } from '@mantine/core';
-import { Game, HINT_UNDO, Move } from '../../gameCode/Classes';
-import { MAX_MOVES, MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
+import { Game, HINT_UNDO, } from '../../gameCode/Classes';
+import { MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
 
 const overrideSymbolText = function (s: string): string {
   if (s === '//') {
