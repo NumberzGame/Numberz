@@ -163,13 +163,7 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     setGameUsingImmerProducerAndStore((draft: Game) => {
-      const moves = draft.state.moves;
-      const lastMove = moves.at(-1)!;
-
-      lastMove.submitted = true;
-      if (moves.length < MAX_MOVES) {
-        moves.push(new Move());
-      }
+        draft.submitLatestMove()
     });
   };
   const undoButtonHandler = function () {

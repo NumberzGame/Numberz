@@ -169,8 +169,14 @@ export class GameState {
   [immerable] = true;
   solved: boolean;
   moves: Move[];
+  hints: MoveData[];
 
-  constructor(solved: boolean = false, moves: Move[] = [new Move()]) {
+  constructor(
+    solved: boolean = false,
+    moves: Move[] = [new Move()],
+    hints: MoveData[] = [],
+    ) {
+
     if (moves.length === 0) {
       // To ensure simple destringification,
       // using a no-op move for padding,
@@ -180,6 +186,7 @@ export class GameState {
 
     this.solved = solved;
     this.moves = moves;
+    this.hints = hints;
   }
 
   // lastMove(): Move {
@@ -482,7 +489,21 @@ export class Game {
     return this.state.moves.at(-1)!;
   }
 
+  numberMovesSubmitted(): number {
+    return this.state.moves.filter((move) => move.submitted).length;
+  }
+
   lastMoveOperandIndices(): number[] {
     return this.lastMove().operandIndices;
+  }
+
+  submitLatestMove(): void {
+    
+    const lastMove = this.lastMove();
+
+    lastMove.submitted = true;
+    if (this.numberMovesSubmitted() < MAX_MOVES) {
+      this.state.moves.push(new Move());
+    }
   }
 }
