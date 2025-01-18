@@ -111,15 +111,28 @@ test('for each Game with a Graded GameID, stringifyGame should roundtrip with de
         ),
         { minLength: 1, maxLength: MAX_MOVES }
       ),
-      (grade, goal, form, index, date, solved, seedIndices, opIndices, moves_data) => {
+      fc.array(
+        fc.tuple(
+          fc.nat({ max: OP_SYMBOLS.length - 1 }),
+          fc.array(fc.nat({ max: MAX_SEEDS - 1 }), { maxLength: MAX_OPERANDS })
+        ),
+        { minLength: 1, maxLength: MAX_MOVES }
+      ),
+      (grade, goal, form, index, date, solved, seedIndices, opIndices, movesData, hintsData) => {
         const gameID = new GradedGameID(grade, goal, form, index);
         const moves = [];
-        for (const move_args of moves_data) {
+        for (const move_args of movesData) {
           const [opIndex, submitted, operandIndices] = move_args;
           const move = new Move(opIndex, operandIndices, submitted);
           moves.push(move);
         }
-        const state = new GameState(solved, moves);
+        const hints = [];
+        for (const hint_args of hintsData) {
+          const [opIndex, operandIndices] = hint_args;
+          const hint = new Move(opIndex, operandIndices, false);
+          hints.push(hint);
+        }
+        const state = new GameState(solved, moves, hints);
 
         const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
 
