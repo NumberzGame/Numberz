@@ -53,6 +53,9 @@ jobs:
       # Error: src/components/NumbersGame/GameSelector.tsx(30,52): error TS2307: Cannot find module '../../data/SuperMiniIndexStr.json'
       - name: Run build
         run: npm run build
+
+      - name: Run Vitest
+        run: npm run vitest
       
       # Needs sub_byte latest version, and additional_difficulty
       # - name: Run tests
