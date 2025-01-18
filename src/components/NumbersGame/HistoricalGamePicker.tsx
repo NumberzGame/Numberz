@@ -89,7 +89,16 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                 );
                 moves.push(move);
               }
-              const state = new GameState(stateObj.solved, moves);
+              const hints: Move[] = [];
+              for (const hintObj of stateObj?.moves ?? []) {
+                const hint = new Move(
+                  hintObj?.opIndex ?? null,
+                  hintObj?.operandIndices ?? [],
+                  hintObj?.submitted ?? false,
+                );
+                hints.push(hint);
+              }
+              const state = new GameState(stateObj.solved, moves, hints);
               let id: GameID;
               const idData = gameData.id;
               const goal = idData.goal;
