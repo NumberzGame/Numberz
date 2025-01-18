@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   ad_hoc_tests_with_Deno:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
 
@@ -37,7 +37,7 @@ jobs:
         run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
 
   test_with_npm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       
