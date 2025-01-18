@@ -98,7 +98,7 @@ export type GameID = GradedGameID | CustomGameID;
 
 export const HINT_UNDO = Symbol();
 
-class MoveData {
+export class Move {
   // A simple base class, only for holding data,
   // e.g. for storing hints.
   [immerable] = true;
@@ -121,24 +121,6 @@ class MoveData {
       return null;
     }
     return OP_SYMBOLS[this.opIndex];
-  }
-}
-
-export class Move extends MoveData {
-
-  constructor(
-    opIndex: number | null = null,
-    submitted: boolean = false,
-    operandIndices: number[] = []
-  ) {
-    if (opIndex === null && submitted) {
-      throw new Error(
-        'Cannot submit a Move with no Op. ' +
-          `Got: opIndex: ${opIndex}, submitted: ${submitted}, ` +
-          `operandIndices: ${operandIndices}. `
-      );
-    }
-    super(opIndex, operandIndices, submitted);
   }
 
   op(): BINARY_OP | null {
@@ -170,12 +152,12 @@ export class GameState {
   [immerable] = true;
   solved: boolean;
   moves: Move[];
-  hints: MoveData[];
+  hints: Move[];
 
   constructor(
     solved: boolean = false,
     moves: Move[] = [new Move()],
-    hints: MoveData[] = [],
+    hints: Move[] = [],
     ) {
 
     if (moves.length === 0) {
@@ -190,16 +172,7 @@ export class GameState {
     this.hints = hints;
   }
 
-  // lastMove(): Move {
-  //     const moves = this.moves;
-  //     const len = moves.length;
-  //     if (len > 0) {
-  //         return moves[len-1];
-  //     }
-  //     const move = new Move();
-  //     moves.push(move)
-  //     return move;
-  // }
+
 }
 
 const randomlyOrderedIndices = function (num: number): number[] {
@@ -422,7 +395,7 @@ export class Game {
     return operands.includes(this.id.goal);
   }
 
-  newHint(): MoveData | typeof HINT_UNDO {
+  newHint(): Move | typeof HINT_UNDO {
     let easiestSolution = null;
     let easiestGrade = Infinity;
     const operands = this.currentOperandsDisplayOrder();
@@ -434,8 +407,6 @@ export class Game {
 
     makeCaches(operands, [goal]);
 
-    // return new MoveData(OP_SYMBOLS.indexOf('+'), [operands.indexOf(1), operands.indexOf(2)]);
-    // if (this.opIndices && this.id.form !== null && operands.length === numSeedsFromForm(this.id.form!)) {
     if (
       this.opIndices &&
       form !== null &&
@@ -483,10 +454,10 @@ export class Game {
     // console.log(`subExpr: ${subExpr}, val: ${val}, opSymbol: ${opSymbol}, subGrade: ${subGrade}`);
     const index1 = operands.indexOf(operand1);
     const index2 = operands.lastIndexOf(operand2);
-    return new MoveData(opIndex, [index1, index2]);
+    return new Move(opIndex, [index1, index2]);
   }
 
-  getHints(): MoveData | typeof HINT_UNDO {
+  getHints(): Move | typeof HINT_UNDO {
 
     const hints = this.state.hints;
 

@@ -84,8 +84,8 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
               for (const moveObj of stateObj?.moves ?? []) {
                 const move = new Move(
                   moveObj?.opIndex ?? null,
+                  moveObj?.operandIndices ?? [],
                   moveObj?.submitted ?? false,
-                  moveObj?.operandIndices ?? []
                 );
                 moves.push(move);
               }

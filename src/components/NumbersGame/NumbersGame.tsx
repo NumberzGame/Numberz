@@ -171,7 +171,8 @@ export function NumbersGame(props: NumbersGameProps) {
       const moves = draft.state.moves;
       const i = moves.findLastIndex((move) => move.submitted);
       if (i >= 0) {
-        // By default a new Move() is unsubmitted.
+        // By default a new Move() is unsubmitted, so the last
+        // working unsubmitted Move is bumped down a notch.
         moves.splice(i, 1);
       }
     });

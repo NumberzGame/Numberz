@@ -116,7 +116,7 @@ test('for each Game with a Graded GameID, stringifyGame should roundtrip with de
         const moves = [];
         for (const move_args of moves_data) {
           const [opIndex, submitted, operandIndices] = move_args;
-          const move = new Move(opIndex, submitted, operandIndices);
+          const move = new Move(opIndex, operandIndices, submitted);
           moves.push(move);
         }
         const state = new GameState(solved, moves);
