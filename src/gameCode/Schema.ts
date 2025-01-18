@@ -386,7 +386,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
     }
   }
 
-  const state = new GameState(solved, moves);
+  const state = new GameState(solved, moves, hints);
   const game = new Game(
     id,
     timeStamp,
