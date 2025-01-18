@@ -218,6 +218,46 @@ export const destringifyGameID = function (stringified: string): GameID {
   throw new Error(` getStringifiedGameIDClass("${stringified}") should've errored. `);
 };
 
+
+function* getMovesfromCodeUnitIterators(
+    next: () => number,
+    takeNextN: (N: number) => IterableIterator<number>
+    ): IterableIterator<Move> {
+
+  for (const opIndex of takeNextN(MAX_MOVES)) {
+    const submitted = next() === 1;
+    const operandIndices = [];
+    for (const operandIndex of takeNextN(MAX_OPERANDS)) {
+      if (operandIndex === NO_OPERAND) {
+        continue;
+      } else if (operandIndex >= 0 && operandIndex < MAX_SEEDS) {
+        operandIndices.push(operandIndex);
+      } else {
+        throw new Error(
+          `Unrecognised operand index: ${operandIndex}. ` +
+            `Must be between 0 and ${MAX_SEEDS - 1} inc, ` +
+            `or ===NO_OPERAND code ${NO_OPERAND}`
+        );
+      }
+    }
+    let move;
+    if (opIndex === NO_MOVE) {
+      continue;
+    } else if (opIndex === NO_OP) {
+      move = new Move(null, submitted, operandIndices);
+    } else if (opIndex >= 0 && opIndex < OP_SYMBOLS.length) {
+      move = new Move(opIndex, submitted, operandIndices);
+    } else {
+      throw new Error(
+        `Unrecognised op index: ${opIndex}. ` +
+          `Must be between 0 and ${OP_SYMBOLS.length - 1} inc, ` +
+          `or ===NO_OP code ${NO_OP}`
+      );
+    }
+    yield move;
+  }
+}
+
 export function stringifyGameID(gameID: GradedGameID): string;
 export function stringifyGameID(gameID: CustomGameID): string;
 export function stringifyGameID(gameID: GradedGameID | CustomGameID): string;
@@ -313,40 +353,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
     }
   }
 
-  const moves = [];
-
-  for (const opIndex of takeNextN(MAX_MOVES)) {
-    const submitted = next() === 1;
-    const operandIndices = [];
-    for (const operandIndex of takeNextN(MAX_OPERANDS)) {
-      if (operandIndex === NO_OPERAND) {
-        continue;
-      } else if (operandIndex >= 0 && operandIndex < MAX_SEEDS) {
-        operandIndices.push(operandIndex);
-      } else {
-        throw new Error(
-          `Unrecognised operand index: ${operandIndex}. ` +
-            `Must be between 0 and ${MAX_SEEDS - 1} inc, ` +
-            `or ===NO_OPERAND code ${NO_OPERAND}`
-        );
-      }
-    }
-    let move;
-    if (opIndex === NO_MOVE) {
-      continue;
-    } else if (opIndex === NO_OP) {
-      move = new Move(null, submitted, operandIndices);
-    } else if (opIndex >= 0 && opIndex < OP_SYMBOLS.length) {
-      move = new Move(opIndex, submitted, operandIndices);
-    } else {
-      throw new Error(
-        `Unrecognised op index: ${opIndex}. ` +
-          `Must be between 0 and ${OP_SYMBOLS.length - 1} inc, ` +
-          `or ===NO_OP code ${NO_OP}`
-      );
-    }
-    moves.push(move);
-  }
+  const moves = Array.from(getMovesfromCodeUnitIterators(next, takeNextN));
 
   const redHerrings = [];
   for (const seedIndex of takeNextN(MAX_SEEDS)) {
@@ -429,6 +436,24 @@ export const checkItemsFitAndPadIterable = function* (
   }
 };
 
+
+function* moveDataCodeUnits(moves: Move[]): IterableIterator<number> {
+    const movesPadValue = new Move(NO_MOVE, false, Array(MAX_OPERANDS).fill(NO_OPERAND));
+    
+    for (const move of checkAndPadIterable(moves, MAX_MOVES, movesPadValue)) {
+      yield move.opIndex ?? NO_OP;
+      yield move.submitted ? 1 : 0;
+      const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
+      for (const operandIndex of operandIndices) {
+        if (operandIndex !== NO_OPERAND) {
+          checkFitsInChunk(operandIndex);
+        }
+        yield operandIndex;
+      }
+    }
+}
+
+
 export const gameDataCodeUnits = function* (game: Game): IterableIterator<number> {
   for (const chunk of chunkify(game.timestamp_ms, 3)) {
     yield chunk;
@@ -445,19 +470,8 @@ export const gameDataCodeUnits = function* (game: Game): IterableIterator<number
     yield opIndex;
   }
 
-  const movesPadValue = new Move(NO_MOVE, false, Array(MAX_OPERANDS).fill(NO_OPERAND));
 
-  for (const move of checkAndPadIterable(game.state.moves, MAX_MOVES, movesPadValue)) {
-    yield move.opIndex ?? NO_OP;
-    yield move.submitted ? 1 : 0;
-    const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
-    for (const operandIndex of operandIndices) {
-      if (operandIndex !== NO_OPERAND) {
-        checkFitsInChunk(operandIndex);
-      }
-      yield operandIndex;
-    }
-  }
+  yield* moveDataCodeUnits(game.state.moves);
 
   for (const seedIndex of checkItemsFitAndPadIterable(game.redHerrings, MAX_SEEDS, NO_SEED)) {
     yield seedIndex;
