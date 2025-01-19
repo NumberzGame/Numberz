@@ -1,3 +1,10 @@
+import {
+  difficultyOfDifference,
+  difficultyOfLongDivision,
+  difficultyOfProduct,
+  difficultyOfSum,
+} from 'additional_difficulty';
+
 // Works in Deno
 import SYMBOLS from '../data/symbols.json' with { type: 'json' };
 
@@ -59,6 +66,16 @@ const OP_FUNCS: BINARY_OP[] = [
 
 export const OPS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, OP_FUNCS[i]])));
 
+export type GRADER = (x: number, y: number, r?: number, c?: number) => number;
+
+const GRADERS_LIST: GRADER[] = [
+  difficultyOfSum,
+  difficultyOfProduct,
+  difficultyOfDifference,
+  difficultyOfLongDivision,
+];
+
+export const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, GRADERS_LIST[i]])));
 export class Operand {
   readonly val: number;
   readonly expr: string;
@@ -101,7 +118,7 @@ export class HashTable<K, V> {
   // i.e. hashTable([1,2]) === hashTable([1,2])
   // Otherwise in JS, map([1,2]) != map([1,2]), due to the SameValueZero 
   // implementation (Sets have a similar gotcha with non-primitives).
-  private map: Map<string, V>;
+  map: Map<string, V>;
   constructor() {
     this.map = new Map<string, V>();
   }
@@ -128,5 +145,13 @@ export class HashTable<K, V> {
   }
   values(): V[] {
     return Array.from(this.map.values());
+  }
+  
+  toStringKeyedObject(): Record<string,V> {
+    return Object.fromEntries(this.map.entries());
+  }
+  // Doesn't support nested maps, and is not likely to work on anything complicated.
+  toJSON(): string {
+    return JSON.stringify(this.toStringKeyedObject());
   }
 }

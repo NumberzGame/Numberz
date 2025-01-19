@@ -1,9 +1,4 @@
-import {
-  difficultyOfDifference,
-  difficultyOfLongDivision,
-  difficultyOfProduct,
-  difficultyOfSum,
-} from 'additional_difficulty';
+
 import { immerable } from 'immer';
 import {
   ALL_SEEDS,
@@ -20,6 +15,7 @@ import {
   OPS,
   randomPositiveInteger,
   SEEDS,
+  GRADERS,
 } from './Core';
 import { solutionExpr } from './solutionEvaluator';
 // import { solutions, EXPR_PATTERN } from './solverDFS';
@@ -27,16 +23,6 @@ import { EXPR_PATTERN } from './solverDFS';
 import { makeCaches } from './Tnetennums/Cachebuilder';
 import { find_solutions } from './Tnetennums/Solver';
 
-type GRADER = (x: number, y: number, r?: number, c?: number) => number;
-
-const GRADERS_LIST: GRADER[] = [
-  difficultyOfSum,
-  difficultyOfProduct,
-  difficultyOfDifference,
-  difficultyOfLongDivision,
-];
-
-const GRADERS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, GRADERS_LIST[i]])));
 
 export class GameIDBase {
   [immerable] = true;
@@ -146,18 +132,36 @@ export class Move {
 
     return retval;
   }
+
+  code(): string {
+      // There are only a hundred or so possibilities for Move's data, 
+      // given 4 ops and a max of 6 operand indices, so we enumerate
+      // them and produce a unique string code-point for each.
+      if (!this.submitted || 
+           this.operandIndices.length <= 1 || 
+           this.opIndex === null) {
+        return "";
+      }
+      // Use 5 pretend ops, instead of 4, and add 1
+      return String.fromCodePoint(
+                  this.operandIndices[0] * MAX_SEEDS * MAX_SEEDS +
+                  this.operandIndices[1] * MAX_SEEDS + 
+                  this.opIndex === null ? 0 : this.opIndex + 1
+                  )
+
+  }
 }
 
 export class GameState {
   [immerable] = true;
   solved: boolean;
   moves: Move[];
-  hints: Move[];
+  hints: Record<string,Move | typeof HINT_UNDO>;
 
   constructor(
     solved: boolean = false,
     moves: Move[] = [new Move()],
-    hints: Move[] = [],
+    hints: Record<string,Move> = {},
     ) {
 
     if (moves.length === 0) {
@@ -172,7 +176,79 @@ export class GameState {
     this.hints = hints;
   }
 
+  submittedMoves(): Move[] {
+    return this.moves.filter((move) => move.submitted);
+  }
 
+  _hintKey(): string {
+      // Using this key means it is possible, if the hint is not taken,
+      // for the player to receive a duplicate hint, but have the
+      // score deducted by the hint's grade twice.  So be it!
+      return this.submittedMoves().map((move) => move.code()).join("");
+  }
+
+  _getHint(): Move | typeof HINT_UNDO {
+      return this.hints[this._hintKey()];
+  }
+
+  setHint(hint: Move | typeof HINT_UNDO): void {
+      this.hints[this._hintKey()] = hint;
+  }
+
+  _hasHint(): boolean {
+      return this._hintKey() in this.hints
+  }
+
+  hintAvailable(): boolean {
+      return this._hasHint();
+  }
+
+
+
+
+  latestMove(): Move {
+    // Unless MAX_MOVES would be exceeded, 
+    // this move should always be unsubmitted.
+    return this.moves.at(-1)!;
+  }
+
+
+
+
+  getHint(): Move | typeof HINT_UNDO | undefined{
+      return this._getHint();
+  }
+
+
+
+  latestMoveOperandIndices(): number[] {
+    return this.latestMove().operandIndices;
+  }
+
+  submitLatestMove(): void {
+    
+    const latestMove = this.latestMove();
+
+    latestMove.submitted = true;
+    if (this.submittedMoves().length < MAX_MOVES) {
+      this.moves.push(new Move());
+    }
+  }
+
+  undoLastSubmittedMove(): void {
+  
+    const moves = this.moves;
+    const i = moves.findLastIndex((move) => move.submitted);
+    if (i >= 0) {
+      // By default a new Move() is unsubmitted, so the last
+      // working unsubmitted Move is bumped down a notch.
+      moves.splice(i, 1);
+      // Overwrite previous working unsubmitted Move.  Its 
+      // operand indices could no longer refer to the
+      // correct operands, after the Undo.
+      moves[moves.length] = new Move();
+    }
+  }
 }
 
 const randomlyOrderedIndices = function (num: number): number[] {
@@ -395,7 +471,7 @@ export class Game {
     return operands.includes(this.id.goal);
   }
 
-  newHint(): Move | typeof HINT_UNDO {
+  _newHint(): Move | typeof HINT_UNDO {
     let easiestSolution = null;
     let easiestGrade = Infinity;
     const operands = this.currentOperandsDisplayOrder();
@@ -410,7 +486,7 @@ export class Game {
     if (
       this.opIndices &&
       form !== null &&
-      this.numberMovesSubmitted() === 0
+      this.state.submittedMoves().length === 0
     ) {
       const ops = this.opIndices!.map((i) => OP_SYMBOLS[i]);
       // easiestSolution = solutionAsOperand(form, seeds, ops);
@@ -457,40 +533,13 @@ export class Game {
     return new Move(opIndex, [index1, index2]);
   }
 
-  getHints(): Move | typeof HINT_UNDO {
-
-    const hints = this.state.hints;
-
-    if (hints.length  < 1 + this.numberMovesSubmitted()) {
-        const newHint = this.newHint();
-        if (newHint === HINT_UNDO) {
-          return HINT_UNDO;
-        }
-        hints.push(newHint);
+  // mutates game state.  Only call from within an immer producer.
+  addHint(): void {
+    if (this.state.hintAvailable()) {
+        return;
     }
-
-    return hints.at(-1)!;
-  }
-
-  lastMove(): Move {
-    return this.state.moves.at(-1)!;
-  }
-
-  numberMovesSubmitted(): number {
-    return this.state.moves.filter((move) => move.submitted).length;
-  }
-
-  lastMoveOperandIndices(): number[] {
-    return this.lastMove().operandIndices;
-  }
-
-  submitLatestMove(): void {
+    this.state.setHint(this._newHint());
     
-    const lastMove = this.lastMove();
-
-    lastMove.submitted = true;
-    if (this.numberMovesSubmitted() < MAX_MOVES) {
-      this.state.moves.push(new Move());
-    }
   }
+
 }
