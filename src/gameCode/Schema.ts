@@ -1,4 +1,4 @@
-import { CustomGameID, Game, GameID, GameState, GradedGameID, Move } from './Classes';
+import { CustomGameID, Game, GameID, GameState, GradedGameID, Move, HINT_UNDO } from './Classes';
 import {
   FORMS,
   MAX_MOVES,
@@ -8,6 +8,7 @@ import {
   OP_SYMBOLS,
   SEEDS,
   takeNextN,
+  NO_MOVE,
 } from './Core';
 
 const SCHEMA_CODE = 'S';
@@ -22,10 +23,10 @@ const NO_SEED = 0xd7ff; // 0xd7ff is the max single code unit BMP code
 // point (before surrogate range).
 export const NO_OP = 0xd7fe; // These cannot be u15s as 0xd7fd needs 16 bits
 const NO_OPERAND = 0xd7fd; // (0xd7fd > 0x7fff == 0b11111111111111)
-const NO_MOVE = 0xd7fc;
 const GRADED_GAME_ID_PADDING = 0xd7fb;
 const NO_FORM = 0xd7fa;
 const NO_GRADE = 0xd7f9;
+const HINT_UNDO_CODE = 0xd7f8;
 
 const GRADED_GAME_ID_MIN_SIZE = 8;
 const CUSTOM_GAME_ID_MIN_SIZE = 8;
@@ -354,7 +355,15 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   }
 
   const moves = Array.from(getMovesfromCodeUnitIterators(next, takeNextN));
-  const hints = Array.from(getMovesfromCodeUnitIterators(next, takeNextN));
+  const hints: Record<string,Move> = {};
+  const numHints = next();
+  for (let i=0; i < numHints; i++) {
+      const key = Array.from(takeNextN(MAX_MOVES)).map((x) => String.fromCharCode(x)).join("");
+      const hintCodeUnit = next();
+      const grade = next();
+      const hint = Move.fromCodeUnit(hintCodeUnit, grade);
+      hints[key] = hint;
+  }  
 
   const redHerrings = [];
   for (const seedIndex of takeNextN(MAX_SEEDS)) {
@@ -456,25 +465,36 @@ function* MoveCodeUnits(moves: Move[]): IterableIterator<number> {
 
 
 export const gameDataCodeUnits = function* (game: Game): IterableIterator<number> {
-  for (const chunk of chunkify(game.timestamp_ms, 3)) {
-    yield chunk;
-  }
+  yield* chunkify(game.timestamp_ms, 3)
 
   const solved_num = game.state.solved === true ? 1 : 0;
   yield solved_num;
 
-  for (const seedIndex of checkItemsFitAndPadIterable(game.seedIndices, MAX_SEEDS, NO_SEED)) {
-    yield seedIndex;
-  }
+  yield* checkItemsFitAndPadIterable(game.seedIndices, MAX_SEEDS, NO_SEED)
 
-  for (const opIndex of checkItemsFitAndPadIterable(game.opIndices ?? [], MAX_OPS, NO_OP)) {
-    yield opIndex;
-  }
+  yield* checkItemsFitAndPadIterable(game.opIndices ?? [], MAX_OPS, NO_OP)
 
 
   yield* MoveCodeUnits(game.state.moves);
 
-  yield* MoveCodeUnits(game.state.hints);
+  const hints = Object.entries(game.state.hints);
+  yield hints.length;
+
+  for (const [moves, hint] of hints) {
+      yield* checkItemsFitAndPadIterable(
+                    moves[Symbol.iterator]().map((c) => c.charCodeAt(0)),
+                    MAX_MOVES + 1,
+                    NO_MOVE,
+                    );
+      if (hint === HINT_UNDO) {
+          yield HINT_UNDO_CODE;
+          yield NO_GRADE;   
+      } else {
+          yield hint.codeUnit();
+          yield hint.grade ?? NO_GRADE;
+      }
+      
+  }
 
   for (const seedIndex of checkItemsFitAndPadIterable(game.redHerrings, MAX_SEEDS, NO_SEED)) {
     yield seedIndex;

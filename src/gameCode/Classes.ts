@@ -136,23 +136,44 @@ export class Move {
     return retval;
   }
 
-  code(): string {
+  codeUnit(): number {
       // There are only a hundred or so possibilities for Move's data, 
       // given 4 ops and a max of 6 operand indices, so we enumerate
       // them and produce a unique string code-point for each.
-      if (!this.submitted || 
-           this.operandIndices.length <= 1 || 
-           this.opIndex === null) {
-        return "";
-      }
-      // Use 5 pretend ops, instead of 4, and add 1
-      return String.fromCodePoint(
-                  this.operandIndices[0] * MAX_SEEDS * MAX_SEEDS +
-                  this.operandIndices[1] * MAX_SEEDS + 
-                  // Belt and braces, double check.
-                  this.opIndex === null ? 0 : this.opIndex + 1
-                  )
 
+      // Belt and braces, add a double check in the encoding that 
+      // fields are not null.
+      // Zero if nullish
+      let retval = ((this.operandIndices[0] ?? -1) + 1) * (MAX_SEEDS+1) * (MAX_SEEDS+1) * 2;
+      // +Zero if nullish.
+      retval +=    ((this.operandIndices[1] ?? -1) + 1) * (MAX_SEEDS+1) * 2;
+      // +Zero if nullish.
+      // Use 5 pretend ops, instead of 4, and add 1 to encode nullish.
+      retval += ((this.opIndex ?? -1) + 1) * 2;
+      retval += this.submitted ? 1 : 0;
+      return retval
+
+  }
+
+  static fromCodeUnit(x: number, grade: number | null = null): Move {
+
+      const submittedVal = x % 2;
+      const opIndexVal = Math.floor(((x - submittedVal) % (MAX_SEEDS + 1)) / 2);
+      let operandIndex1Val = (x - 2*opIndexVal - submittedVal); 
+      operandIndex1Val = Math.floor(operandIndex1Val /(2*(MAX_SEEDS+1)));
+      const operandIndex0Val = Math.floor(x / (2*(MAX_SEEDS+1)*(MAX_SEEDS+1)));
+
+      const opIndex = operandIndex0Val === 0 ? null : operandIndex0Val -1;
+      const operandIndices = [];
+      if (operandIndex0Val >= 1) {
+          operandIndices.push(operandIndex0Val - 1);
+          if (operandIndex1Val >= 1) {
+              operandIndices.push(operandIndex1Val - 1);
+          }
+      }
+      const submitted = (submittedVal === 1);
+      const move = new Move(opIndex,operandIndices,submitted,grade);
+      return move;
   }
 }
 
@@ -188,7 +209,7 @@ export class GameState {
       // Using this key means it is possible, if the hint is not taken,
       // for the player to receive a duplicate hint, but have the
       // score deducted by the hint's grade twice.  So be it!
-      return this.submittedMoves().map((move) => move.code()).join("");
+      return this.submittedMoves().map((move) => String.fromCharCode(move.codeUnit())).join("");
   }
 
   _getHint(): Move | typeof HINT_UNDO {
