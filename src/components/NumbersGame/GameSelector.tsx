@@ -25,7 +25,7 @@ import {
 } from '../../gameCode/Tnetennums/SolutionInfo';
 import { easiestSolution, stringifyForm } from '../../gameCode/Tnetennums/Solver';
 import { CustomGamePicker } from './CustomGamePicker';
-import { HistoricalGamePicker } from './HistoricalGamePicker';
+import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
 import { NumbersGame } from './NumbersGame';
 import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
 import { WinScreen } from './WinScreen';
@@ -75,7 +75,7 @@ function assert(condition: any, goalKey: string, grade: number): asserts conditi
 
 function randomFormAndIndex(
   grade: number,
-  goal: number
+  goal: number,
   // grade: keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS,
   // goal: number, //keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
 ): [string, number] {
@@ -314,8 +314,15 @@ export function GameSelector(props: { grade: number }) {
     // factory passed to useState, which checked localstorage.
     if (loadCurrentGameIDIfStorageAvailable() === null) {
       setCurrentGameIDToPreviouslyUnseenGradedGameID();
+      // The previous line called a useState setter, triggering a re-render.
       return <></>;
     }
+
+    const historicalGames = Object.fromEntries(
+      Array.from(getStoredGames())
+           .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
+           .map((game) => [niceGameSummaryStr(game), game])
+    );
 
     return (
       <Group justify="center" mt="xs">
@@ -328,9 +335,9 @@ export function GameSelector(props: { grade: number }) {
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
-            getStoredGames={getStoredGames}
             storeGame={storeGame}
             setCurrentGameID={setCurrentGameID}
+            historicalGames={historicalGames}
           />
         </Stack>
       </Group>
