@@ -437,7 +437,12 @@ export class Game {
     return this.seedsAndDecoyIndices().map((i) => SEEDS[i]);
   }
 
-  currentOperandsDisplayOrder(testUnsubmittedMoves: boolean = false): number[] {
+  currentOperandsDisplayOrder(
+    
+    // Allow the player to resume the game, and press submit to see
+    // the win screen as many times as they like.
+    testUnsubmittedMoves: boolean = false,
+    ): number[] {
     const seedsAndDecoys = this.seedsAndDecoys();
     const operands = this.seedsDisplayOrder.map((i) => seedsAndDecoys[i]);
 
@@ -470,7 +475,11 @@ export class Game {
     return operands;
   }
 
-  solved(testUnsubmittedMoves: boolean = false): boolean {
+  solved(
+    // Allows the player can resume and press submit to see
+    // the win screen as many times as they like.
+    testUnsubmittedMoves: boolean = false,
+    ): boolean {
     const operands = this.currentOperandsDisplayOrder(testUnsubmittedMoves);
     return operands.includes(this.id.goal);
   }
@@ -545,6 +554,21 @@ export class Game {
     }
     this.state.setHint(this._newHint());
     
+  }
+
+  getScore(): number {
+      if (!this.solved(true)) {
+        return 0;
+      }
+            
+      let gameScore = this.id.grade ?? 0;
+      for (const hint of Object.values(this.state.hints)) {
+          if (hint === null || hint === HINT_UNDO) {
+              continue;
+          }
+          gameScore = Math.max(0, gameScore - (hint.grade ?? 0));
+      }
+      return gameScore;
   }
 
 }

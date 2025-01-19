@@ -301,7 +301,14 @@ const calculateScore = function(historicalGames: Record<string,Game>): number {
     if (games.length === 0) {
         return 0;
     }
-    return 245;
+    let score = 0;
+    for (const game of games) {
+        // If points are given only for solving Graded Games 
+        // if (game.id instanceof GradedGameID) {            
+        // }
+        score += game.getScore();
+    }
+    return score;
 }
 
 
@@ -377,7 +384,7 @@ export function GameSelector(props: { grade: number }) {
             initialValue={newGameChosenGrade}
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
-            max={246}
+            max={score}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
