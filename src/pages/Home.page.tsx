@@ -1,6 +1,5 @@
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { GameSelector } from '../components/NumbersGame/GameSelector';
-import { Welcome } from '../components/Welcome/Welcome';
 
 export function HomePage() {
   
@@ -23,7 +22,6 @@ export function HomePage() {
   return (
     <>
       <ColorSchemeToggle />
-      <Welcome />
       <GameSelector grade={INITIAL_GRADE} />
       {/* <NumbersGame gameID={gameID}></NumbersGame> */}
     </>

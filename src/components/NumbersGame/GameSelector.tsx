@@ -1,7 +1,11 @@
 import { ReactNode, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Group, Stack } from '@mantine/core';
+import { Group, Stack, Title, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+
+
+import classes from './GameSelector.module.css';
+
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
@@ -29,6 +33,32 @@ import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker
 import { NumbersGame } from './NumbersGame';
 import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
 import { WinScreen } from './WinScreen';
+
+
+interface GameTitleAndScoreProps {
+    score: number;
+}
+
+function GameTitleAndScore(props: GameTitleAndScoreProps) {
+  return <Title className={classes.title} ta="center" mt={0}>
+          <Group justify="center" align="end">
+            <Text
+              inherit
+              variant="gradient"
+              component="span"
+              gradient={{ from: 'rebeccapurple', to: 'orange' }}
+            >
+              Numberz.
+            </Text>
+            <Text component="span" size="lg" mb={4.5}>
+              A numbers game.
+            </Text>
+          </Group>
+  </Title>
+}
+
+
+
 
 function sumValues(obj: Record<string, number>): number {
   return Object.values(obj).reduce((x, y) => x + y);
@@ -265,6 +295,16 @@ const getStoredGames = function* (): IterableIterator<Game> {
   }
 };
 
+
+const calculateScore = function(historicalGames: Record<string,Game>): number {
+    const games = Object.values(historicalGames);
+    if (games.length === 0) {
+        return 0;
+    }
+    return 245;
+}
+
+
 export function GameSelector(props: { grade: number }) {
   const [newGameChosenGrade, setNewGameChosenGrade] = useState<number>(
     () => loadChosenGradeOfNewGameIfStorageAvailable() ?? props.grade
@@ -309,22 +349,28 @@ export function GameSelector(props: { grade: number }) {
     selectNewGame();
   };
 
-  if (currentGameID === null) {
-    // Check if the null in currentGameID came from the initial/default
-    // factory passed to useState, which checked localstorage.
-    if (loadCurrentGameIDIfStorageAvailable() === null) {
+  if (currentGameID === null && 
+      loadCurrentGameIDIfStorageAvailable() === null) {
+
       setCurrentGameIDToPreviouslyUnseenGradedGameID();
-      // The previous line called a useState setter, triggering a re-render.
+      // The previous line called a useState setter, triggering 
+      // a re-render, so don't return any components on this render.
       return <></>;
     }
 
-    const historicalGames = Object.fromEntries(
-      Array.from(getStoredGames())
-           .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
-           .map((game) => [niceGameSummaryStr(game), game])
-    );
+  const historicalGames = Object.fromEntries(
+    Array.from(getStoredGames())
+          .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
+          .map((game) => [niceGameSummaryStr(game), game])
+  );
 
-    return (
+  const score = calculateScore(historicalGames);
+
+  if (currentGameID === null) {
+    // Check if the null in currentGameID came from the initial/default
+    // factory passed to useState, which checked localstorage.
+    return <>
+      <GameTitleAndScore score={score}/>
       <Group justify="center" mt="xs">
         <Stack justify="flex-start">
           <RandomGameOfGivenGradePicker
@@ -341,7 +387,7 @@ export function GameSelector(props: { grade: number }) {
           />
         </Stack>
       </Group>
-    );
+    </>
   }
 
   // Write stringified gameID to localstorage (if available) under the key: "currentGame".
@@ -411,7 +457,10 @@ export function GameSelector(props: { grade: number }) {
     gameComponent = <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />;
   }
 
-  return <>{gameComponent}</>;
+  return <>
+      <GameTitleAndScore score={score}/>
+      {gameComponent}
+  </>
 }
 
 interface NewGradedGameProps {
