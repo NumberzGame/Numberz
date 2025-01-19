@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, FileInput, Group, Select, Text } from '@mantine/core';
-import { CustomGameID, Game, GameID, GameState, GradedGameID, Move } from '../../gameCode/Classes';
+import { CustomGameID, Game, GameID, GameState, GradedGameID, Move, Hints } from '../../gameCode/Classes';
 
 const formatterOptions: Intl.DateTimeFormatOptions = {
   timeStyle: 'medium',
@@ -87,17 +87,25 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                   moveObj?.opIndex ?? null,
                   moveObj?.operandIndices ?? [],
                   moveObj?.submitted ?? false,
+                  moveObj?.grade ?? null,
                 );
                 moves.push(move);
               }
-              const hints: Move[] = [];
-              for (const hintObj of stateObj?.moves ?? []) {
+              const hints: Hints = {};
+              for (const [key, hintObj] of Object.entries(stateObj?.hints ?? {})) {
+                const hintObjCast = hintObj as {
+                  opIndex?: number | null,
+                  operandIndices?: number[],
+                  submitted?: boolean,
+                  grade?: number | null,
+                }; 
                 const hint = new Move(
-                  hintObj?.opIndex ?? null,
-                  hintObj?.operandIndices ?? [],
-                  hintObj?.submitted ?? false,
+                  hintObjCast?.opIndex ?? null,
+                  hintObjCast?.operandIndices ?? [],
+                  hintObjCast?.submitted ?? false,
+                  hintObjCast?.grade ?? null,
                 );
-                hints.push(hint);
+                hints[key] = hint;
               }
               const state = new GameState(stateObj.solved, moves, hints);
               let id: GameID;

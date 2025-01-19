@@ -24,6 +24,7 @@ import { makeCaches } from './Tnetennums/Cachebuilder';
 import { find_solutions } from './Tnetennums/Solver';
 
 
+
 export class GameIDBase {
   [immerable] = true;
   typeCode: string = '';
@@ -177,16 +178,18 @@ export class Move {
   }
 }
 
+export type Hints = Record<string,Move | typeof HINT_UNDO>;
+
 export class GameState {
   [immerable] = true;
   solved: boolean;
   moves: Move[];
-  hints: Record<string,Move | typeof HINT_UNDO>;
+  hints: Hints;
 
   constructor(
     solved: boolean = false,
     moves: Move[] = [new Move()],
-    hints: Record<string,Move> = {},
+    hints: Hints = {},
     ) {
 
     if (moves.length === 0) {
@@ -205,11 +208,17 @@ export class GameState {
     return this.moves.filter((move) => move.submitted);
   }
 
-  _hintKey(): string {
+  static _makeHintKey(moves: Move[]): string {
+    return moves.map((move) => String.fromCharCode(move.codeUnit())).join("");
+  }
+
+
+  _hintKey(testMoves: Move[] | null = null): string {
       // Using this key means it is possible, if the hint is not taken,
       // for the player to receive a duplicate hint, but have the
       // score deducted by the hint's grade twice.  So be it!
-      return this.submittedMoves().map((move) => String.fromCharCode(move.codeUnit())).join("");
+      const moves = testMoves ?? this.submittedMoves();
+      return GameState._makeHintKey(moves);
   }
 
   _getHint(): Move | typeof HINT_UNDO {
