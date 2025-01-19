@@ -7,7 +7,7 @@ const formatterOptions: Intl.DateTimeFormatOptions = {
   dateStyle: 'medium',
 };
 const formatter = new Intl.DateTimeFormat(navigator.language, formatterOptions);
-const prettifyGame = function (game: Game): string {
+const niceGameSummaryStr = function (game: Game): string {
   const id: GradedGameID | CustomGameID = game.id;
   const description = id instanceof GradedGameID ? `Grade: ${id.grade}` : 'Custom';
   return (
@@ -28,7 +28,9 @@ interface historicalGamePickerProps {
 
 export function HistoricalGamePicker(props: historicalGamePickerProps) {
   const historicalGames = Object.fromEntries(
-    Array.from(props.getStoredGames()).map((game) => [prettifyGame(game), game])
+    Array.from(props.getStoredGames())
+         .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
+         .map((game) => [niceGameSummaryStr(game), game])
   );
   // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
   const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(
@@ -43,9 +45,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
       <Select
         label="Game history."
         placeholder="Select game"
-        data={Object.keys(historicalGames).sort(
-          (a, b) => historicalGames[b].timestamp_ms - historicalGames[a].timestamp_ms
-        )}
+        data={Object.keys(historicalGames)}
         value={historicalGameStr}
         onChange={setHistoricalGameStr}
         withScrollArea={false}
@@ -58,7 +58,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
           component="a"
           href={`data:text/json;charset=utf-8,${encodeURIComponent(
             JSON.stringify(
-              Object.values(historicalGames).sort((a, b) => b.timestamp_ms - a.timestamp_ms),
+              Object.values(historicalGames),
               null,
               4
             )
