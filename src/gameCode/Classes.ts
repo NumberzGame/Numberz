@@ -91,15 +91,18 @@ export class Move {
   opIndex: number | null;
   operandIndices: number[];
   submitted: boolean;
+  readonly grade: number | null;
 
   constructor(
     opIndex: number | null = null,
     operandIndices: number[] = [],
     submitted: boolean = false,
+    grade: number | null = null,
     ) {
     this.opIndex = opIndex;
     this.operandIndices = operandIndices;
     this.submitted = submitted;
+    this.grade = grade;
   }
 
   opSymbol(): string | null {
@@ -146,6 +149,7 @@ export class Move {
       return String.fromCodePoint(
                   this.operandIndices[0] * MAX_SEEDS * MAX_SEEDS +
                   this.operandIndices[1] * MAX_SEEDS + 
+                  // Belt and braces, double check.
                   this.opIndex === null ? 0 : this.opIndex + 1
                   )
 
@@ -530,7 +534,8 @@ export class Game {
     // console.log(`subExpr: ${subExpr}, val: ${val}, opSymbol: ${opSymbol}, subGrade: ${subGrade}`);
     const index1 = operands.indexOf(operand1);
     const index2 = operands.lastIndexOf(operand2);
-    return new Move(opIndex, [index1, index2]);
+    const grade = GRADERS[opSymbol](operand1, operand2);
+    return new Move(opIndex, [index1, index2], false, grade);
   }
 
   // mutates game state.  Only call from within an immer producer.
