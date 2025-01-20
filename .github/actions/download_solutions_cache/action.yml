@@ -16,12 +16,15 @@ runs:
   using: "composite"
   steps:          
     - name: Download solutions
+      shell: bash
       run: curl -L https://github.com/NumberzGame/Solutions/releases/download/v0.0.0/grades_goals_forms_solutions.tar.xz -o grades_goals_forms_solutions.tar.xz
       
     - name: Unzip solutions
+      shell: bash
       run: tar xJf grades_goals_forms_solutions.tar.xz
       
     - name: Move solutions to dir
+      shell: bash
       run: |
         mkdir -p ${{ inputs.dir }}
         mv grades_goals_forms_solutions ${{ inputs.dir }}
