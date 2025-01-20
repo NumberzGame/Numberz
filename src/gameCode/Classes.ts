@@ -595,6 +595,7 @@ export class Game {
       }
             
       let gameScore = this.id.grade ?? 0;
+      
       for (const hint of Object.values(this.state.hints)) {
           if (hint === null || hint === HINT_UNDO) {
               continue;

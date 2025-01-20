@@ -4,6 +4,9 @@ import { nanoid } from 'nanoid';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from 'use-immer';
 import { Badge, Button, Group, Stack, Text } from '@mantine/core';
+
+import {ScoreAndGradeBadge} from './ScoreAndGradeBadge';
+
 import { Game, HINT_UNDO, } from '../../gameCode/Classes';
 import { MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
 
@@ -197,9 +200,7 @@ export function NumbersGame(props: NumbersGameProps) {
           <Group justify="space-between" mt="md" w={400}>
             <Group>
               <Text> Grade: </Text>
-              <Badge variant="filled" color="pink" size="lg">
-                {game.id.grade ?? 'Impossible!'}
-              </Badge>
+              <ScoreAndGradeBadge contents={game.id.grade ?? 'Impossible!'}/>
             </Group>
             <Group>
               <Text> Make: </Text>
@@ -217,7 +218,7 @@ export function NumbersGame(props: NumbersGameProps) {
           </Group>
           <Group justify="center" mt="md">
             <Button onClick={submitButtonHandler}>
-              <b>=</b>
+              =
             </Button>
             {undoButton}
           </Group>

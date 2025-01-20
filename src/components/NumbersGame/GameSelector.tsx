@@ -1,10 +1,16 @@
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Group, Stack, Title, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 
 
-import classes from './GameSelector.module.css';
+
+import { CustomGamePicker } from './CustomGamePicker';
+import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
+import { NumbersGame } from './NumbersGame';
+import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
+import { WinScreen } from './WinScreen';
+import { Layout } from './Layout';
 
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
@@ -28,34 +34,7 @@ import {
   get_seeds_from_encodable_sol_expr,
 } from '../../gameCode/Tnetennums/SolutionInfo';
 import { easiestSolution, stringifyForm } from '../../gameCode/Tnetennums/Solver';
-import { CustomGamePicker } from './CustomGamePicker';
-import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
-import { NumbersGame } from './NumbersGame';
-import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
-import { WinScreen } from './WinScreen';
 
-
-interface GameTitleAndScoreProps {
-    score: number;
-}
-
-function GameTitleAndScore(props: GameTitleAndScoreProps) {
-  return <Title className={classes.title} ta="center" mt={0}>
-          <Group justify="center" align="end">
-            <Text
-              inherit
-              variant="gradient"
-              component="span"
-              gradient={{ from: 'rebeccapurple', to: 'orange' }}
-            >
-              Numberz.
-            </Text>
-            <Text component="span" size="lg" mb={4.5}>
-              A numbers game.
-            </Text>
-          </Group>
-  </Title>
-}
 
 
 
@@ -306,7 +285,8 @@ const calculateScore = function(historicalGames: Record<string,Game>): number {
         // If points are given only for solving Graded Games 
         // if (game.id instanceof GradedGameID) {            
         // }
-        score += game.getScore();
+        const gameScore = game.getScore();
+        score += gameScore;
     }
     return score;
 }
@@ -341,7 +321,6 @@ export function GameSelector(props: { grade: number }) {
     return <WinScreen opened={winScreenOpened} close={onClose} />;
   }
 
-  // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function (val: number) {
     saveChosenGradeOfNewGameIfStorageAvailable(val);
     setNewGameChosenGrade(val);
@@ -376,8 +355,7 @@ export function GameSelector(props: { grade: number }) {
   if (currentGameID === null) {
     // Check if the null in currentGameID came from the initial/default
     // factory passed to useState, which checked localstorage.
-    return <>
-      <GameTitleAndScore score={score}/>
+    return <Layout score={score}>
       <Group justify="center" mt="xs">
         <Stack justify="flex-start">
           <RandomGameOfGivenGradePicker
@@ -394,7 +372,7 @@ export function GameSelector(props: { grade: number }) {
           />
         </Stack>
       </Group>
-    </>
+    </Layout>
   }
 
   // Write stringified gameID to localstorage (if available) under the key: "currentGame".
@@ -422,7 +400,6 @@ export function GameSelector(props: { grade: number }) {
         {}
       );
 
-      // console.log(solution);
 
       let form: string | null;
       let grade: number | null;
@@ -438,7 +415,6 @@ export function GameSelector(props: { grade: number }) {
         form = stringifyForm(solution.form);
         grade = solution.grade;
         const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
-        // console.log(`ops: ${ops}`);
         opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
         seedIndices = Array.from(get_seeds_from_encodable_sol_expr(solution.encodable)).map(
           (seed) => SEEDS.indexOf(seed)
@@ -447,7 +423,6 @@ export function GameSelector(props: { grade: number }) {
       const id = new CustomGameID(customGameID.goal, customGameID.seedIndices, grade, form);
       const state = new GameState();
       const datetime_ms = Date.now();
-      // console.log(`opIndices: ${opIndices}`);
       game = new Game(id, datetime_ms, seedIndices, opIndices, state);
     }
     if (game === null) {
@@ -464,10 +439,9 @@ export function GameSelector(props: { grade: number }) {
     gameComponent = <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />;
   }
 
-  return <>
-      <GameTitleAndScore score={score}/>
+  return <Layout score={score}>
       {gameComponent}
-  </>
+  </Layout>
 }
 
 interface NewGradedGameProps {

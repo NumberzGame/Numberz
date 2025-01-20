@@ -1,4 +1,3 @@
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { GameSelector } from '../components/NumbersGame/GameSelector';
 import { Move, GameState } from '../gameCode/Classes';
 
@@ -22,7 +21,6 @@ export function HomePage() {
 
   return (
     <>
-      <ColorSchemeToggle />
       <GameSelector grade={INITIAL_GRADE} />
       {/* <NumbersGame gameID={gameID}></NumbersGame> */}
     </>
