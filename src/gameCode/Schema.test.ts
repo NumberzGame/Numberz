@@ -6,17 +6,11 @@
 
 import fc from 'fast-check';
 import { expect, test } from 'vitest';
-import { CustomGameID, Game, GameState, GradedGameID, Move } from './Classes';
+import { Game, GameState } from './Classes';
+import { UTF16codeUnits, gradedGameIDs, customGameIDs, seedIndex, opIndex, moves, hints } from './Classes.test';
 import {
-  FORMS,
-  GOAL_MAX,
-  GOAL_MIN,
-  MAX_MOVES,
-  MAX_OPERANDS,
   MAX_OPS,
   MAX_SEEDS,
-  OP_SYMBOLS,
-  SEEDS,
 } from './Core';
 import {
   CHUNK_SIZE,
@@ -32,9 +26,10 @@ import {
 
 // const [destringifyGameID, stringifyGameID, destringifyGame, stringifyGame] = stringifiersAndGetters();
 
+
 test('for all arrays of positive 15-bit integers, stringifyCodeUnits should roundtrip with Array.from(destringifyCodeUnits)', () => {
   fc.assert(
-    fc.property(fc.array(fc.nat({ max: 32767 })), (UTF16codeUnits) => {
+    fc.property(UTF16codeUnits, (UTF16codeUnits) => {
       const stringified = stringifyCodeUnits(UTF16codeUnits);
       const destringified = Array.from(destringifyCodeUnits(stringified));
       expect(destringified).toStrictEqual(UTF16codeUnits);
@@ -53,15 +48,10 @@ test('for all positiveintegers, chunkify should roundtrip with deChunkify', () =
   );
 });
 
+
 test('for each GradedGameID, stringifyGameID should roundtrip with destringifyGameID', () => {
   fc.assert(
-    fc.property(
-      fc.integer({ min: 1, max: 246 }),
-      fc.integer({ min: GOAL_MIN, max: GOAL_MAX }),
-      fc.constantFrom(...FORMS),
-      fc.nat({ max: 781176 }),
-      (grade, goal, form, index) => {
-        const gameID = new GradedGameID(grade, goal, form, index);
+    fc.property(gradedGameIDs, (gameID) => {
         const stringified = stringifyGameID(gameID);
         const destringifiedGameID = destringifyGameID(stringified);
         expect(gameID).toStrictEqual(destringifiedGameID);
@@ -73,12 +63,8 @@ test('for each GradedGameID, stringifyGameID should roundtrip with destringifyGa
 test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGameID', () => {
   fc.assert(
     fc.property(
-      fc.integer({ min: GOAL_MIN, max: GOAL_MAX }),
-      fc.array(seedIndex(), { maxLength: MAX_SEEDS }),
-      fc.option(fc.integer({ min: 1, max: 246 })),
-      fc.option(fc.constantFrom(...FORMS)),
-      (goal, seedIndices, grade, form) => {
-        const gameID = new CustomGameID(goal, seedIndices, grade, form);
+        customGameIDs,
+        (gameID) => {
         const stringified = stringifyGameID(gameID);
         const destringifiedGameID = destringifyGameID(stringified);
         expect(gameID).toStrictEqual(destringifiedGameID);
@@ -87,39 +73,26 @@ test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGa
   );
 });
 
-const opIndex = () => fc.nat({ max: OP_SYMBOLS.length - 1 });
-const seedIndex = () => fc.nat({ max: SEEDS.length - 1 });
-// const operand = () => fc.nat({ max: SEEDS.length - 1 });
+// const hints = [];
+// for (const hint_args of hintsData) {
+//   const [opIndex, operandIndices] = hint_args;
+//   const hint = new Move(opIndex, operandIndices, false);
+//   hints.push(hint);
+// }
 
 test('for each Game with a Graded GameID, stringifyGame should roundtrip with destringifyGame', () => {
   fc.assert(
     fc.property(
-      fc.integer({ min: 1, max: 246 }),
-      fc.integer({ min: GOAL_MIN, max: GOAL_MAX }),
-      fc.constantFrom(...FORMS),
-      fc.nat({ max: 781176 }),
+      gradedGameIDs,
       // A millisecond later than the max, is 2**45 miliseconds since 1970
       fc.date({ min: new Date(Date.now()), max: new Date('3084-12-12T12:41:28.831Z') }),
       fc.boolean(),
-      fc.array(seedIndex(), { maxLength: MAX_SEEDS }),
-      fc.array(opIndex(), { maxLength: MAX_OPS }),
-      fc.array(
-        fc.tuple(
-          fc.nat({ max: OP_SYMBOLS.length - 1 }),
-          fc.boolean(),
-          fc.array(fc.nat({ max: MAX_SEEDS - 1 }), { maxLength: MAX_OPERANDS })
-        ),
-        { minLength: 1, maxLength: MAX_MOVES }
-      ),
-      (grade, goal, form, index, date, solved, seedIndices, opIndices, moves_data) => {
-        const gameID = new GradedGameID(grade, goal, form, index);
-        const moves = [];
-        for (const move_args of moves_data) {
-          const [opIndex, submitted, operandIndices] = move_args;
-          const move = new Move(opIndex, submitted, operandIndices);
-          moves.push(move);
-        }
-        const state = new GameState(solved, moves);
+      fc.array(seedIndex, { maxLength: MAX_SEEDS }),
+      fc.array(opIndex, { maxLength: MAX_OPS }),
+      moves,
+      hints,
+      (gameID, date, solved, seedIndices, opIndices, moves, hints) => {
+        const state = new GameState(solved, moves, hints);
 
         const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
 

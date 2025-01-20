@@ -1,11 +1,6 @@
-import {
-  difficultyOfDifference,
-  difficultyOfLongDivision,
-  difficultyOfProduct,
-  difficultyOfSum,
-} from 'additional_difficulty';
+
 import SYMBOLS from '../../data/symbols.json' with { type: 'json' };
-import { HashTable, INVALID_ARGS, MAX_SEEDS, OPS } from '../Core';
+import { HashTable, INVALID_ARGS, MAX_SEEDS, OPS, GRADERS } from '../Core';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -49,13 +44,6 @@ export const GOALS = Object.freeze({
 export const opsCache: OpsCacheT = new HashTable<OpsCacheKeyT, OpsCacheValT>();
 export const resultsAndGradesCaches: ResultsAndGradesCachesT = { forward: {}, reverse: {} };
 
-export const DIFFICULTY_CALCULATORS: DifficultyCalculators = {
-  '+': difficultyOfSum,
-  '*': difficultyOfProduct,
-  '-': difficultyOfDifference,
-  //  ,'//' : additional_difficulty.division.difficulty_of_long_division
-  '/': difficultyOfLongDivision,
-};
 
 // "Normal", as in unexceptional
 export const normalInverses: Record<Op, Op> = {
@@ -92,7 +80,7 @@ function* opsAndLevelsGen(
   a: OperandT,
   b: OperandT,
   ops: Record<string, OpFunc> = OPS,
-  level_calulators: DifficultyCalculators = DIFFICULTY_CALCULATORS
+  level_calulators: DifficultyCalculators = GRADERS
 ): IterableIterator<[Op, [Result, Grade]]> {
   // Yields the not-null and not-INVALID_ARGS results of applying all ops to a and b."""
 

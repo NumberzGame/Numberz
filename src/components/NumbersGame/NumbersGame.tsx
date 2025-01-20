@@ -4,8 +4,11 @@ import { nanoid } from 'nanoid';
 // import { useFetch } from '@mantine/hooks';
 import { useImmer } from 'use-immer';
 import { Badge, Button, Group, Stack, Text } from '@mantine/core';
-import { Game, HINT_UNDO, Move } from '../../gameCode/Classes';
-import { MAX_MOVES, MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
+
+import {ScoreAndGradeBadge} from './ScoreAndGradeBadge';
+
+import { Game, HINT_UNDO, } from '../../gameCode/Classes';
+import { MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
 
 const overrideSymbolText = function (s: string): string {
   if (s === '//') {
@@ -40,7 +43,7 @@ export interface NumbersGameProps {
 }
 
 export function NumbersGame(props: NumbersGameProps) {
-  const [game, setGameUsingImmerProducer] = useImmer(props.game);
+  const [game, setGameUsingImmerProducer] = useImmer<Game>(props.game);
   const [hintsShown, setHintsShown] = useState(false);
 
   const store = props.store;
@@ -58,7 +61,7 @@ export function NumbersGame(props: NumbersGameProps) {
       setGameUsingImmerProducerAndStore((draft: Game) => {
         const opIndex = OP_SYMBOLS.indexOf(opSymbol);
 
-        const move = draft.lastMove();
+        const move = draft.state.latestMove();
         move.opIndex = opIndex === move.opIndex ? null : opIndex;
       });
     };
@@ -66,14 +69,14 @@ export function NumbersGame(props: NumbersGameProps) {
   };
 
   const currentOperands = game.currentOperandsDisplayOrder();
-  const hint = hintsShown ? game.getHints() : null;
+  const hint = hintsShown ? game.state.getHint() : null;
 
   const SymbolsButtons = OP_SYMBOLS.map((s: string) => {
     const displayText = overrideSymbolText(s);
 
     let colour = 'blue';
 
-    if (game.lastMove().opIndex !== null && s === OP_SYMBOLS[game.lastMove().opIndex!]) {
+    if (game.state.latestMove().opIndex !== null && s === OP_SYMBOLS[game.state.latestMove().opIndex!]) {
       colour = 'pink';
     } else if (hint && hint !== HINT_UNDO && hint.opSymbol() === s) {
       return (
@@ -99,7 +102,7 @@ export function NumbersGame(props: NumbersGameProps) {
       setGameUsingImmerProducerAndStore((draft: Game) => {
         // const move = draft.state.moves.at(-1)!;
         // const operandIndices = move.operandIndices;
-        const operandIndices = draft.lastMoveOperandIndices();
+        const operandIndices = draft.state.latestMoveOperandIndices();
 
         const len = operandIndices.length;
         if (operandIndices.includes(operandIndex)) {
@@ -116,7 +119,7 @@ export function NumbersGame(props: NumbersGameProps) {
           throw new Error(
             `Move has too many operand indices: ${operandIndices}. ` +
               `Cannot have more than MAX_OPERANDS: ${MAX_OPERANDS}. ` +
-              `Move: ${draft.lastMove}`
+              `Move: ${draft.state.latestMove}`
           );
         }
       });
@@ -129,7 +132,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
     let colour = 'blue';
 
-    if (game.lastMoveOperandIndices().includes(index)) {
+    if (game.state.latestMoveOperandIndices().includes(index)) {
       colour = 'pink';
     } else if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
       return (
@@ -163,23 +166,12 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     setGameUsingImmerProducerAndStore((draft: Game) => {
-      const moves = draft.state.moves;
-      const lastMove = moves.at(-1)!;
-
-      lastMove.submitted = true;
-      if (moves.length < MAX_MOVES) {
-        moves.push(new Move());
-      }
+        draft.state.submitLatestMove();
     });
   };
   const undoButtonHandler = function () {
     setGameUsingImmerProducerAndStore((draft: Game) => {
-      const moves = draft.state.moves;
-      const i = moves.findLastIndex((move) => move.submitted);
-      if (i >= 0) {
-        // By default a new Move() is unsubmitted.
-        moves.splice(i, 1);
-      }
+        draft.state.undoLastSubmittedMove();
     });
   };
 
@@ -195,8 +187,9 @@ export function NumbersGame(props: NumbersGameProps) {
     );
 
   const hintButtonHandler = function () {
-    // Alternatively, Mantine provides useDisclosure just to handle
-    // toggling booleans https://mantine.dev/hooks/use-disclosure/
+    if (!hintsShown) {
+      setGameUsingImmerProducer((draft) => draft.addHint());
+    }
     setHintsShown(!hintsShown);
   };
 
@@ -207,9 +200,7 @@ export function NumbersGame(props: NumbersGameProps) {
           <Group justify="space-between" mt="md" w={400}>
             <Group>
               <Text> Grade: </Text>
-              <Badge variant="filled" color="pink" size="lg">
-                {game.id.grade ?? 'Impossible!'}
-              </Badge>
+              <ScoreAndGradeBadge contents={game.id.grade ?? 'Impossible!'}/>
             </Group>
             <Group>
               <Text> Make: </Text>
@@ -227,7 +218,7 @@ export function NumbersGame(props: NumbersGameProps) {
           </Group>
           <Group justify="center" mt="md">
             <Button onClick={submitButtonHandler}>
-              <b>=</b>
+              =
             </Button>
             {undoButton}
           </Group>

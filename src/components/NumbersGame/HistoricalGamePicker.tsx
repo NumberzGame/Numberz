@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Box, Button, FileInput, Group, Select, Text } from '@mantine/core';
-import { CustomGameID, Game, GameID, GameState, GradedGameID, Move } from '../../gameCode/Classes';
+import { CustomGameID, Game, GameID, GameState, GradedGameID, Move, Hints } from '../../gameCode/Classes';
 
 const formatterOptions: Intl.DateTimeFormatOptions = {
   timeStyle: 'medium',
   dateStyle: 'medium',
 };
 const formatter = new Intl.DateTimeFormat(navigator.language, formatterOptions);
-const prettifyGame = function (game: Game): string {
+
+
+export const niceGameSummaryStr = function (game: Game): string {
   const id: GradedGameID | CustomGameID = game.id;
   const description = id instanceof GradedGameID ? `Grade: ${id.grade}` : 'Custom';
   return (
@@ -21,18 +23,18 @@ const prettifyGame = function (game: Game): string {
 };
 
 interface historicalGamePickerProps {
-  getStoredGames: () => IterableIterator<Game>;
   storeGame: (game: Game) => void;
   setCurrentGameID: (gameID: GameID) => void;
+  historicalGames: Record<string, Game>;
 }
 
 export function HistoricalGamePicker(props: historicalGamePickerProps) {
-  const historicalGames = Object.fromEntries(
-    Array.from(props.getStoredGames()).map((game) => [prettifyGame(game), game])
-  );
-  // console.log(`Goal: ${newCustomGameID.goal}, ${newCustomGameID.seedIndices.map(i => SEEDS[i])}`);
+
+  const mostRecentHistoricalGameSummaryStr = function() {
+      return Object.keys(props.historicalGames).at(-1) ?? null
+  }
   const [historicalGameStr, setHistoricalGameStr] = useState<string | null>(
-    Object.keys(historicalGames).at(-1) ?? null
+    mostRecentHistoricalGameSummaryStr
   );
 
   return (
@@ -43,9 +45,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
       <Select
         label="Game history."
         placeholder="Select game"
-        data={Object.keys(historicalGames).sort(
-          (a, b) => historicalGames[b].timestamp_ms - historicalGames[a].timestamp_ms
-        )}
+        data={Object.keys(props.historicalGames)}
         value={historicalGameStr}
         onChange={setHistoricalGameStr}
         withScrollArea={false}
@@ -58,7 +58,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
           component="a"
           href={`data:text/json;charset=utf-8,${encodeURIComponent(
             JSON.stringify(
-              Object.values(historicalGames).sort((a, b) => b.timestamp_ms - a.timestamp_ms),
+              Object.values(props.historicalGames),
               null,
               4
             )
@@ -70,7 +70,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
         <FileInput
           aria-label="Upload game history"
           accept="text/json"
-          label="Load game history (into browser's localstorage)"
+          label="Load game history (into the browser's local storage)"
           placeholder="(Warning: overwrites existing saved games with same ID)"
           onChange={async (fileBlob) => {
             if (fileBlob === null) {
@@ -78,18 +78,36 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
             }
             const jsonString = await fileBlob.text();
             const uploadedGameData = JSON.parse(jsonString);
+            let gameSummaryStr: string | null = null;
             for (const gameData of uploadedGameData) {
               const moves: Move[] = [];
               const stateObj = gameData?.state ?? {};
               for (const moveObj of stateObj?.moves ?? []) {
                 const move = new Move(
                   moveObj?.opIndex ?? null,
+                  moveObj?.operandIndices ?? [],
                   moveObj?.submitted ?? false,
-                  moveObj?.operandIndices ?? []
+                  moveObj?.grade ?? null,
                 );
                 moves.push(move);
               }
-              const state = new GameState(stateObj.solved, moves);
+              const hints: Hints = {};
+              for (const [key, hintObj] of Object.entries(stateObj?.hints ?? {})) {
+                const hintObjCast = hintObj as {
+                  opIndex?: number | null,
+                  operandIndices?: number[],
+                  submitted?: boolean,
+                  grade?: number | null,
+                }; 
+                const hint = new Move(
+                  hintObjCast?.opIndex ?? null,
+                  hintObjCast?.operandIndices ?? [],
+                  hintObjCast?.submitted ?? false,
+                  hintObjCast?.grade ?? null,
+                );
+                hints[key] = hint;
+              }
+              const state = new GameState(stateObj.solved, moves, hints);
               let id: GameID;
               const idData = gameData.id;
               const goal = idData.goal;
@@ -110,6 +128,10 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                 gameData.seedsDisplayOrder
               );
               props.storeGame(game);
+              gameSummaryStr ??= niceGameSummaryStr(game);
+            }
+            if (gameSummaryStr !== null) {
+                setHistoricalGameStr(gameSummaryStr);
             }
           }}
         />
@@ -118,8 +140,8 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
       <Group justify="end" mt="sm">
         <Button
           onClick={() => {
-            if (historicalGameStr !== null && historicalGameStr in historicalGames) {
-              props.setCurrentGameID(historicalGames[historicalGameStr].id);
+            if (historicalGameStr !== null && historicalGameStr in props.historicalGames) {
+              props.setCurrentGameID(props.historicalGames[historicalGameStr].id);
             }
           }}
         >

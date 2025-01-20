@@ -4,7 +4,7 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --open --port 3000",
+    "dev": "vite --port 3000",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -14,7 +14,7 @@
     "stylelint": "stylelint '**/*.css' --cache",
     "prettier": "prettier --check \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
     "prettier:write": "prettier --write \"**/*.{js,msx,mjs,ts,tsx,mts,mtx}\"",
-    "vitest": "vitest run src/gameCode/Schema.test.ts",
+    "vitest": "vitest run",
     "vitest:watch": "vitest",
     "test": "npm run typecheck && npm run vitest",
     "storybook": "storybook dev -p 6006",

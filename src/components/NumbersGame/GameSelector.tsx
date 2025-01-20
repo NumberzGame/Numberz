@@ -1,7 +1,17 @@
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Group, Stack } from '@mantine/core';
+import { Group, Stack, Title, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+
+
+
+import { CustomGamePicker } from './CustomGamePicker';
+import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
+import { NumbersGame } from './NumbersGame';
+import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
+import { WinScreen } from './WinScreen';
+import { Layout } from './Layout';
+
 // These JSON imports won't work in Deno without appending " with { type: "json" }"
 // import NUM_SOLS_OF_EACH_GRADE_AND_FORM from '../../data/num_of_sols_of_each_grade_and_form.json';
 import NUM_SOLS_OF_EACH_GRADE_AND_GOAL from '../../data/num_of_sols_of_each_grade_and_goal.json';
@@ -24,11 +34,11 @@ import {
   get_seeds_from_encodable_sol_expr,
 } from '../../gameCode/Tnetennums/SolutionInfo';
 import { easiestSolution, stringifyForm } from '../../gameCode/Tnetennums/Solver';
-import { CustomGamePicker } from './CustomGamePicker';
-import { HistoricalGamePicker } from './HistoricalGamePicker';
-import { NumbersGame } from './NumbersGame';
-import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
-import { WinScreen } from './WinScreen';
+
+
+// Players unlock higher difficulties as their score increases.
+const MAX_INITIAL_DIFFICULTY=14;
+
 
 function sumValues(obj: Record<string, number>): number {
   return Object.values(obj).reduce((x, y) => x + y);
@@ -75,7 +85,7 @@ function assert(condition: any, goalKey: string, grade: number): asserts conditi
 
 function randomFormAndIndex(
   grade: number,
-  goal: number
+  goal: number,
   // grade: keyof typeof NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS,
   // goal: number, //keyof typeof NUM_SOLS_OF_EACH_GRADE_AND_GOAL,
 ): [string, number] {
@@ -265,6 +275,24 @@ const getStoredGames = function* (): IterableIterator<Game> {
   }
 };
 
+
+const calculateScore = function(historicalGames: Record<string,Game>): number {
+    const games = Object.values(historicalGames);
+    if (games.length === 0) {
+        return 0;
+    }
+    let score = 0;
+    for (const game of games) {
+        // If points are given only for solving Graded Games 
+        // if (game.id instanceof GradedGameID) {            
+        // }
+        const gameScore = game.getScore();
+        score += gameScore;
+    }
+    return score;
+}
+
+
 export function GameSelector(props: { grade: number }) {
   const [newGameChosenGrade, setNewGameChosenGrade] = useState<number>(
     () => loadChosenGradeOfNewGameIfStorageAvailable() ?? props.grade
@@ -294,7 +322,6 @@ export function GameSelector(props: { grade: number }) {
     return <WinScreen opened={winScreenOpened} close={onClose} />;
   }
 
-  // console.log(`currentGameID: ${currentGameID?.goal}, ${currentGameID?.form}` );
   const gradeSliderHandler = function (val: number) {
     saveChosenGradeOfNewGameIfStorageAvailable(val);
     setNewGameChosenGrade(val);
@@ -309,32 +336,44 @@ export function GameSelector(props: { grade: number }) {
     selectNewGame();
   };
 
-  if (currentGameID === null) {
-    // Check if the null in currentGameID came from the initial/default
-    // factory passed to useState, which checked localstorage.
-    if (loadCurrentGameIDIfStorageAvailable() === null) {
+  if (currentGameID === null && 
+      loadCurrentGameIDIfStorageAvailable() === null) {
+
       setCurrentGameIDToPreviouslyUnseenGradedGameID();
+      // The previous line called a useState setter, triggering 
+      // a re-render, so don't return any components on this render.
       return <></>;
     }
 
-    return (
+  const historicalGames = Object.fromEntries(
+    Array.from(getStoredGames())
+          .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
+          .map((game) => [niceGameSummaryStr(game), game])
+  );
+
+  const score = calculateScore(historicalGames);
+
+  if (currentGameID === null) {
+    // Check if the null in currentGameID came from the initial/default
+    // factory passed to useState, which checked localstorage.
+    return <Layout score={score}>
       <Group justify="center" mt="xs">
         <Stack justify="flex-start">
           <RandomGameOfGivenGradePicker
             initialValue={newGameChosenGrade}
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
-            max={246}
+            max={Math.max(score, MAX_INITIAL_DIFFICULTY)}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
-            getStoredGames={getStoredGames}
             storeGame={storeGame}
             setCurrentGameID={setCurrentGameID}
+            historicalGames={historicalGames}
           />
         </Stack>
       </Group>
-    );
+    </Layout>
   }
 
   // Write stringified gameID to localstorage (if available) under the key: "currentGame".
@@ -362,7 +401,6 @@ export function GameSelector(props: { grade: number }) {
         {}
       );
 
-      // console.log(solution);
 
       let form: string | null;
       let grade: number | null;
@@ -378,7 +416,6 @@ export function GameSelector(props: { grade: number }) {
         form = stringifyForm(solution.form);
         grade = solution.grade;
         const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
-        // console.log(`ops: ${ops}`);
         opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
         seedIndices = Array.from(get_seeds_from_encodable_sol_expr(solution.encodable)).map(
           (seed) => SEEDS.indexOf(seed)
@@ -387,7 +424,6 @@ export function GameSelector(props: { grade: number }) {
       const id = new CustomGameID(customGameID.goal, customGameID.seedIndices, grade, form);
       const state = new GameState();
       const datetime_ms = Date.now();
-      // console.log(`opIndices: ${opIndices}`);
       game = new Game(id, datetime_ms, seedIndices, opIndices, state);
     }
     if (game === null) {
@@ -404,7 +440,9 @@ export function GameSelector(props: { grade: number }) {
     gameComponent = <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />;
   }
 
-  return <>{gameComponent}</>;
+  return <Layout score={score}>
+      {gameComponent}
+  </Layout>
 }
 
 interface NewGradedGameProps {

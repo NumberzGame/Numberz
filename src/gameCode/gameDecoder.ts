@@ -50,7 +50,7 @@ export function decodeSolsFromGoalFormAndBinaryData(
     }
 
     if (evalSolution(form, seeds, opSymbols) !== goal) {
-      throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}`);
+      throw new Error(`Invalid solution. Form: ${form}, seeds: ${seeds}, ops: ${opSymbols}, goal: ${goal}`);
     }
     seedIndicesAndOpIndices.push([seedIndices, opIndices]);
     solSymbols.push([seeds, opSymbols]);

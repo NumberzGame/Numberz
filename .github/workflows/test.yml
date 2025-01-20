@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   ad_hoc_tests_with_Deno:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
 
@@ -23,21 +23,26 @@ jobs:
 
       - name: Install dependencies
         run: deno install
-      # Needs example solution files.
-      # - name: Test GameDecoder
-      #   working-directory: src/gameCode/gameDecoder
-      #   run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
+
+      - name: Download and unzip solutions cache
+        uses: ./.github/actions/download_solutions_cache
+        with:
+          dir: ./public/
+
+      - name: Test GameDecoder
+        working-directory: src/gameCode
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoderTest.ts
 
       - name: Test Tnetennums Core
         working-directory: src/gameCode/Tnetennums
-        run: deno run --unstable-sloppy-imports --allow-read --allow-env Core.test.mts
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env CoreTest.mts
 
       - name: Test Tnetennums Solver
         working-directory: src/gameCode/Tnetennums
-        run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env SolverTest.mts
 
   test_with_npm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       
@@ -53,6 +58,9 @@ jobs:
       # Error: src/components/NumbersGame/GameSelector.tsx(30,52): error TS2307: Cannot find module '../../data/SuperMiniIndexStr.json'
       - name: Run build
         run: npm run build
+
+      - name: Run Vitest
+        run: npm run vitest
       
       # Needs sub_byte latest version, and additional_difficulty
       # - name: Run tests

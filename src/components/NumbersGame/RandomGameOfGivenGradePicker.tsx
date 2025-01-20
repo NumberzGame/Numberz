@@ -16,7 +16,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         <Text>Choose difficulty. </Text>
       </Group>
       <Slider
-        label={`${grade}`}
+        label={grade < 100 ? `Grade: ${grade}` : `Beast mode!  Grade: ${grade}`}
         value={grade}
         min={1}
         max={props.max}
