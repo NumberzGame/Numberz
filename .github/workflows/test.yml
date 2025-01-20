@@ -30,7 +30,7 @@ jobs:
           dir: ./public/
 
       - name: Test GameDecoder
-        working-directory: src/gameCode/gameDecoder
+        working-directory: src/gameCode
         run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoderTest.ts
 
       - name: Test Tnetennums Core
