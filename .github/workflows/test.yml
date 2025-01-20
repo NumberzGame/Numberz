@@ -31,7 +31,7 @@ jobs:
 
       - name: Test GameDecoder
         working-directory: src/gameCode/gameDecoder
-        run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoderTest.ts
 
       - name: Test Tnetennums Core
         working-directory: src/gameCode/Tnetennums
