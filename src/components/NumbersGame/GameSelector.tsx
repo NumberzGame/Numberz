@@ -36,7 +36,8 @@ import {
 import { easiestSolution, stringifyForm } from '../../gameCode/Tnetennums/Solver';
 
 
-
+// Players unlock higher difficulties as their score increases.
+const MAX_INITIAL_DIFFICULTY=14;
 
 
 function sumValues(obj: Record<string, number>): number {
@@ -362,7 +363,7 @@ export function GameSelector(props: { grade: number }) {
             initialValue={newGameChosenGrade}
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
-            max={score}
+            max={Math.max(score, MAX_INITIAL_DIFFICULTY)}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
