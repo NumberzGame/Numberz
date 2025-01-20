@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
 
-const SOLS_DIR = '../../public/grade_22_goals_forms_solutions';
+const SOLS_DIR = '../../public/grade_goals_forms_solutions';
 
 const gradesGoalDirsGoalsForms = function* (): IterableIterator<[number, string, number, string]> {
   // for (let grade = 1; grade <= 246; grade++) {

@@ -139,7 +139,7 @@ export class HashTable<K, V> {
     return this.map.size;
   }
   keys(): K[] {
-    return Array.from(this.map.keys().map((s) => JSON.parse(s)));
+    return Array.from(this.map.keys()).map((s) => JSON.parse(s));
   }
   entries(): [K, V][] {
     return Array.from(this.map.entries().map(([s, v]) => [JSON.parse(s), v]));
