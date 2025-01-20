@@ -358,9 +358,13 @@ export const destringifyGame = function (s: string, id: GameID): Game {
   const hints: Record<string,Move> = {};
   const numHints = next();
   for (let i=0; i < numHints; i++) {
-      const key = Array.from(takeNextN(MAX_MOVES)).map((x) => String.fromCharCode(x)).join("");
+      const key = (Array.from(takeNextN(MAX_MOVES+1))
+                        .filter((x) => x != NO_MOVE)
+                        .map((x) => String.fromCharCode(x)).join("")
+                  );
       const hintCodeUnit = next();
-      const grade = next();
+      const gradeCodeUnit = next();
+      const grade = gradeCodeUnit === NO_GRADE ? null : gradeCodeUnit
       const hint = Move.fromCodeUnit(hintCodeUnit, grade);
       hints[key] = hint;
   }  
