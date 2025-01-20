@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Button, Group, Slider, Text } from '@mantine/core';
 
-import {classes} from './RandomGameOfGivenGradePicker.module.css';
+import classes from './RandomGameOfGivenGradePicker.module.css';
+
+const ACTIVE_SLIDER_GRADIENT = { from: 'violet', to: 'red', deg: 90 };
 
 interface gradeSliderProps {
   initialValue: number;
@@ -12,6 +14,7 @@ interface gradeSliderProps {
 
 export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
   const [grade, setGrade] = useState(props.initialValue);
+  const label= grade < 100 ? `Grade: ${grade}` : `Beast mode!  Grade: ${grade}`
   const maxWidth = 590;
   const MIN = 1;
   const activeSliderWidth = Math.ceil(maxWidth * (props.max-MIN)/(246-MIN));
@@ -19,11 +22,13 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
   return (
     <>
       <Group justify="start">
-        <Text>Choose difficulty. </Text>
+        <Text>Choose difficulty (higher difficulties available with higher scores). </Text>
       </Group>
       <Group maw={maxWidth} justify="space-between" grow gap={0}>
       <Slider
-        label={grade < 100 ? `Grade: ${grade}` : `Beast mode!  Grade: ${grade}`}
+        color="violet"
+        label={label}
+        thumbSize={14}
         value={grade}
         min={MIN}
         max={props.max}
@@ -41,7 +46,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         classNames={classes}
       />
       <Slider
-        label={grade < 100 ? `Grade: ${grade}` : `Beast mode!  Grade: ${grade}`}
+        label={label}
         min={props.max}
         max={246}
         marks={[
@@ -54,6 +59,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         maw={inactiveSliderWidth}
         disabled={true}
         classNames={classes}
+        style={{opacity: 0.6}}
       />
       </Group>
       <Group justify="end" mt="xl">
