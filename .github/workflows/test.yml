@@ -23,18 +23,23 @@ jobs:
 
       - name: Install dependencies
         run: deno install
-      # Needs example solution files.
-      # - name: Test GameDecoder
-      #   working-directory: src/gameCode/gameDecoder
-      #   run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
+
+      - name: Download and unzip solutions cache
+        uses: ./.github/actions/download_solutions_cache
+        with:
+          dir: ./public/
+
+      - name: Test GameDecoder
+        working-directory: src/gameCode/gameDecoder
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
 
       - name: Test Tnetennums Core
         working-directory: src/gameCode/Tnetennums
-        run: deno run --unstable-sloppy-imports --allow-read --allow-env Core.test.mts
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env CoreTest.mts
 
       - name: Test Tnetennums Solver
         working-directory: src/gameCode/Tnetennums
-        run: deno run --unstable-sloppy-imports --allow-read --allow-env Solver.test.mts
+        run: deno run --unstable-sloppy-imports --allow-read --allow-env SolverTest.mts
 
   test_with_npm:
     runs-on: ubuntu-24.04

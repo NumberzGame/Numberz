@@ -1,0 +1,27 @@
+name:
+  Download and unpack solutions cache  
+  
+description:
+  Download and unzip solutions cache, and copy contents to the specified directory.
+
+  
+inputs:
+  dir:
+    required: false
+    default: "./dist/"
+    description: 'The path to put the solutions cache in (mv to).'
+
+
+runs:
+  using: "composite"
+  steps:          
+    - name: Download solutions
+      run: curl -L https://github.com/NumberzGame/Solutions/releases/download/v0.0.0/grades_goals_forms_solutions.tar.xz -o grades_goals_forms_solutions.tar.xz
+      
+    - name: Unzip solutions
+      run: tar xJf grades_goals_forms_solutions.tar.xz
+      
+    - name: Move solutions to dir
+      run: |
+        mkdir -p ${{ inputs.dir }}
+        mv grades_goals_forms_solutions ${{ inputs.dir }}

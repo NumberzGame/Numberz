@@ -69,15 +69,11 @@ jobs:
         run: |
           mkdir -p ./dist/
           mv *.jpg ./dist/
-          
-      - name: Download solutions
-        run: curl -L https://github.com/NumberzGame/Solutions/releases/download/v0.0.0/grades_goals_forms_solutions.tar.xz -o grades_goals_forms_solutions.tar.xz
-        
-      - name: Unzip solutions
-        run: tar xJf grades_goals_forms_solutions.tar.xz
-        
-      - name: Move solutions to dist
-        run: mv grades_goals_forms_solutions ./dist/
+
+      - name: Download and unzip solutions cache
+        uses: ./.github/actions/download_solutions_cache
+        with:
+          dir: ./dist/
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
