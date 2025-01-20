@@ -145,9 +145,9 @@ export class Move {
       // Belt and braces, add a double check in the encoding that 
       // fields are not null.
       // Zero if nullish
-      let retval = ((this.operandIndices[0] ?? -1) + 1) * (MAX_SEEDS+1) * (MAX_SEEDS+1) * 2;
-      // +Zero if nullish.
-      retval +=    ((this.operandIndices[1] ?? -1) + 1) * (MAX_SEEDS+1) * 2;
+      let retval = ((this.operandIndices[0] ?? -1) + 1) * (MAX_SEEDS+1) * (OP_SYMBOLS.length+1) * 2;
+      // +Zero if nullish.#
+      retval +=    ((this.operandIndices[1] ?? -1) + 1) * (OP_SYMBOLS.length+1)* 2;
       // +Zero if nullish.
       // Use 5 pretend ops, instead of 4, and add 1 to encode nullish.
       retval += ((this.opIndex ?? -1) + 1) * 2;
@@ -159,17 +159,20 @@ export class Move {
   static fromCodeUnit(x: number, grade: number | null = null): Move {
 
       const submittedVal = x % 2;
-      const opIndexVal = Math.floor(((x - submittedVal) % (MAX_SEEDS + 1)) / 2);
-      let operandIndex1Val = (x - 2*opIndexVal - submittedVal); 
-      operandIndex1Val = Math.floor(operandIndex1Val /(2*(MAX_SEEDS+1)));
-      const operandIndex0Val = Math.floor(x / (2*(MAX_SEEDS+1)*(MAX_SEEDS+1)));
+      const opIndexPart = x % (2*(OP_SYMBOLS.length + 1)) - submittedVal;
+      const operandIndex1Part = x % (2*(OP_SYMBOLS.length + 1)*(MAX_SEEDS+1))- opIndexPart - submittedVal; 
+      const operandIndex0Part = x - operandIndex1Part - opIndexPart - submittedVal;
 
-      const opIndex = operandIndex0Val === 0 ? null : operandIndex0Val -1;
+      const opIndexVal = Math.floor(opIndexPart / 2) - 1;
+      const operandIndex1Val = Math.floor(operandIndex1Part / ((OP_SYMBOLS.length+1)* 2)) - 1
+      const operandIndex0Val = Math.floor(operandIndex0Part / ((MAX_SEEDS+1) * (OP_SYMBOLS.length+1) * 2)) - 1;
+
+      const opIndex = opIndexVal === -1 ? null : opIndexVal;
       const operandIndices = [];
-      if (operandIndex0Val >= 1) {
-          operandIndices.push(operandIndex0Val - 1);
-          if (operandIndex1Val >= 1) {
-              operandIndices.push(operandIndex1Val - 1);
+      if (operandIndex0Val >= 0) {
+          operandIndices.push(operandIndex0Val);
+          if (operandIndex1Val >= 0) {
+              operandIndices.push(operandIndex1Val);
           }
       }
       const submitted = (submittedVal === 1);
