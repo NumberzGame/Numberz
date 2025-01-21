@@ -3,13 +3,13 @@ import { Button, Group, Slider, Text } from '@mantine/core';
 
 import classes from './RandomGameOfGivenGradePicker.module.css';
 
-const ACTIVE_SLIDER_GRADIENT = { from: 'violet', to: 'red', deg: 90 };
 
 interface gradeSliderProps {
   initialValue: number;
   onChangeEnd: (val: number) => void;
   onClick: () => void;
   max: number;
+  min: number
   highestKnownGrade: number;
 }
 
@@ -17,10 +17,10 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
   const [grade, setGrade] = useState(props.initialValue);
   const label= grade < 100 ? `Grade: ${grade}` : `Beast mode!  Grade: ${grade}`
   const highestKnownGrade = props.highestKnownGrade;
-  const max = Math.max(props.max, highestKnownGrade);
+  const max = Math.min(props.max, highestKnownGrade);
   const maxWidth = 590;
-  const MIN = 1;
-  const activeSliderWidth = Math.ceil(maxWidth * (max-MIN)/(highestKnownGrade-MIN));
+  const min = props.min;
+  const activeSliderWidth = Math.ceil(maxWidth * (max-min)/(highestKnownGrade-min));
   const inactiveSliderWidth = maxWidth - activeSliderWidth;
   const inactiveSliderMarks = inactiveSliderWidth >= 14 ?
       [{ value: highestKnownGrade, label: `${highestKnownGrade}` }] :
@@ -37,7 +37,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         label={label}
         thumbSize={14}
         value={grade}
-        min={MIN}
+        min={min}
         max={max}
         marks={[
           { value: 1, label: '1' },
@@ -52,7 +52,7 @@ export function RandomGameOfGivenGradePicker(props: gradeSliderProps) {
         onChangeEnd={props.onChangeEnd}
         classNames={classes}
       />
-      {max === highestKnownGrade && <Slider
+      {max < highestKnownGrade && <Slider
         label={label}
         min={max}
         max={highestKnownGrade}

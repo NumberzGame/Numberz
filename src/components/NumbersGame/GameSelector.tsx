@@ -264,6 +264,7 @@ export function GameSelector(props: { grade: number }) {
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
             max={maxDifficulty(score)}
             // assumes KNOWN_GRADES is sorted
+            min={KNOWN_GRADES[0]!}
             highestKnownGrade={KNOWN_GRADES.at(-1)!}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
