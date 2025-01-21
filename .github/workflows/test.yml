@@ -22,7 +22,7 @@ jobs:
           deno-version: v2.x
 
       - name: Install dependencies
-        run: deno install
+        run: deno install npm:sub_byte npm:additional_difficulty
 
       - name: Download and unzip solutions cache
         uses: ./.github/actions/download_solutions_cache
