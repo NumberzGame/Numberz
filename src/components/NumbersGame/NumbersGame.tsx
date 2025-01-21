@@ -61,7 +61,7 @@ export function NumbersGame(props: NumbersGameProps) {
       setGameUsingImmerProducerAndStore((draft: Game) => {
         const opIndex = OP_SYMBOLS.indexOf(opSymbol);
 
-        const move = draft.state.latestMove();
+        const move = draft.state.currentMove;
         move.opIndex = opIndex === move.opIndex ? null : opIndex;
       });
     };
@@ -76,7 +76,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
     let colour = 'blue';
 
-    if (game.state.latestMove().opIndex !== null && s === OP_SYMBOLS[game.state.latestMove().opIndex!]) {
+    if (game.state.currentMove.opIndex !== null && s === OP_SYMBOLS[game.state.currentMove.opIndex!]) {
       colour = 'pink';
     } else if (hint && hint !== HINT_UNDO && hint.opSymbol() === s) {
       return (
@@ -100,9 +100,9 @@ export function NumbersGame(props: NumbersGameProps) {
   const makeOperandButtonClickHandler = function (_val: number, operandIndex: number): () => void {
     const operandButtonClickHandler = function () {
       setGameUsingImmerProducerAndStore((draft: Game) => {
-        // const move = draft.state.moves.at(-1)!;
+        // const move = draft.state.submittedMoves.at(-1)!;
         // const operandIndices = move.operandIndices;
-        const operandIndices = draft.state.latestMoveOperandIndices();
+        const operandIndices = draft.state.currentMove.operandIndices;
 
         const len = operandIndices.length;
         if (operandIndices.includes(operandIndex)) {
@@ -119,7 +119,7 @@ export function NumbersGame(props: NumbersGameProps) {
           throw new Error(
             `Move has too many operand indices: ${operandIndices}. ` +
               `Cannot have more than MAX_OPERANDS: ${MAX_OPERANDS}. ` +
-              `Move: ${draft.state.latestMove}`
+              `Move: ${draft.state.currentMove}`
           );
         }
       });
@@ -132,7 +132,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
     let colour = 'blue';
 
-    if (game.state.latestMoveOperandIndices().includes(index)) {
+    if (game.state.currentMove.operandIndices.includes(index)) {
       colour = 'pink';
     } else if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
       return (
@@ -151,7 +151,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
   const submitButtonHandler = function () {
     // Don't submit invalid moves
-    const lastMove = game.state.moves.at(-1)!;
+    const lastMove = game.state.submittedMoves.at(-1)!;
     const result = lastMove.result(game.currentOperandsDisplayOrder());
     if (result === null) {
       return;

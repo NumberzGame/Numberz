@@ -189,14 +189,6 @@ export class GameState {
     submittedMoves: Move[] = [],
     hints: Hints = {},
     ) {
-
-    if (submittedMoves.length === 0) {
-      // To ensure simple destringification,
-      // using a no-op move for padding,
-      // is unambiguous.
-      throw new Error(`submittedMoves cannot be empty.  Got: ${submittedMoves}`);
-    }
-
     this.solved = solved;
     this.submittedMoves = submittedMoves;
     this.hints = hints;
@@ -234,31 +226,16 @@ export class GameState {
   }
 
 
-
-
-  latestMove(): Move {
-    // Unless MAX_MOVES would be exceeded, 
-    // this move should always be unsubmitted.
-    return this.submittedMoves.at(-1)!;
-  }
-
-
-
-
   getHint(): Move | typeof HINT_UNDO | undefined{
       return this._getHint();
   }
 
 
-
-  latestMoveOperandIndices(): number[] {
-    return this.latestMove().operandIndices;
-  }
-
   submitLatestMove(): void {
     
     if (this.submittedMoves.length < MAX_MOVES) {
-      this.submittedMoves.push(new Move());
+      this.submittedMoves.push(this.currentMove);
+      this.currentMove = new Move();
     }
   }
 
@@ -268,7 +245,8 @@ export class GameState {
 
     // Overwrite previous current Move.  Its 
     // operand indices could no longer refer to the
-    // correct operands, after the Undo.
+    // correct operands, after the Undo restores
+    // two new operands.
     this.currentMove = new Move();
   }
 }
@@ -474,7 +452,7 @@ export class Game {
       const op_symbol = move.opSymbol();
 
       const result = move.result(operands);
-      // Submitted valid moves must be at the start of state.moves
+      // Submitted valid moves must be at the start of state.submittedMoves
       if (op_symbol === null || result === null) {
         break;
       }
@@ -549,7 +527,7 @@ export class Game {
       if (easiestSolution === null) {
         // No solution found.
         return HINT_UNDO;
-        // if (game.state.moves.length >= 1) {
+        // if (game.state.submittedMoves.length >= 1) {
         //   Highlight undo button
         // } else {
         // Tell user no solution found.  Prompt to select new game.
