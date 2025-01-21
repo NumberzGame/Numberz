@@ -31,7 +31,14 @@ function investigate_140_1_1_1_1_25_10(): void {
   }
 }
 
-// investigate_140_1_1_1_1_25_10()
+function investigate_0s() {
+
+  const fwd: AllDepthsCacheT = {};
+  const rev: AllDepthsCacheT = {};
+  makeCaches([1,1],[2], 2, fwd, rev);
+  console.log(fwd);
+
+}
 
 function eval_encodable(
   form: SolutionForm,
@@ -135,7 +142,9 @@ function solveAndGradePuzzleFromCommandLine(): void {
 }
 
 if (argv.slice(2).length === 0) {
-  testPUZZLESjson();
+  // investigate_0s();
+  investigate_140_1_1_1_1_25_10();
+  // testPUZZLESjson();
 } else {
   solveAndGradePuzzleFromCommandLine();
 }
