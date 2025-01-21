@@ -151,8 +151,8 @@ export function NumbersGame(props: NumbersGameProps) {
 
   const submitButtonHandler = function () {
     // Don't submit invalid moves
-    const lastMove = game.state.submittedMoves.at(-1)!;
-    const result = lastMove.result(game.currentOperandsDisplayOrder());
+    const currentMove = game.state.currentMove;
+    const result = currentMove.result(game.currentOperandsDisplayOrder());
     if (result === null) {
       return;
     }
