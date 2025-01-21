@@ -61,8 +61,13 @@ export type BINARY_OP = (x: number, y: number) => OP_RESULT;
 const OP_FUNCS: BINARY_OP[] = [
   (x, y) => x + y,
   (x, y) => x * y,
-  (x, y) => (x === y ? null : Math.abs(x - y)),
-  (x, y) => (x % y === 0 ? x / y : y % x === 0 ? y / x : INVALID_ARGS),
+  (x, y) => Math.abs(x - y),
+  (x, y) => (x === 0 ? INVALID_ARGS :
+             y === 0 ? INVALID_ARGS :
+             x % y === 0 ? x / y : 
+             y % x === 0 ? y / x : 
+             INVALID_ARGS
+            ),
 ];
 
 export const OPS = Object.freeze(Object.fromEntries(OP_SYMBOLS.map((op, i) => [op, OP_FUNCS[i]])));
