@@ -1,11 +1,11 @@
 // deno repl --unstable-sloppy-imports --allow-read --allow-env --eval-file=gameDecoder.test.ts
-// deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoder.test.ts
+// deno run --unstable-sloppy-imports --allow-read --allow-env gameDecoderTest.ts
 // \22\224\solutions_224_6_grade_22.dat
 
 import { existsSync, readFileSync } from 'node:fs';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
-import { KNOWN_GRADES } from './Tnetennums/PreBuiltCache';
+// import { KNOWN_GRADES } from './Tnetennums/PreBuiltCache';
 
 const SOLS_DIR = '../../public/grade_goals_forms_solutions';
 
