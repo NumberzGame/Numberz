@@ -82,32 +82,35 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
             for (const gameData of uploadedGameData) {
               const moves: Move[] = [];
               const stateObj = gameData?.state ?? {};
-              for (const moveObj of stateObj?.moves ?? []) {
+              for (const moveObj of stateObj?.submittedMoves ?? []) {
                 const move = new Move(
                   moveObj?.opIndex ?? null,
                   moveObj?.operandIndices ?? [],
-                  moveObj?.submitted ?? false,
                   moveObj?.grade ?? null,
                 );
                 moves.push(move);
               }
+              const currentMoveObj = stateObj?.currentMove ?? {}
+              const currentMove = new Move(
+                currentMoveObj?.opIndex ?? null,
+                currentMoveObj?.operandIndices ?? [],
+                currentMoveObj?.grade ?? null,
+              );
               const hints: Hints = {};
               for (const [key, hintObj] of Object.entries(stateObj?.hints ?? {})) {
                 const hintObjCast = hintObj as {
                   opIndex?: number | null,
                   operandIndices?: number[],
-                  submitted?: boolean,
                   grade?: number | null,
                 }; 
                 const hint = new Move(
                   hintObjCast?.opIndex ?? null,
                   hintObjCast?.operandIndices ?? [],
-                  hintObjCast?.submitted ?? false,
                   hintObjCast?.grade ?? null,
                 );
                 hints[key] = hint;
               }
-              const state = new GameState(stateObj.solved, moves, hints);
+              const state = new GameState(stateObj.solved, moves, hints, currentMove);
               let id: GameID;
               const idData = gameData.id;
               const goal = idData.goal;

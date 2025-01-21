@@ -7,7 +7,7 @@
 import fc from 'fast-check';
 import { expect, test } from 'vitest';
 import { Game, GameState } from './Classes';
-import { UTF16codeUnits, gradedGameIDs, customGameIDs, seedIndex, opIndex, moves, hints } from './Classes.test';
+import { UTF16codeUnits, gradedGameIDs, customGameIDs, seedIndex, opIndex, moves, hints, move } from './Classes.test';
 import {
   MAX_OPS,
   MAX_SEEDS,
@@ -76,7 +76,7 @@ test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGa
 // const hints = [];
 // for (const hint_args of hintsData) {
 //   const [opIndex, operandIndices] = hint_args;
-//   const hint = new Move(opIndex, operandIndices, false);
+//   const hint = new Move(opIndex, operandIndices);
 //   hints.push(hint);
 // }
 
@@ -91,8 +91,35 @@ test('for each Game with a Graded GameID, stringifyGame should roundtrip with de
       fc.array(opIndex, { maxLength: MAX_OPS }),
       moves,
       hints,
-      (gameID, date, solved, seedIndices, opIndices, moves, hints) => {
-        const state = new GameState(solved, moves, hints);
+      move,
+      (gameID, date, solved, seedIndices, opIndices, moves, hints, currentMove) => {
+        const state = new GameState(solved, moves, hints, currentMove);
+
+        const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
+
+        const stringified = stringifyGame(game);
+        const destringifiedGame = destringifyGame(stringified, gameID);
+
+        expect(game).toStrictEqual(destringifiedGame);
+      }
+    )
+  );
+});
+
+test('for each Game with a Custom GameID, stringifyGame should roundtrip with destringifyGame', () => {
+  fc.assert(
+    fc.property(
+      customGameIDs,
+      // A millisecond later than the max, is 2**45 miliseconds since 1970
+      fc.date({ min: new Date(Date.now()), max: new Date('3084-12-12T12:41:28.831Z') }),
+      fc.boolean(),
+      fc.array(seedIndex, { maxLength: MAX_SEEDS }),
+      fc.array(opIndex, { maxLength: MAX_OPS }),
+      moves,
+      hints,
+      move,
+      (gameID, date, solved, seedIndices, opIndices, moves, hints, currentMove) => {
+        const state = new GameState(solved, moves, hints, currentMove);
 
         const game = new Game(gameID, date.getTime(), seedIndices, opIndices, state);
 

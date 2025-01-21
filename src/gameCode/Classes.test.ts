@@ -46,7 +46,7 @@ export const move = fc.tuple(
   fc.array(fc.nat({ max: MAX_SEEDS - 1 }), { maxLength: MAX_OPERANDS }),
   fc.boolean(),
   fc.option(grade),
-).map(([opIndex, operandIndices, submitted, grade]) => new Move(opIndex, operandIndices, submitted));
+).map(([opIndex, operandIndices, submitted, grade]) => new Move(opIndex, operandIndices));
 
 export const moves = fc.array(
   move,
