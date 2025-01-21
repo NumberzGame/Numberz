@@ -89,7 +89,7 @@ function* opsAndLevelsGen(
     const result = op(a, b);
 
     // # Skip division with non-zero remainders, and x-x == 0
-    if (result === INVALID_ARGS || result === null) {
+    if (result === INVALID_ARGS || result === 0 || result === null) {
       continue;
     }
 
