@@ -25,7 +25,7 @@ for (const move_args of moves_data) {
   const opIndex: number = move_args[0] as number;
   const submitted: boolean = move_args[1] as boolean;
   const operandIndices: number[] = move_args[2] as number[];
-  const move = new Move(opIndex, operandIndices, submitted);
+  const move = new Move(opIndex, operandIndices);
   moves.push(move);
 }
 const state = new GameState(solved, moves);

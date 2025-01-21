@@ -76,7 +76,7 @@ test('for each CustomGameID, stringifyGameID should roundtrip with destringifyGa
 // const hints = [];
 // for (const hint_args of hintsData) {
 //   const [opIndex, operandIndices] = hint_args;
-//   const hint = new Move(opIndex, operandIndices, false);
+//   const hint = new Move(opIndex, operandIndices);
 //   hints.push(hint);
 // }
 

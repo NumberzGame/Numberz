@@ -226,7 +226,6 @@ function* getMovesfromCodeUnitIterators(
     ): IterableIterator<Move> {
 
   for (const opIndex of takeNextN(MAX_MOVES)) {
-    const submitted = next() === 1;
     const operandIndices = [];
     for (const operandIndex of takeNextN(MAX_OPERANDS)) {
       if (operandIndex === NO_OPERAND) {
@@ -245,9 +244,9 @@ function* getMovesfromCodeUnitIterators(
     if (opIndex === NO_MOVE) {
       continue;
     } else if (opIndex === NO_OP) {
-      move = new Move(null, operandIndices, submitted);
+      move = new Move(null, operandIndices);
     } else if (opIndex >= 0 && opIndex < OP_SYMBOLS.length) {
-      move = new Move(opIndex, operandIndices, submitted);
+      move = new Move(opIndex, operandIndices);
     } else {
       throw new Error(
         `Unrecognised op index: ${opIndex}. ` +
@@ -452,11 +451,10 @@ export const checkItemsFitAndPadIterable = function* (
 
 
 function* MoveCodeUnits(moves: Move[]): IterableIterator<number> {
-    const movesPadValue = new Move(NO_MOVE, Array(MAX_OPERANDS).fill(NO_OPERAND), false);
+    const movesPadValue = new Move(NO_MOVE, Array(MAX_OPERANDS).fill(NO_OPERAND));
     
     for (const move of checkAndPadIterable(moves, MAX_MOVES, movesPadValue)) {
       yield move.opIndex ?? NO_OP;
-      yield move.submitted ? 1 : 0;
       const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
       for (const operandIndex of operandIndices) {
         if (operandIndex !== NO_OPERAND) {
@@ -479,7 +477,7 @@ export const gameDataCodeUnits = function* (game: Game): IterableIterator<number
   yield* checkItemsFitAndPadIterable(game.opIndices ?? [], MAX_OPS, NO_OP)
 
 
-  yield* MoveCodeUnits(game.state.moves);
+  yield* MoveCodeUnits(game.state.submittedMoves);
 
   const hints = Object.entries(game.state.hints);
   yield hints.length;

@@ -82,11 +82,10 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
             for (const gameData of uploadedGameData) {
               const moves: Move[] = [];
               const stateObj = gameData?.state ?? {};
-              for (const moveObj of stateObj?.moves ?? []) {
+              for (const moveObj of stateObj?.submittedMoves ?? []) {
                 const move = new Move(
                   moveObj?.opIndex ?? null,
                   moveObj?.operandIndices ?? [],
-                  moveObj?.submitted ?? false,
                   moveObj?.grade ?? null,
                 );
                 moves.push(move);
@@ -96,13 +95,11 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                 const hintObjCast = hintObj as {
                   opIndex?: number | null,
                   operandIndices?: number[],
-                  submitted?: boolean,
                   grade?: number | null,
                 }; 
                 const hint = new Move(
                   hintObjCast?.opIndex ?? null,
                   hintObjCast?.operandIndices ?? [],
-                  hintObjCast?.submitted ?? false,
                   hintObjCast?.grade ?? null,
                 );
                 hints[key] = hint;

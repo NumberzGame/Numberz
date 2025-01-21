@@ -91,18 +91,15 @@ export class Move {
   [immerable] = true;
   opIndex: number | null;
   operandIndices: number[];
-  submitted: boolean;
   readonly grade: number | null;
 
   constructor(
     opIndex: number | null = null,
     operandIndices: number[] = [],
-    submitted: boolean = false,
     grade: number | null = null,
     ) {
     this.opIndex = opIndex;
     this.operandIndices = operandIndices;
-    this.submitted = submitted;
     this.grade = grade;
   }
 
@@ -145,27 +142,25 @@ export class Move {
       // Belt and braces, add a double check in the encoding that 
       // fields are not null.
       // Zero if nullish
-      let retval = ((this.operandIndices[0] ?? -1) + 1) * (MAX_SEEDS+1) * (OP_SYMBOLS.length+1) * 2;
+      let retval = ((this.operandIndices[0] ?? -1) + 1) * (MAX_SEEDS+1) * (OP_SYMBOLS.length+1);
       // +Zero if nullish.#
-      retval +=    ((this.operandIndices[1] ?? -1) + 1) * (OP_SYMBOLS.length+1)* 2;
+      retval +=    ((this.operandIndices[1] ?? -1) + 1) * (OP_SYMBOLS.length+1);
       // +Zero if nullish.
       // Use 5 pretend ops, instead of 4, and add 1 to encode nullish.
-      retval += ((this.opIndex ?? -1) + 1) * 2;
-      retval += this.submitted ? 1 : 0;
+      retval += ((this.opIndex ?? -1) + 1);
       return retval
 
   }
 
   static fromCodeUnit(x: number, grade: number | null = null): Move {
 
-      const submittedVal = x % 2;
-      const opIndexPart = x % (2*(OP_SYMBOLS.length + 1)) - submittedVal;
-      const operandIndex1Part = x % (2*(OP_SYMBOLS.length + 1)*(MAX_SEEDS+1))- opIndexPart - submittedVal; 
-      const operandIndex0Part = x - operandIndex1Part - opIndexPart - submittedVal;
+      const opIndexPart = x % (OP_SYMBOLS.length + 1);
+      const operandIndex1Part = x % ((OP_SYMBOLS.length + 1)*(MAX_SEEDS+1))- opIndexPart; 
+      const operandIndex0Part = x - operandIndex1Part - opIndexPart;
 
-      const opIndexVal = Math.floor(opIndexPart / 2) - 1;
-      const operandIndex1Val = Math.floor(operandIndex1Part / ((OP_SYMBOLS.length+1)* 2)) - 1
-      const operandIndex0Val = Math.floor(operandIndex0Part / ((MAX_SEEDS+1) * (OP_SYMBOLS.length+1) * 2)) - 1;
+      const opIndexVal = opIndexPart - 1;
+      const operandIndex1Val = Math.floor(operandIndex1Part / (OP_SYMBOLS.length+1)) - 1
+      const operandIndex0Val = Math.floor(operandIndex0Part / ((MAX_SEEDS+1) * (OP_SYMBOLS.length+1))) - 1;
 
       const opIndex = opIndexVal === -1 ? null : opIndexVal;
       const operandIndices = [];
@@ -175,8 +170,7 @@ export class Move {
               operandIndices.push(operandIndex1Val);
           }
       }
-      const submitted = (submittedVal === 1);
-      const move = new Move(opIndex,operandIndices,submitted,grade);
+      const move = new Move(opIndex,operandIndices,grade);
       return move;
   }
 }
@@ -186,30 +180,29 @@ export type Hints = Record<string,Move | typeof HINT_UNDO>;
 export class GameState {
   [immerable] = true;
   solved: boolean;
-  moves: Move[];
+  submittedMoves: Move[];
   hints: Hints;
+  currentMove: Move;
 
   constructor(
     solved: boolean = false,
-    moves: Move[] = [new Move()],
+    submittedMoves: Move[] = [],
     hints: Hints = {},
     ) {
 
-    if (moves.length === 0) {
+    if (submittedMoves.length === 0) {
       // To ensure simple destringification,
       // using a no-op move for padding,
       // is unambiguous.
-      throw new Error(`moves cannot be empty.  Got: ${moves}`);
+      throw new Error(`submittedMoves cannot be empty.  Got: ${submittedMoves}`);
     }
 
     this.solved = solved;
-    this.moves = moves;
+    this.submittedMoves = submittedMoves;
     this.hints = hints;
+    this.currentMove = new Move();
   }
 
-  submittedMoves(): Move[] {
-    return this.moves.filter((move) => move.submitted);
-  }
 
   static _makeHintKey(moves: Move[]): string {
     return moves.map((move) => String.fromCharCode(move.codeUnit())).join("");
@@ -220,7 +213,7 @@ export class GameState {
       // Using this key means it is possible, if the hint is not taken,
       // for the player to receive a duplicate hint, but have the
       // score deducted by the hint's grade twice.  So be it!
-      const moves = testMoves ?? this.submittedMoves();
+      const moves = testMoves ?? this.submittedMoves;
       return GameState._makeHintKey(moves);
   }
 
@@ -246,7 +239,7 @@ export class GameState {
   latestMove(): Move {
     // Unless MAX_MOVES would be exceeded, 
     // this move should always be unsubmitted.
-    return this.moves.at(-1)!;
+    return this.submittedMoves.at(-1)!;
   }
 
 
@@ -264,27 +257,19 @@ export class GameState {
 
   submitLatestMove(): void {
     
-    const latestMove = this.latestMove();
-
-    latestMove.submitted = true;
-    if (this.submittedMoves().length < MAX_MOVES) {
-      this.moves.push(new Move());
+    if (this.submittedMoves.length < MAX_MOVES) {
+      this.submittedMoves.push(new Move());
     }
   }
 
   undoLastSubmittedMove(): void {
   
-    const moves = this.moves;
-    const i = moves.findLastIndex((move) => move.submitted);
-    if (i >= 0) {
-      // By default a new Move() is unsubmitted, so the last
-      // working unsubmitted Move is bumped down a notch.
-      moves.splice(i, 1);
-      // Overwrite previous working unsubmitted Move.  Its 
-      // operand indices could no longer refer to the
-      // correct operands, after the Undo.
-      moves[moves.length] = new Move();
-    }
+    this.submittedMoves.pop();
+
+    // Overwrite previous current Move.  Its 
+    // operand indices could no longer refer to the
+    // correct operands, after the Undo.
+    this.currentMove = new Move();
   }
 }
 
@@ -479,12 +464,18 @@ export class Game {
     const seedsAndDecoys = this.seedsAndDecoys();
     const operands = this.seedsDisplayOrder.map((i) => seedsAndDecoys[i]);
 
-    for (const move of this.state.moves) {
+    const moves = Array.from(this.state.submittedMoves);
+
+    if (testUnsubmittedMoves) {
+        moves.push(this.state.currentMove);
+    }
+
+    for (const move of moves) {
       const op_symbol = move.opSymbol();
 
       const result = move.result(operands);
       // Submitted valid moves must be at the start of state.moves
-      if (op_symbol === null || result === null || (!move.submitted && !testUnsubmittedMoves)) {
+      if (op_symbol === null || result === null) {
         break;
       }
 
@@ -532,7 +523,7 @@ export class Game {
     if (
       this.opIndices &&
       form !== null &&
-      this.state.submittedMoves().length === 0
+      this.state.submittedMoves.length === 0
     ) {
       const ops = this.opIndices!.map((i) => OP_SYMBOLS[i]);
       // easiestSolution = solutionAsOperand(form, seeds, ops);
@@ -577,7 +568,7 @@ export class Game {
     const index1 = operands.indexOf(operand1);
     const index2 = operands.lastIndexOf(operand2);
     const grade = GRADERS[opSymbol](operand1, operand2);
-    return new Move(opIndex, [index1, index2], false, grade);
+    return new Move(opIndex, [index1, index2], grade);
   }
 
   // mutates game state.  Only call from within an immer producer.
