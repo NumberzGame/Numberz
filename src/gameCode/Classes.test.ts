@@ -12,12 +12,13 @@ import {
   OP_SYMBOLS,
   SEEDS,
 } from './Core';
+import { KNOWN_GRADES } from '../components/NumbersGame/GameSelector'
 
 
 
 export const UTF16codeUnits = fc.array(fc.nat({ max: 32767 }))
 
-export const grade = fc.integer({ min: 1, max: 246 });
+export const grade = fc.integer({ min: 1, max: KNOWN_GRADES.at(-1)! });
 export const goal = fc.integer({ min: GOAL_MIN, max: GOAL_MAX });
 export const form = fc.constantFrom(...FORMS);
 export const opIndex = fc.nat({ max: OP_SYMBOLS.length - 1 });

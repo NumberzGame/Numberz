@@ -10,6 +10,7 @@ import { ColorSchemeToggle } from '../ColorSchemeToggle/ColorSchemeToggle';
 
 interface LayoutProps {
     score: number
+    pointsAvailable: number | null;
     children: ReactElement
 }
 
@@ -19,8 +20,14 @@ export function Layout(props: LayoutProps) {
     return <>
         <Group justify="space-between">
           <Group mt="sm">
-            <Text ml="md">Score: </Text> 
-            <ScoreAndGradeBadge contents={props.score}/> 
+            <Group>
+                <Text ml="md">Total score: </Text> 
+                <ScoreAndGradeBadge contents={props.score}/> 
+            </Group>
+            {props.pointsAvailable !== null && <Group>
+                <Text ml="md">Points available: </Text> 
+                <ScoreAndGradeBadge contents={props.pointsAvailable}/> 
+            </Group>}
           </Group>
           <ColorSchemeToggle/>
         </Group>

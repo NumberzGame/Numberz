@@ -7,7 +7,7 @@ import { useDisclosure } from '@mantine/hooks';
 
 import { CustomGamePicker } from './CustomGamePicker';
 import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
-import { NumbersGame } from './NumbersGame';
+import { NumbersGame, GameCallbacks } from './NumbersGame';
 import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
 import { WinScreen } from './WinScreen';
 import { Layout } from './Layout';
@@ -38,6 +38,12 @@ import { easiestSolution, stringifyForm } from '../../gameCode/Tnetennums/Solver
 
 // Players unlock higher difficulties as their score increases.
 const INITIAL_MAX_DIFFICULTY=14;
+
+export const KNOWN_GRADES=Object.freeze(
+  Object.keys(NUM_SOLS_OF_EACH_GRADE_AND_GOAL)
+        .map((k) => parseInt(k))
+        .sort()
+);
 
 function maxDifficulty(score: number): number {
     return Math.floor(0.6*score + INITIAL_MAX_DIFFICULTY);
@@ -307,6 +313,7 @@ export function GameSelector(props: { grade: number }) {
     loadCurrentGameIDIfStorageAvailable
   );
 
+  // useDisclosure is Mantine's built-in hook for boolean state variables.
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
   const onWin = function (): void {
@@ -340,6 +347,8 @@ export function GameSelector(props: { grade: number }) {
     selectNewGame();
   };
 
+  const gameCallbacks = new GameCallbacks(onWin, storeGame, onQuit);
+
   if (currentGameID === null && 
       loadCurrentGameIDIfStorageAvailable() === null) {
 
@@ -360,7 +369,7 @@ export function GameSelector(props: { grade: number }) {
   if (currentGameID === null) {
     // Check if the null in currentGameID came from the initial/default
     // factory passed to useState, which checked localstorage.
-    return <Layout score={score}>
+    return <Layout score={score} pointsAvailable = {null}>
       <Group justify="center" mt="xs">
         <Stack justify="flex-start">
           <RandomGameOfGivenGradePicker
@@ -368,6 +377,8 @@ export function GameSelector(props: { grade: number }) {
             onChangeEnd={gradeSliderHandler}
             onClick={setCurrentGameIDToPreviouslyUnseenGradedGameID}
             max={maxDifficulty(score)}
+            // assumes KNOWN_GRADES is sorted
+            highestKnownGrade={KNOWN_GRADES.at(-1)!}
           />
           <CustomGamePicker setCurrentGameID={setCurrentGameID} />
           <HistoricalGamePicker
@@ -388,7 +399,10 @@ export function GameSelector(props: { grade: number }) {
   if (game === null && currentGameID.typeCode === GradedGameID.GAME_ID_TYPE_CODE) {
     const gradedGameID = currentGameID as GradedGameID;
     gameComponent = (
-      <NewGradedGame gameID={gradedGameID} onWin={onWin} store={storeGame} onQuit={onQuit} />
+      <NewGradedGame 
+        score = {score}
+        gameID={gradedGameID}
+        callBacks={gameCallbacks} />
     );
   } else {
     if (currentGameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
@@ -441,19 +455,16 @@ export function GameSelector(props: { grade: number }) {
     // write stringifed game to local storage under its (stringified) game ID
     storeGame(game);
 
-    gameComponent = <NumbersGame game={game} onWin={onWin} store={storeGame} onQuit={onQuit} />;
+    gameComponent = <NumbersGame score={score} game={game} callBacks={gameCallbacks} />;
   }
 
-  return <Layout score={score}>
-      {gameComponent}
-  </Layout>
+  return gameComponent;
 }
 
-interface NewGradedGameProps {
+interface NewGradedGameProps{
+  score: number;
   gameID: GradedGameID;
-  onWin: () => void;
-  store: (game: Game) => void;
-  onQuit: () => void;
+  callBacks: GameCallbacks;
 }
 
 function NewGradedGame(props: NewGradedGameProps) {
@@ -509,11 +520,11 @@ function NewGradedGame(props: NewGradedGameProps) {
     data
   );
   const game = randomGameFromGradeGoalFormAndSols(grade!, goal, form, seedsAndOpIndices);
-  props.store(game);
+  props.callBacks.store(game);
 
   return (
     <>
-      <NumbersGame game={game} onWin={props.onWin} store={props.store} onQuit={props.onQuit} />
+      <NumbersGame score={props.score} game={game} callBacks={props.callBacks} />
     </>
   );
 }

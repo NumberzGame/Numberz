@@ -5,11 +5,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
+import {KNOWN_GRADES} from '../components/NumbersGame/GameSelector';
 
 const SOLS_DIR = '../../public/grade_goals_forms_solutions';
 
 const gradesGoalDirsGoalsForms = function* (): IterableIterator<[number, string, number, string]> {
-  // for (let grade = 1; grade <= 246; grade++) {
+  // for (let grade = 1; grade <= KNOWN_GRADES.at(-1)!; grade++) {
   for (let grade = 22; grade <= 22; grade++) {
     const gradeDir = `${SOLS_DIR}/${grade}`;
     if (!existsSync(gradeDir)) {

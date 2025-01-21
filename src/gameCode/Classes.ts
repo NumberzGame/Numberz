@@ -559,21 +559,28 @@ export class Game {
     
   }
 
+  getPoints(): number {
+
+    let gameScore = this.id.grade ?? 0;
+
+    for (const hint of Object.values(this.state.hints)) {
+        if (hint === null || hint === HINT_UNDO) {
+            continue;
+        }
+        gameScore -= 2*(hint.grade ?? 0);
+    }
+    // console.log(`gameScore: ${gameScore}`);
+    return Math.max(1, gameScore);
+  }
+
   getScore(): number {
       // console.log(`getScore called.  Grade: ${this.id.grade}.  Solved: ${this.solved(true)}`);
       if (this.id.grade === null || !this.solved(true)) {
         return 0;
       }
+
+      return this.getPoints();
             
-      let gameScore = this.id.grade;
-      for (const hint of Object.values(this.state.hints)) {
-          if (hint === null || hint === HINT_UNDO) {
-              continue;
-          }
-          gameScore = Math.max(0, gameScore - 2*(hint.grade ?? 0));
-      }
-      // console.log(`gameScore: ${gameScore}`);
-      return gameScore;
   }
 
 }

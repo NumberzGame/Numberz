@@ -6,6 +6,7 @@ import { useImmer } from 'use-immer';
 import { Badge, Button, Group, Stack, Text } from '@mantine/core';
 
 import {ScoreAndGradeBadge} from './ScoreAndGradeBadge';
+import { Layout } from './Layout';
 
 import { Game, HINT_UNDO, } from '../../gameCode/Classes';
 import { MAX_OPERANDS, OP_SYMBOLS } from '../../gameCode/Core';
@@ -35,18 +36,36 @@ export function HintButton(props: HintButtonProps) {
   return <Button onClick={props.handler}>Show hint</Button>;
 }
 
+
+export class GameCallbacks{
+
+  readonly onWin: () => void;
+  readonly store: (game: Game) => void;
+  readonly onQuit: () => void;
+
+  constructor(
+    onWin: () => void,
+    store: (game: Game) => void,
+    onQuit: () => void,
+  ) {
+      this.onWin = onWin;
+      this.store = store;
+      this.onQuit = onQuit;
+  }
+}
+
+
 export interface NumbersGameProps {
+  score: number;
   game: Game;
-  onWin: () => void;
-  store: (game: Game) => void;
-  onQuit: () => void;
+  callBacks: GameCallbacks;
 }
 
 export function NumbersGame(props: NumbersGameProps) {
   const [game, setGameUsingImmerProducer] = useImmer<Game>(props.game);
   const [hintsShown, setHintsShown] = useState(false);
 
-  const store = props.store;
+  const store = props.callBacks.store;
 
   const setGameUsingImmerProducerAndStore = function (producer: (draft: Game) => void) {
     const produceAndStore = function (draft: Game) {
@@ -158,7 +177,7 @@ export function NumbersGame(props: NumbersGameProps) {
     }
 
     if (game.solved(true)) {
-      props.onWin();
+      props.callBacks.onWin();
       // Leave stored game in localstorage alone
       // Player can resume and press submit to see
       // the win screen as many times as they like.
@@ -194,7 +213,7 @@ export function NumbersGame(props: NumbersGameProps) {
   };
 
   return (
-    <>
+    <Layout score = {props.score} pointsAvailable = {game.getPoints()}>
       <Stack h={500} justify="space-between">
         <Stack justify="flex-start" align="center">
           <Group justify="space-between" mt="md" w={400}>
@@ -226,10 +245,10 @@ export function NumbersGame(props: NumbersGameProps) {
         <Stack justify="flex-end">
           <Group justify="center" mt="md">
             <HintButton handler={hintButtonHandler} hintsShown={hintsShown} />
-            <Button onClick={props.onQuit}>⮾</Button>
+            <Button onClick={props.callBacks.onQuit}>⮾</Button>
           </Group>
         </Stack>
       </Stack>
-    </>
+    </Layout>
   );
 }
