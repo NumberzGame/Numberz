@@ -12,10 +12,10 @@ import NUM_SOLS_GRADE_GOAL_FORMS_DATA_STRINGS from '../../data/superMiniIndexStr
 export const KNOWN_GRADES=Object.freeze(
     Object.keys(NUM_SOLS_OF_EACH_GRADE_AND_GOAL)
           .map((k) => parseInt(k))
-          .sort()
+          .sort((a, b) => a-b)
   );
 
-
+console.log(KNOWN_GRADES);
 
 
 function sumValues(obj: Record<string, number>): number {
