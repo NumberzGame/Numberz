@@ -560,7 +560,7 @@ export class Game {
   }
 
   getScore(): number {
-      console.log(`getScore called.  Grade: ${this.id.grade}.  Solved: ${this.solved(true)}`);
+      // console.log(`getScore called.  Grade: ${this.id.grade}.  Solved: ${this.solved(true)}`);
       if (this.id.grade === null || !this.solved(true)) {
         return 0;
       }
@@ -572,7 +572,7 @@ export class Game {
           }
           gameScore = Math.max(0, gameScore - 2*(hint.grade ?? 0));
       }
-      console.log(`gameScore: ${gameScore}`);
+      // console.log(`gameScore: ${gameScore}`);
       return gameScore;
   }
 
