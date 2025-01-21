@@ -12,7 +12,7 @@ import {
   OP_SYMBOLS,
   SEEDS,
 } from './Core';
-import { KNOWN_GRADES } from '../components/NumbersGame/GameSelector'
+import { KNOWN_GRADES } from '../gameCode/Tnetennums/PreBuiltCache';
 
 
 

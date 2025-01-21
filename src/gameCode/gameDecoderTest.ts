@@ -5,7 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { decodeSolsFromGoalFormAndBinaryData } from './gameDecoder';
 import { evalSolution } from './solutionEvaluator';
-import {KNOWN_GRADES} from '../components/NumbersGame/GameSelector';
+import { KNOWN_GRADES } from './Tnetennums/PreBuiltCache';
 
 const SOLS_DIR = '../../public/grade_goals_forms_solutions';
 
