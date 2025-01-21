@@ -90,6 +90,12 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                 );
                 moves.push(move);
               }
+              const currentMoveObj = stateObj?.currentMove ?? {}
+              const currentMove = new Move(
+                currentMoveObj?.opIndex ?? null,
+                currentMoveObj?.operandIndices ?? [],
+                currentMoveObj?.grade ?? null,
+              );
               const hints: Hints = {};
               for (const [key, hintObj] of Object.entries(stateObj?.hints ?? {})) {
                 const hintObjCast = hintObj as {
@@ -104,7 +110,7 @@ export function HistoricalGamePicker(props: historicalGamePickerProps) {
                 );
                 hints[key] = hint;
               }
-              const state = new GameState(stateObj.solved, moves, hints);
+              const state = new GameState(stateObj.solved, moves, hints, currentMove);
               let id: GameID;
               const idData = gameData.id;
               const goal = idData.goal;

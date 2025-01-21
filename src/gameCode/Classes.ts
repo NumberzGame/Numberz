@@ -188,11 +188,12 @@ export class GameState {
     solved: boolean = false,
     submittedMoves: Move[] = [],
     hints: Hints = {},
+    currentMove: Move = new Move(),
     ) {
     this.solved = solved;
     this.submittedMoves = submittedMoves;
     this.hints = hints;
-    this.currentMove = new Move();
+    this.currentMove = currentMove;
   }
 
 
@@ -559,18 +560,19 @@ export class Game {
   }
 
   getScore(): number {
-      if (!this.solved(true)) {
+      console.log(`getScore called.  Grade: ${this.id.grade}.  Solved: ${this.solved(true)}`);
+      if (this.id.grade === null || !this.solved(true)) {
         return 0;
       }
             
-      let gameScore = this.id.grade ?? 0;
-      
+      let gameScore = this.id.grade;
       for (const hint of Object.values(this.state.hints)) {
           if (hint === null || hint === HINT_UNDO) {
               continue;
           }
-          gameScore = Math.max(0, gameScore - (hint.grade ?? 0));
+          gameScore = Math.max(0, gameScore - 2*(hint.grade ?? 0));
       }
+      console.log(`gameScore: ${gameScore}`);
       return gameScore;
   }
 

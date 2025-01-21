@@ -222,10 +222,11 @@ export const destringifyGameID = function (stringified: string): GameID {
 
 function* getMovesfromCodeUnitIterators(
     next: () => number,
-    takeNextN: (N: number) => IterableIterator<number>
+    takeNextN: (N: number) => IterableIterator<number>,
+    numMoves: number = MAX_MOVES,
     ): IterableIterator<Move> {
 
-  for (const opIndex of takeNextN(MAX_MOVES)) {
+  for (const opIndex of takeNextN(numMoves)) {
     const operandIndices = [];
     for (const operandIndex of takeNextN(MAX_OPERANDS)) {
       if (operandIndex === NO_OPERAND) {
@@ -353,7 +354,8 @@ export const destringifyGame = function (s: string, id: GameID): Game {
     }
   }
 
-  const moves = Array.from(getMovesfromCodeUnitIterators(next, takeNextN));
+  const moves = Array.from(getMovesfromCodeUnitIterators(next, takeNextN, MAX_MOVES));
+  const currentMove = getMovesfromCodeUnitIterators(next, takeNextN, 1).next().value;
   const hints: Record<string,Move> = {};
   const numHints = next();
   for (let i=0; i < numHints; i++) {
@@ -398,7 +400,7 @@ export const destringifyGame = function (s: string, id: GameID): Game {
     }
   }
 
-  const state = new GameState(solved, moves, hints);
+  const state = new GameState(solved, moves, hints, currentMove);
   const game = new Game(
     id,
     timeStamp,
@@ -450,18 +452,23 @@ export const checkItemsFitAndPadIterable = function* (
 };
 
 
-function* MoveCodeUnits(moves: Move[]): IterableIterator<number> {
+function* MoveCodeUnits(move: Move): IterableIterator<number> {
+  yield move.opIndex ?? NO_OP;
+  const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
+  for (const operandIndex of operandIndices) {
+      if (operandIndex !== NO_OPERAND) {
+          checkFitsInChunk(operandIndex);
+      }
+      yield operandIndex;
+  }
+}
+
+
+function* MovesCodeUnits(moves: Move[]): IterableIterator<number> {
     const movesPadValue = new Move(NO_MOVE, Array(MAX_OPERANDS).fill(NO_OPERAND));
     
     for (const move of checkAndPadIterable(moves, MAX_MOVES, movesPadValue)) {
-      yield move.opIndex ?? NO_OP;
-      const operandIndices = checkAndPadIterable(move.operandIndices, MAX_OPERANDS, NO_OPERAND);
-      for (const operandIndex of operandIndices) {
-        if (operandIndex !== NO_OPERAND) {
-          checkFitsInChunk(operandIndex);
-        }
-        yield operandIndex;
-      }
+        yield* MoveCodeUnits(move);
     }
 }
 
@@ -477,7 +484,9 @@ export const gameDataCodeUnits = function* (game: Game): IterableIterator<number
   yield* checkItemsFitAndPadIterable(game.opIndices ?? [], MAX_OPS, NO_OP)
 
 
-  yield* MoveCodeUnits(game.state.submittedMoves);
+  yield* MovesCodeUnits(game.state.submittedMoves);
+
+  yield* MoveCodeUnits(game.state.currentMove);
 
   const hints = Object.entries(game.state.hints);
   yield hints.length;
