@@ -15,7 +15,6 @@ export const KNOWN_GRADES=Object.freeze(
           .sort((a, b) => a-b)
   );
 
-console.log(KNOWN_GRADES);
 
 
 function sumValues(obj: Record<string, number>): number {

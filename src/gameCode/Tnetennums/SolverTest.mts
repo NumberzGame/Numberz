@@ -143,8 +143,8 @@ function solveAndGradePuzzleFromCommandLine(): void {
 
 if (argv.slice(2).length === 0) {
   // investigate_0s();
-  investigate_140_1_1_1_1_25_10();
-  // testPUZZLESjson();
+  // investigate_140_1_1_1_1_25_10();
+  testPUZZLESjson();
 } else {
   solveAndGradePuzzleFromCommandLine();
 }
