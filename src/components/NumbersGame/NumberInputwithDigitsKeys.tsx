@@ -105,6 +105,7 @@ export function NumberInputWithDigitsKeys(props: NumberInputWithDigitsKeysProps)
           onKeyDown={(event) => {
             event.key === 'Enter' && close();
           }}
+          wrapperProps={{inputmode:"none"}}
         />
       </Popover.Target>
       <Popover.Dropdown ref={clickOutsideRef}>

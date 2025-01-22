@@ -13,11 +13,10 @@ export function ColourSchemeToggle(props : ColourSchemeToggleProps) {
   const buttonIcon = nextButtonToShow[colorScheme] as keyof typeof statesToSetForButtons;
   const stateToSetToOnClick = statesToSetForButtons[buttonIcon];
 
-  return (
-    <Group gap="xs" justify="right" mt="sm" mr="md">
-      <Button size={props.size} onClick={() => setColorScheme(stateToSetToOnClick as 'dark' | 'light' | 'auto')}>
-        <b>{buttonIcon}</b>
-      </Button>
-    </Group>
-  );
+  return <Button 
+           size={props.size} 
+           onClick={() => setColorScheme(stateToSetToOnClick as 'dark' | 'light' | 'auto')}
+         >
+           <b>{buttonIcon}</b>
+         </Button>
 }

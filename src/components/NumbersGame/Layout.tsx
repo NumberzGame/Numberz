@@ -1,6 +1,6 @@
 
 import { ReactElement } from 'react';
-import { Anchor, Group, Text } from '@mantine/core';
+import { Button, Group, Text } from '@mantine/core';
 
 import {TitleBanner} from './TitleBanner';
 
@@ -31,8 +31,14 @@ export function Layout(props: LayoutProps) {
                 <ScoreAndGradeBadge contents={props.pointsAvailable}/> 
             </Group>}
           </Group>
-          <Group>
-            <Anchor href="https://github.com/NumberzGame/Numberz"><GithubIcon size={size} /></Anchor>
+          <Group gap="xs" justify="right" mr="md" mt="xs">
+            <Button  
+              size = {size}
+              component="a"
+              href="https://github.com/NumberzGame/Numberz"
+            >
+              <GithubIcon size = {12}/>
+            </Button>
             <ColourSchemeToggle size = {size}/>
           </Group>
         </Group>
