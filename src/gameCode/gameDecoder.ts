@@ -60,16 +60,11 @@ export function decodeSolsFromGoalFormAndBinaryData(
   return [seedIndicesAndOpIndices, solSymbols, solStrings];
 }
 
-export function randomGameFromGradeGoalFormAndSols(
-  grade: number,
-  goal: number,
-  form: string,
+export function newGameFromGradeGoalFormAndSols(
+  id: GradedGameID,
   seedIndicesAndOpIndices: [number[], number[]][]
 ): Game {
-  const index = randomPositiveInteger(seedIndicesAndOpIndices.length);
-  const id = new GradedGameID(grade, goal, form, index);
-
-  const [seedIndices, opIndices] = seedIndicesAndOpIndices[index];
+  const [seedIndices, opIndices] = seedIndicesAndOpIndices[id.index];
 
   const state = new GameState();
   const datetime_ms = Date.now();
@@ -77,3 +72,13 @@ export function randomGameFromGradeGoalFormAndSols(
 
   return game;
 }
+
+// export function randomGameFromGradeGoalFormAndSols(
+//   grade: number,
+//   goal: number,
+//   form: string,
+//   seedIndicesAndOpIndices: [number[], number[]][]
+// ): Game {
+//   const index = randomPositiveInteger(seedIndicesAndOpIndices.length);
+//   return newGameFromGradeGoalFormAndSols(grade, goal, form, index, seedIndicesAndOpIndices);
+// }

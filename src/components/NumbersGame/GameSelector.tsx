@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Group, Stack, } from '@mantine/core';
 import { useDisclosure, } from '@mantine/hooks';
 
-
-
 import { CustomGamePicker } from './CustomGamePicker';
 import { HistoricalGamePicker, niceGameSummaryStr } from './HistoricalGamePicker';
 import { NumbersGame, GameCallbacks } from './NumbersGame';
@@ -16,7 +14,7 @@ import { CustomGameID, Game, GameID, GameState, GradedGameID } from '../../gameC
 import { OP_SYMBOLS, randomPositiveInteger, SEEDS } from '../../gameCode/Core';
 import {
   decodeSolsFromGoalFormAndBinaryData,
-  randomGameFromGradeGoalFormAndSols,
+  newGameFromGradeGoalFormAndSols,
 } from '../../gameCode/gameDecoder';
 import {
   destringifyGame,
@@ -88,7 +86,6 @@ const storeGame = function (game: Game) {
 
 const loadStoredGameFromKeyAndID = function (key: string, id: GameID): Game | null {
   const val = getFromLocalStorageIfAvailable(key);
-
   if (val === null) {
     return null;
   }
@@ -114,6 +111,8 @@ const loadCurrentGameIDIfStorageAvailable = function (): GameID | null {
 
   return destringifyGameID(stringifiedID);
 };
+
+const dec = (s: string) => s.split("").map((c)=>c.charCodeAt(0)); 
 
 const saveGameIDIfStorageAvailable = function (id: GameID): void {
   const stringifiedID = stringifyGameID(id);
@@ -203,6 +202,12 @@ export function GameSelector(props: { grade: number }) {
   // useDisclosure is Mantine's built-in hook for boolean state variables.
   const [winScreenOpened, winScreenHandlers] = useDisclosure(false);
 
+  const setAndStoreCurrentGameID = function(id: GameID) {
+      saveGameIDIfStorageAvailable(id);
+      setCurrentGameID(id);
+  }
+
+
   const onWin = function (): void {
     winScreenHandlers.open();
   };
@@ -227,7 +232,7 @@ export function GameSelector(props: { grade: number }) {
 
   const setCurrentGameIDToPreviouslyUnseenGradedGameID = function () {
     const gameID = previouslyUnseenGradedGameID(newGameChosenGrade, newGameChosenGrade);
-    setCurrentGameID(gameID);
+    setAndStoreCurrentGameID(gameID);
   };
 
   const onQuit = function () {
@@ -238,13 +243,11 @@ export function GameSelector(props: { grade: number }) {
 
   if (currentGameID === null && 
       loadCurrentGameIDIfStorageAvailable() === null) {
-
       setCurrentGameIDToPreviouslyUnseenGradedGameID();
       // The previous line called a useState setter, triggering 
       // a re-render, so don't return any components on this render.
       return <></>;
     }
-
   const historicalGames = Object.fromEntries(
     Array.from(getStoredGames())
           .sort((a, b) => b.timestamp_ms - a.timestamp_ms)
@@ -268,10 +271,10 @@ export function GameSelector(props: { grade: number }) {
             min={KNOWN_GRADES[0]!}
             highestKnownGrade={KNOWN_GRADES.at(-1)!}
           />
-          <CustomGamePicker setCurrentGameID={setCurrentGameID} />
+          <CustomGamePicker setCurrentGameID={setAndStoreCurrentGameID} />
           <HistoricalGamePicker
             storeGame={storeGame}
-            setCurrentGameID={setCurrentGameID}
+            setCurrentGameID={setAndStoreCurrentGameID}
             historicalGames={historicalGames}
           />
         </Stack>
@@ -365,6 +368,7 @@ function NewGradedGame(props: NewGradedGameProps) {
   const grade = gameID.grade;
   const goal = gameID.goal; //
   const form = gameID.form!; //
+  const index = gameID.index;
 
   const formStrNoCommas = form.replaceAll(', ', '_');
   const fileName = `solutions_${goal}_${formStrNoCommas}_grade_${grade}.dat`;
@@ -407,8 +411,9 @@ function NewGradedGame(props: NewGradedGameProps) {
     form,
     data
   );
-  const game = randomGameFromGradeGoalFormAndSols(grade!, goal, form, seedsAndOpIndices);
+  const game = newGameFromGradeGoalFormAndSols(gameID, seedsAndOpIndices);
   props.callBacks.store(game);
+  saveGameIDIfStorageAvailable(gameID);
 
   return (
     <>
