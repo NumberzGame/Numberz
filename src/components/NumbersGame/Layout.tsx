@@ -1,11 +1,12 @@
 
 import { ReactElement } from 'react';
-import { Group, Text } from '@mantine/core';
+import { Button, Group, Text } from '@mantine/core';
 
 import {TitleBanner} from './TitleBanner';
 
 import { ScoreAndGradeBadge } from './ScoreAndGradeBadge';
-import { ColorSchemeToggle } from '../ColorSchemeToggle/ColorSchemeToggle';
+import { ColourSchemeToggle } from '../ColourSchemeToggle/ColourSchemeToggle';
+import { GithubIcon } from '@mantinex/dev-icons';
 
 
 interface LayoutProps {
@@ -14,6 +15,7 @@ interface LayoutProps {
     children: ReactElement
 }
 
+const size = "compact-xs";
 
 export function Layout(props: LayoutProps) {
 
@@ -29,7 +31,16 @@ export function Layout(props: LayoutProps) {
                 <ScoreAndGradeBadge contents={props.pointsAvailable}/> 
             </Group>}
           </Group>
-          <ColorSchemeToggle/>
+          <Group gap="xs" justify="right" mr="md" mt="xs">
+            <Button  
+              size = {size}
+              component="a"
+              href="https://github.com/NumberzGame/Numberz"
+            >
+              <GithubIcon size = {12}/>
+            </Button>
+            <ColourSchemeToggle size = {size}/>
+          </Group>
         </Group>
         <TitleBanner/>
         {props.children}
