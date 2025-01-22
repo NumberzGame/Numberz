@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Group, Stack, Title, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Group, Stack, } from '@mantine/core';
+import { useDisclosure, } from '@mantine/hooks';
 
 
 
@@ -61,10 +61,11 @@ function storageAvailable(type: 'localStorage' | 'sessionStorage' = 'localStorag
   }
 }
 
+const LOCAL_STORAGE_AVAILABLE = storageAvailable('localStorage');
+
 let storeInLocalStorageIfAvailable: (k: string, v: string) => void;
 let getFromLocalStorageIfAvailable: (k: string) => string | null;
 let getKeyFromLocalStorageIfAvailable: (index: number) => string | null;
-const LOCAL_STORAGE_AVAILABLE = storageAvailable('localStorage');
 
 if (LOCAL_STORAGE_AVAILABLE) {
   storeInLocalStorageIfAvailable = (k: string, v: string) => localStorage.setItem(k, v);
