@@ -15,7 +15,7 @@ other definitions of difficulty could also be used.
 ### What are those weird strings your app is storing in my browser's local storage?
 It is assumed that only 5MB can be stored in local storage per domain[^0].  
 Those are encodings of all the puzzles you have seen.  These can be decoded, and 
-inspected in a more human readable, by downloading the json file of your game history.
+inspected in a more human readable form, by downloading the json file of your game history.
 
 The data for each puzzle, includes your current calculation, all the hints seen 
 for it (including the game stages they are for).  Each string character
@@ -23,6 +23,36 @@ represents a UTF-16 code unit[^1].  The encoding keeps integers below 15 bits
 (splitting any wider ones into 15 bit chunks).  A 15 bit UTF-16 code unit is 
 never part of a surrogate pair.  High, but not too high 16 bit non-surrogate code units
 are used as flags and padding (which are frequently rendered as tofus).  
+
+### Why would I care about downloading my game history.
+Making profit from user data is the reality of much of the economy of the internet.
+I wanted to see what was still possible, while avoiding that.  Numberz takes quite a 
+"local first" approach.  Firstly, the code runs in your
+browser, and in order to share what it's doing in there with players (without them 
+having to decipher the compiled JS), the Typescript is open source under AGPL-3.
+Secondly, you are in charge
+of your own data.  Including backing it up, storing it in the cloud, and uploading 
+it to transfer your games to a different device or browser. 
+
+These two points greatly reduce the infrastructure cost and maintenance burden 
+to near zero.  Therefore I'm not just taking an idealogical stance, by not 
+running ads, not tracking your activity, and not selling your data.  I simply
+don't need to do so, because it's not costing me anything to host and maintain, 
+(other than development which I enjoy for its own sake. More so in fact, than 
+contributing to any open source project which I do anyway).
+
+I do not need to run a complicated back end server, and keep an eye on it.  In modern
+cloud terms, no compute is needed at all, just a CDN or storage bucket.  It's entirely 
+static web content.  
+
+### What are the weird enormous hard coded constants in the source code?
+Certainly not my finest design decision!  They are indexes into the 
+[solutions cache](https://github.com/NumberzGame/Solutions/releases), to allow 
+a random game to be chosen fairly.
+
+
+### How does your app know the user is not cheating?
+It doesn't.  If that's how you choose to play, then 'cheat' away.  
 
 ### Where are the game puzzles stored?
 They are in static files, alongside the website content, in binary form.  There are
