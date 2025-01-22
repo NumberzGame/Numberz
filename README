@@ -1,0 +1,72 @@
+# Numberz!
+Numbers games, from fun to fiendish.
+
+## Infrequently asked questions.
+
+### How are the puzzles' difficulties calculated?
+The difficulty of each puzzle, is that of its easiest solution.  The difficulty of a puzzle's 
+solution is roughly the number of operations equivalent to "1+1 =2" that it would take a person
+to calculate it using pen and paper arithmetic in base 10, including long division.  See 
+[additional_difficulty](https://github.com/NumberzGame/Additional_difficulty) for 
+the details.  As well as a famous cliche, 1+1=2 is the first operation of Peano 
+arithmetic ("S").  But this measure of difficulty is entirely subjective - many 
+other definitions of difficulty could also be used.
+
+### What are those weird strings your app is storing in my browser's local storage?
+It is assumed that only 5MB can be stored in local storage per domain[^0].  
+Those are encodings of all the puzzles you have seen.  These can be decoded, and 
+inspected in a more human readable, by downloading the json file of your game history.
+
+The data for each puzzle, includes your current calculation, all the hints seen 
+for it (including the game stages they are for).  Each string character
+represents a UTF-16 code unit[^1].  The encoding keeps integers below 15 bits 
+(splitting any wider ones into 15 bit chunks).  A 15 bit UTF-16 code unit is 
+never part of a surrogate pair.  High, but not too high 16 bit non-surrogate code units
+are used as flags and padding (which are frequently rendered as tofus).  
+
+### Where are the game puzzles stored?
+They are in static files, alongside the website content, in binary form.  There are
+tens of millions of them, so instead of making a curl request for each one, it is 
+convenient to download a compressed archive of them 
+all:  https://github.com/NumberzGame/Solutions/releases
+The precise binary encoding uses https://github.com/NumberzGame/sub_byte but 
+starts a new byte for each solution.  4 bits for 
+each of the 14 possible seed values is used, then 2 bits for each op.  The 
+total number of seeds and ops is deduced from the form in the file name (which is 
+also needed to reconstruct the actual calculation, with a left to right insertion
+order).
+
+### How were the puzzles' solutions calculated?
+Brute force in reverse.  It is a great exercise to write a forward brute force 
+solver that simply runs through all the possible solutions (a brute force search).  
+For a single puzzle, the depth is no more than the number of starting numbers, and 
+the branching factor of the solutions space is large, but not in feasible for modern
+machines.  Numberz applies a bit of maths, not just to solve one game, but all of them.  
+And calculate each one's difficulty.  
+
+Internally, the calculations use a commutative extension of subtraction and integer 
+division, that reject zero differences, and numbers that cannot be divided (including 
+zero).  Each possible operation is then
+invertible by applying one of the other operations (addition or itself for subtraction).  
+means we can search backwards from the 900 possible goals, 
+as well as forwards through the ~
+
+There are associative operations (and a mutually pairs, in some sense) within 
++, *, |-| and |/|, but in 
+general the expressions of possible solutions are non-associative.  By making the 
+operations commutative, the possible 
+forms of general solution expressions can be
+enumerated: (2, 3, 4, 5, 6, (2, 2), (3, 2), ((2, 2), 1), (4, 2), (3, 3), ((3, 2), 1), ((2, 2), 2)
+and (((2, 2), 1), 1)).  Extensive cacheing means a slight overhead 
+allows all the possible solutions, for all
+the possible games to be solved (and their difficulties calculated according to 
+some metric) in a few hours on a multi-core machine - see 
+https://github.com/NumberzGame/Tnetennums.  Optimisation is done to keep 
+the storage requirement in the 10-100s of MB, instead of in GB, not so much for speed.
+
+[^0] The code to use IndexedDB is ever so slightly more complicated (requiring async 
+transactions).  Session and local storage are relatively simple ordered key/value 
+stores for strings.
+
+[^1] JS uses UTF-16 internally anyway, and dropping one bit in 16 is significantly more 
+efficient than taking 4 bytes to encode 3 bytes of binary with Base 64.
