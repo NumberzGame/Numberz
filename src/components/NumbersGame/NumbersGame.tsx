@@ -207,7 +207,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
   const hintButtonHandler = function () {
     if (!hintsShown) {
-      setGameUsingImmerProducer((draft) => draft.addHint());
+      setGameUsingImmerProducerAndStore((draft) => draft.addHint());
     }
     setHintsShown(!hintsShown);
   };
