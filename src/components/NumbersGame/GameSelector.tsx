@@ -10,7 +10,7 @@ import { RandomGameOfGivenGradePicker } from './RandomGameOfGivenGradePicker';
 import { WinScreen } from './WinScreen';
 import { Layout } from './Layout';
 
-import { CustomGameID, Game, GameID, GameState, GradedGameID } from '../../gameCode/Classes';
+import { CustomGameID, Game, GameID, GameState, GradedGameID, getRedHerringIndices } from '../../gameCode/Classes';
 import { OP_SYMBOLS, randomPositiveInteger, SEEDS } from '../../gameCode/Core';
 import {
   decodeSolsFromGoalFormAndBinaryData,
@@ -22,6 +22,7 @@ import {
   stringifyGame,
   stringifyGameID,
 } from '../../gameCode/Schema';
+import {makeCounter} from '../../gameCode/Tnetennums/Core';
 import {
   get_op_symbols_from_encodable_sol_expr,
   get_seeds_from_encodable_sol_expr,
@@ -315,6 +316,7 @@ export function GameSelector(props: { grade: number }) {
       let grade: number | null;
       let opIndices: number[] | null;
       let seedIndices: number[];
+      let redHerrings: number[] = [];
 
       if (solution === null) {
         form = null;
@@ -326,14 +328,36 @@ export function GameSelector(props: { grade: number }) {
         grade = solution.grade;
         const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
         opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
-        seedIndices = Array.from(get_seeds_from_encodable_sol_expr(solution.encodable)).map(
-          (seed) => SEEDS.indexOf(seed)
-        );
+        // solution might not have used all seeds in CustomGameID 
+        const seedsCounter = makeCounter(customGameID.seeds());
+        seedIndices = [];
+        for (const seed of get_seeds_from_encodable_sol_expr(solution.encodable)) {
+            if ((seedsCounter[seed] ?? 0) === 0) {
+                throw new Error(
+                  `Solution: ${solution.encodable} requires too `+
+                  `many of seed: ${seed}  from available seeds: ${customGameID.seeds()}`
+                );
+            }
+            seedsCounter[seed] -= 1
+            seedIndices.push(SEEDS.indexOf(seed));
+        }
+        // Preserve any other custom seeds, not used in the easiest solution, as redHerrings
+        for (const [seed, freq] of Object.entries(seedsCounter)) {
+            for (let x = 0; x < freq; x++) {
+                const index = SEEDS.indexOf(parseInt(seed, 10))
+                redHerrings.push(index);
+            }
+        }
       }
+      //Fill rest of redHerrings up to MAX_SEEDS, if less than 6 custom seeds specified.
+      for (const index of getRedHerringIndices(seedIndices.concat(redHerrings))) {
+          redHerrings.push(index);
+      }
+      // avoid triggering a re-render from having to call setter
       const id = new CustomGameID(customGameID.goal, customGameID.seedIndices, grade, form);
       const state = new GameState();
       const datetime_ms = Date.now();
-      game = new Game(id, datetime_ms, seedIndices, opIndices, state);
+      game = new Game(id, datetime_ms, seedIndices, opIndices, state, redHerrings);
     }
     if (game === null) {
       throw new Error(

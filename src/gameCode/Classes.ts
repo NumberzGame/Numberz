@@ -265,7 +265,7 @@ const randomlyOrderedIndices = function (num: number): number[] {
   return retval;
 };
 
-function getRedHerringIndices(seedIndices: number[]): number[] {
+export function getRedHerringIndices(seedIndices: number[]): number[] {
   const unusedSeeds = Array.from(ALL_SEEDS);
   // Can't use Array1.filter((x) => Array2.includes(x)) as that would remove all occurences from
   // ALL_SEEDS (which contains duplicates of small numbers).

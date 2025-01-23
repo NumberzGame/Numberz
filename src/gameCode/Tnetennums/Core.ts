@@ -60,7 +60,7 @@ export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKeyT {
   return a <= b ? [a, b] : [b, a];
 }
 
-function makeCounter(arr: OperandT[]): Counter {
+export function makeCounter(arr: OperandT[]): Counter {
   const obj: Counter = {};
   arr.forEach((x) => {
     const s = x.toString();
