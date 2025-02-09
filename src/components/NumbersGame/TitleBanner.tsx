@@ -10,7 +10,7 @@ export function TitleBanner() {
               component="span"
               gradient={{ from: 'rebeccapurple', to: 'orange' }}
             >
-              Numberz.
+              Numberz
             </Text>
             <Text component="span" size="lg" mb={4.5}>
               A numbers game.
