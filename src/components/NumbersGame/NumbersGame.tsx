@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
-// import { useLocalStorage } from '@mantine/hooks';
-// import { useFetch } from '@mantine/hooks';
 import { useImmer } from 'use-immer';
-import { Badge, Button, Group, Stack, Text } from '@mantine/core';
+
+import { useMediaQuery } from '@mantine/hooks';
+import { Badge, Button, Group, Stack, Text, Space } from '@mantine/core';
 
 import {ScoreAndGradeBadge} from './ScoreAndGradeBadge';
 import { Layout } from './Layout';
@@ -62,6 +62,7 @@ export interface NumbersGameProps {
 }
 
 export function NumbersGame(props: NumbersGameProps) {
+  const isTooSmall = useMediaQuery(`(max-width: 440px)`);
   const [game, setGameUsingImmerProducer] = useImmer<Game>(props.game);
   const [hintsShown, setHintsShown] = useState(false);
 
@@ -214,7 +215,7 @@ export function NumbersGame(props: NumbersGameProps) {
 
   return (
     <Layout score = {props.score} pointsAvailable = {game.getPoints()}>
-      <Stack h={500} align="center" justify="space-between">
+      <Stack align="center">
         <Stack justify="flex-start" align="center">
           <Group justify="space-between" mt="md" w="100%">
             <Group>
@@ -241,7 +242,8 @@ export function NumbersGame(props: NumbersGameProps) {
             </Button>
             {undoButton}
           </Group>
-        </Stack>
+        </Stack>      
+        {!isTooSmall && <Space h="md" />}
         <Group justify="center" mt="md">
           <HintButton handler={hintButtonHandler} hintsShown={hintsShown} />
           <Button onClick={props.callBacks.onQuit}>⮾</Button>
