@@ -101,19 +101,15 @@ export function makeCachesExceptTripleTriples(
   // console.log(`numIterations=${numIterations}`);
 
   function* triple_seeds(triple_operands: [OperandT, OperandT]): IterableIterator<Seed[]> {
-    let [a, b] = triple_operands;
-    if (!(b in forwardCache[2])) {
-      [a, b] = [b, a];
-    }
 
-    // # TODO: If (somehow) neither of (a, b) are a known pair,
-    // # should this return [Sentinel] where Sentinel
-    // # is never in Seeds, to exclude further cache
-    // # entries based on them?
-    for (const pair_seeds of (
-      forwardCache[2]?.[b] ?? new HashTable<OpsCacheKeyT, OpsCacheValT>()
-    ).keys()) {
-      yield [a, ...pair_seeds] as Seed[];
+    const [x, y] = triple_operands;
+
+    for (const [a, b] of [[x, y],  [y, x]])  {
+      for (const pair_seeds of (
+        forwardCache[2]?.[b] ?? new HashTable<OpsCacheKeyT, OpsCacheValT>()
+      ).keys()) {
+        yield [a, ...pair_seeds] as Seed[];
+      }
     }
   }
 
