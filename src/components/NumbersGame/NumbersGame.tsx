@@ -214,9 +214,9 @@ export function NumbersGame(props: NumbersGameProps) {
 
   return (
     <Layout score = {props.score} pointsAvailable = {game.getPoints()}>
-      <Stack h={500} justify="space-between">
+      <Stack h={500} align="center" justify="space-between">
         <Stack justify="flex-start" align="center">
-          <Group justify="space-between" mt="md" w={400}>
+          <Group justify="space-between" mt="md" w="100%">
             <Group>
               <Text> Grade: </Text>
               <ScoreAndGradeBadge contents={game.id.grade ?? 'Impossible!'}/>
@@ -242,12 +242,10 @@ export function NumbersGame(props: NumbersGameProps) {
             {undoButton}
           </Group>
         </Stack>
-        <Stack justify="flex-end">
-          <Group justify="center" mt="md">
-            <HintButton handler={hintButtonHandler} hintsShown={hintsShown} />
-            <Button onClick={props.callBacks.onQuit}>⮾</Button>
-          </Group>
-        </Stack>
+        <Group justify="center" mt="md">
+          <HintButton handler={hintButtonHandler} hintsShown={hintsShown} />
+          <Button onClick={props.callBacks.onQuit}>⮾</Button>
+        </Group>
       </Stack>
     </Layout>
   );
