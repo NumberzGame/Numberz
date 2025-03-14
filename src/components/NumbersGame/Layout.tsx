@@ -1,6 +1,6 @@
 
 import { ReactElement } from 'react';
-import { Button, Group, Text } from '@mantine/core';
+import { Button, Group, Text, SimpleGrid } from '@mantine/core';
 
 import {TitleBanner} from './TitleBanner';
 
@@ -21,7 +21,10 @@ export function Layout(props: LayoutProps) {
 
     return <>
         <Group justify="space-between">
-          <Group mt="sm">
+          <SimpleGrid 
+           mt="sm"
+           cols={{ base: 1, xs: 2}}
+          >
             <Group>
                 <Text ml="md">Total score: </Text> 
                 <ScoreAndGradeBadge contents={props.score}/> 
@@ -30,7 +33,7 @@ export function Layout(props: LayoutProps) {
                 <Text ml="md">Points available: </Text> 
                 <ScoreAndGradeBadge contents={props.pointsAvailable}/> 
             </Group>}
-          </Group>
+          </SimpleGrid>
           <Group gap="xs" justify="right" mr="md" mt="xs">
             <Button  
               size = {size}
