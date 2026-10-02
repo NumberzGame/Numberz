@@ -4,12 +4,13 @@ import { argv } from 'node:process';
 import { INVALID_ARGS, OPS, takeNextN } from '../Core';
 import { makeCaches } from './Cachebuilder';
 import { AllDepthsCacheT, inverseOp, Op, Seed, SolutionForm } from './Core';
-import PUZZLES from './PUZZLES.json' with { type: 'json' };
+// import PUZZLES from './PUZZLES.json' with { type: 'json' };
 import {
   get_op_symbols_from_encodable_sol_expr,
   get_seeds_from_encodable_sol_expr,
 } from './SolutionInfo';
-import { find_solutions } from './Solver';
+import { find_solutions, forward_solutions } from './Solver';
+
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function investigate_140_1_1_1_1_25_10(): void {
@@ -36,8 +37,25 @@ function investigate_0s() {
   const fwd: AllDepthsCacheT = {};
   const rev: AllDepthsCacheT = {};
   makeCaches([1,1],[2], 2, fwd, rev);
-  console.log(fwd);
 
+}
+
+function investigateReverseTripleResolveAfterHint() {
+  const fwd: AllDepthsCacheT = {};
+  const rev: AllDepthsCacheT = {};
+  makeCaches([9,9,7,7,5,4],[860], 6, fwd, rev);
+  // console.log(rev[3][860]);
+  // console.log(fwd);
+  makeCaches([9,9,14,5,4],[860], 5, fwd, rev);
+  // console.log(rev[2][860]);
+  // console.log(fwd);
+  console.log(fwd[2][10]);
+  console.log(fwd[3][86]);
+  console.log(fwd[5][860]);
+  // for (const sol of find_solutions([9,9,14,5,4], 860, 'all', null, fwd, rev)) {
+  for (const sol of forward_solutions([9,9,14,5,4], 860, 5, fwd, 0, false)) {
+    console.log(`sol: ${sol}`);
+  }
 }
 
 function eval_encodable(
@@ -92,8 +110,10 @@ function eval_encodable(
   return result;
 }
 
+const PUZZLES = [[[9, 6, 4, 1], 100]];
+
 function testPUZZLESjson() {
-  for (const [seeds, goal] of PUZZLES.slice(2)) {
+  for (const [seeds, goal] of PUZZLES) {
     console.log(`Testing: ${seeds}, goal: ${goal}`);
     const solutions = Array.from(
       find_solutions(seeds as number[], goal as number, 'all', null, {}, {})
@@ -144,7 +164,8 @@ function solveAndGradePuzzleFromCommandLine(): void {
 if (argv.slice(2).length === 0) {
   // investigate_0s();
   // investigate_140_1_1_1_1_25_10();
-  testPUZZLESjson();
+  investigateReverseTripleResolveAfterHint();
+  // testPUZZLESjson();
 } else {
   solveAndGradePuzzleFromCommandLine();
 }

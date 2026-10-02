@@ -53,6 +53,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
     makeCaches(newCustomGameID.seeds(), [newCustomGameID.goal]);
   }
 
+  // TODO:  dedupe SEEDS ?!!
   const seedButtons = SEEDS.map((seed, seedIndex) => {
     const clickHandler = makeSeedButtonClickHandler(seedIndex);
     const colour = newCustomGameID.seedIndices.includes(seedIndex) ? 'pink' : 'blue';
