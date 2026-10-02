@@ -25,6 +25,7 @@ jobs:
         run: |
           mkdir -p tmp_deno_test_dir/src
           cp -r src/gameCode tmp_deno_test_dir/src
+          cp -r src/data tmp_deno_test_dir/src
 
       - name: Install dependencies
         working-directory: ./tmp_deno_test_dir
