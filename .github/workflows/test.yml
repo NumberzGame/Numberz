@@ -23,8 +23,8 @@ jobs:
 
       - name: Make test dir
         run: |
-          mkdir tmp_deno_test_dir
-          cp -r src/gameCode tmp_deno_test_dir
+          mkdir -p tmp_deno_test_dir/src
+          cp -r src/gameCode tmp_deno_test_dir/src
 
       - name: Install dependencies
         working-directory: ./tmp_deno_test_dir
