@@ -21,10 +21,6 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Look for deno.lock
-        run: |
-          ls deno.lock
-
       - name: Install dependencies
         run: deno install --reload npm:sub_byte npm:additional_difficulty
 
