@@ -1,4 +1,4 @@
-// deno run --unstable-sloppy-imports Solver.test.mts
+// deno run --unstable-sloppy-imports SolverTest.mts
 
 import { argv } from 'node:process';
 import { INVALID_ARGS, OPS, takeNextN } from '../Core';
@@ -125,11 +125,11 @@ function testPUZZLESjson() {
 
 function solveAndGradePuzzleFromCommandLine(): void {
   // Use with:
-  // deno run --unstable-sloppy-imports Solver.test.mts 10 1 2 3 4
-  // deno run --unstable-sloppy-imports Solver.test.mts 140 1 1 1 1 10 25
-  // deno run --unstable-sloppy-imports Solver.test.mts 958 75 100 25 4 8 4
-  // deno run --unstable-sloppy-imports Solver.test.mts 110 10 6 1 5 2
-  // deno run --unstable-sloppy-imports Solver.test.mts  386 50 100 75 6 1 3
+  // deno run --unstable-sloppy-imports SolverTest.mts 10 1 2 3 4
+  // deno run --unstable-sloppy-imports SolverTest.mts 140 1 1 1 1 10 25
+  // deno run --unstable-sloppy-imports SolverTest.mts 958 75 100 25 4 8 4
+  // deno run --unstable-sloppy-imports SolverTest.mts 110 10 6 1 5 2
+  // deno run --unstable-sloppy-imports SolverTest.mts  386 50 100 75 6 1 3
   const [goal, ...seeds] = argv.slice(2).map((s) => parseInt(s, 10));
 
   makeCaches(seeds, [goal], seeds.length);
