@@ -1,8 +1,8 @@
 # Note:  This workflow is currently set up  
 # (along with base: "/", in vite.config.mjs)
-# to be run from a Github pages organisation or user repo 
-# (https://github.com/<organization_or_user>/<organization_or_user>.github.io), 
-# not a project one (https://<organization>.github.io/<REPO>/)
+# to be run from the Github pages organisation or user repo 
+# (https://github.com/NumberzGame/NumberzGame.github.io), 
+# not a project one (https://NumberzGame.github.io/Numberz/)
 # such as the one that is this file's primary residence. 
 # https://vite.dev/guide/static-deploy.html#github-pages
 # https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#types-of-github-pages-sites
@@ -34,9 +34,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
 
-      # To allow possibly including other content on this home 
+      # When running from /NumberzGame/NumberzGame.github.io
+      # to allow possibly including other content on this home 
       # page in future as well, we pull in Numberz
-      # from its sister repo home, into this mostly empty repo.   
+      # from NumberzGame/Numberz just as if it were an external repo.   
       - name: Checkout
         uses: actions/checkout@v4
         with:

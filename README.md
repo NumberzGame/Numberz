@@ -1,6 +1,9 @@
 # Numberz!
 Numbers games, from fun to fiendish.
 
+
+![Tests](https://github.com/NumberzGame/Numberz/actions/workflows/test.yml/badge.svg)
+
 ## Infrequently asked questions.
 
 ### How are the puzzles' difficulties calculated?
