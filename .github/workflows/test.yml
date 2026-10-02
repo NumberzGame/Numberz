@@ -27,8 +27,7 @@ jobs:
           cp -r src/gameCode tmp_deno_test_dir
 
       - name: Install dependencies
-        with:
-          dir: ./tmp_deno_test_dir
+        working-directory: ./tmp_deno_test_dir
         run: deno add --reload npm:sub_byte npm:additional_difficulty
         # run: deno install --reload npm:sub_byte npm:additional_difficulty
 
