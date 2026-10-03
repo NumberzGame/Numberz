@@ -250,6 +250,7 @@ export class GameState {
     // two new operands.
     this.currentMove = new Move();
   }
+
 }
 
 const randomlyOrderedIndices = function (num: number): number[] {

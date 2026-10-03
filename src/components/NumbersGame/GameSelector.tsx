@@ -319,6 +319,7 @@ export function GameSelector(props: { grade: number }) {
       let redHerrings: number[] = [];
 
       if (solution === null) {
+        // Solution not found.  Proceed regardless.
         form = null;
         grade = null;
         opIndices = null;
@@ -339,6 +340,8 @@ export function GameSelector(props: { grade: number }) {
                 );
             }
             seedsCounter[seed] -= 1
+
+            // TODO:   Fix duplication of indices, e.g. if seeds = 1 1 10 25 50 75
             seedIndices.push(SEEDS.indexOf(seed));
         }
         // Preserve any other custom seeds, not used in the easiest solution, as redHerrings

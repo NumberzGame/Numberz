@@ -34,6 +34,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
           !allOfThisSeedUsed(seedIndex, draft.seedIndices) &&
           draft.seedIndices.length < MAX_SEEDS
         ) {
+          // TODO:  Don't repeat a seedIndex if two seeds have the same value
           draft.seedIndices.push(seedIndex);
         } else if (draft.seedIndices.includes(seedIndex)) {
           // Delete seedIndex from draft.seedIndices
@@ -53,6 +54,7 @@ export function CustomGamePicker(props: CustomGamePickerProps) {
     makeCaches(newCustomGameID.seeds(), [newCustomGameID.goal]);
   }
 
+  // TODO:  dedupe SEEDS ?!!
   const seedButtons = SEEDS.map((seed, seedIndex) => {
     const clickHandler = makeSeedButtonClickHandler(seedIndex);
     const colour = newCustomGameID.seedIndices.includes(seedIndex) ? 'pink' : 'blue';
