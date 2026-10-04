@@ -298,69 +298,7 @@ export function GameSelector(props: { grade: number }) {
     );
   } else {
     if (currentGameID.typeCode === CustomGameID.GAME_ID_TYPE_CODE) {
-      const customGameID = currentGameID as CustomGameID;
-      const solution = easiestSolution(
-        customGameID.seeds(),
-        customGameID.goal,
-        // Keeping the cache from previous custom games, slows
-        // down solving future games unnecessarily,
-        // as all possible operands in the caches are checked.
-        // So we provide new empty forward and reverse caches
-        // for each call:
-        {},
-        {}
-      );
-
-
-      let form: string | null;
-      let grade: number | null;
-      let opIndices: number[] | null;
-      let seedIndices: number[];
-      let redHerrings: number[] = [];
-
-      if (solution === null) {
-        // Solution not found.  Proceed regardless.
-        form = null;
-        grade = null;
-        opIndices = null;
-        seedIndices = customGameID.seedIndices;
-      } else {
-        form = stringifyForm(solution.form);
-        grade = solution.grade;
-        const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
-        opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
-        // solution might not have used all seeds in CustomGameID 
-        const seedsCounter = makeCounter(customGameID.seeds());
-        seedIndices = [];
-        for (const seed of get_seeds_from_encodable_sol_expr(solution.encodable)) {
-            if ((seedsCounter[seed] ?? 0) === 0) {
-                throw new Error(
-                  `Solution: ${solution.encodable} requires too `+
-                  `many of seed: ${seed}  from available seeds: ${customGameID.seeds()}`
-                );
-            }
-            seedsCounter[seed] -= 1
-
-            // TODO:   Fix duplication of indices, e.g. if seeds = 1 1 10 25 50 75
-            seedIndices.push(SEEDS.indexOf(seed));
-        }
-        // Preserve any other custom seeds, not used in the easiest solution, as redHerrings
-        for (const [seed, freq] of Object.entries(seedsCounter)) {
-            for (let x = 0; x < freq; x++) {
-                const index = SEEDS.indexOf(parseInt(seed, 10))
-                redHerrings.push(index);
-            }
-        }
-      }
-      //Fill rest of redHerrings up to MAX_SEEDS, if less than 6 custom seeds specified.
-      for (const index of getRedHerringIndices(seedIndices.concat(redHerrings))) {
-          redHerrings.push(index);
-      }
-      // avoid triggering a re-render from having to call setter
-      const id = new CustomGameID(customGameID.goal, customGameID.seedIndices, grade, form);
-      const state = new GameState();
-      const datetime_ms = Date.now();
-      game = new Game(id, datetime_ms, seedIndices, opIndices, state, redHerrings);
+      const game = Game.fromCustomGameID(currentGameID as CustomGameID);
     }
     if (game === null) {
       throw new Error(
