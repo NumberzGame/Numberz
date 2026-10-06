@@ -180,7 +180,8 @@ export class Move {
   }
 }
 
-export type Hints = Record<string,Move | typeof HINT_UNDO>;
+export type Hint = Move | typeof HINT_UNDO;
+export type Hints = Record<string, Hint>;
 
 export class GameState {
   [immerable] = true;
@@ -215,11 +216,11 @@ export class GameState {
       return GameState._makeHintKey(moves);
   }
 
-  _getHint(): Move | typeof HINT_UNDO {
+  _getHint(): Hint {
       return this.hints[this._hintKey()];
   }
 
-  setHint(hint: Move | typeof HINT_UNDO): void {
+  setHint(hint: Hint): void {
       this.hints[this._hintKey()] = hint;
   }
 
@@ -232,7 +233,7 @@ export class GameState {
   }
 
 
-  getHint(): Move | typeof HINT_UNDO | undefined{
+  getHint(): Hint | undefined{
       return this._getHint();
   }
 
@@ -564,7 +565,7 @@ export class Game {
     return operands.includes(this.id.goal);
   }
 
-  _newHint(): Move | typeof HINT_UNDO {
+  _newHint(): Hint {
     let easiestSolution = null;
     let easiestGrade = Infinity;
     const operands = this.currentOperandsDisplayOrder();
@@ -628,11 +629,13 @@ export class Game {
   }
 
   // mutates game state.  Only call from within an immer producer.
-  addHint(): void {
+  addHint(): Hint {
     if (this.state.hintAvailable()) {
-        return;
+        return this.state.getHint() as Hint;
     }
-    this.state.setHint(this._newHint());
+    const hint = this._newHint();
+    this.state.setHint(hint);
+    return hint;
     
   }
 
