@@ -11,6 +11,7 @@ import {
 } from './SolutionInfo';
 import { find_solutions } from './Solver';
 
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function investigate_140_1_1_1_1_25_10(): void {
   const seeds = [25, 10, 1, 1, 1, 1];
@@ -93,7 +94,7 @@ function eval_encodable(
 }
 
 function testPUZZLESjson() {
-  for (const [seeds, goal] of PUZZLES.slice(2)) {
+  for (const [seeds, goal] of PUZZLES) {
     console.log(`Testing: ${seeds}, goal: ${goal}`);
     const solutions = Array.from(
       find_solutions(seeds as number[], goal as number, 'all', null, {}, {})
