@@ -2,6 +2,7 @@ import { ALL_SEEDS, HashTable } from '../Core';
 import {
   AllDepthsCacheT,
   combinations,
+  combinationsWithReplacement,
   default_max_num,
   enoughSeeds,
   GOALS,
@@ -182,10 +183,14 @@ export function makeCachesExceptTripleTriples(
         }
       }
 
-      for (const [pairItemA, pairItemB] of combinations(2, Object.entries(forwardCache[2]))) {
+      for (const [pairItemA, pairItemB] of combinationsWithReplacement(2, Object.entries(forwardCache[2]))) {
         const [pairA, pairAMap] = pairItemA;
         const [pairB, pairBMap] = pairItemB;
 
+        // TODO:  Never get pairA===pairB ( e.g.=== 0)
+        // if (pairA === "10") { // && pairB === 10) {
+        // console.log(`A: ${pairA} B: ${pairB}, ${pairAMap}, ${pairBMap}`);
+        // }
         if (
           pairAMap
             .keys()

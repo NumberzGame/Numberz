@@ -375,6 +375,9 @@ export function* find_solutions(
     makeCaches(nums, [goal], max_num_seeds, forward_cache, reverse_cache);
   }
 
+  // console.log(forward_cache);
+  // console.log(reverse_cache);
+
   let solutions = forward_and_reverse_solutions(
     nums,
     goal,

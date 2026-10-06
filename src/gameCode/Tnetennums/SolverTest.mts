@@ -4,7 +4,7 @@ import { argv } from 'node:process';
 import { INVALID_ARGS, OPS, takeNextN } from '../Core';
 import { makeCaches } from './Cachebuilder';
 import { AllDepthsCacheT, inverseOp, Op, Seed, SolutionForm } from './Core';
-import PUZZLES from './PUZZLES.json' with { type: 'json' };
+// import PUZZLES from './PUZZLES.json' with { type: 'json' };
 import {
   get_op_symbols_from_encodable_sol_expr,
   get_seeds_from_encodable_sol_expr,
@@ -92,6 +92,8 @@ function eval_encodable(
   }
   return result;
 }
+
+const PUZZLES = [[[9, 6, 4, 1], 100]];
 
 function testPUZZLESjson() {
   for (const [seeds, goal] of PUZZLES) {

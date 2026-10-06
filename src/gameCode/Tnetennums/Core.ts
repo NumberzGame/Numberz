@@ -179,6 +179,33 @@ export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {
   }
 }
 
+export function* combinationsWithReplacement<T>(n: number, arr: T[]): IterableIterator<T[]> {
+
+  if (n === 1) {
+    for (const x of arr) {
+      yield [x];
+    }
+    return;
+  }
+
+  if (arr.length === 1) {
+    // Copies of reference
+    yield Array(n).fill(arr[0]);
+    return;
+  }
+
+  const [first, ...rest] = arr;
+
+  // Combinations containing first
+  for (const combo of combinationsWithReplacement<T>(n-1, rest)) {
+    yield [first, ...combo];
+  }
+
+  // Combinations excluding first
+  yield* combinationsWithReplacement<T>(n, rest);
+
+}
+
 export function* permutations<T>(n: number, arr: T[]): IterableIterator<T[]> {
   if (n > arr.length) {
     throw new Error(`Not enough items in: ${arr} for permutations of length: ${n}.`);

@@ -444,6 +444,7 @@ export class Game {
             {},
             {}
           );
+          console.log(`sol: ${solution}`);
     
     
           let form: string | null;
