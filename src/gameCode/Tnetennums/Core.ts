@@ -197,7 +197,7 @@ export function* combinationsWithReplacement<T>(n: number, arr: T[]): IterableIt
   const [first, ...rest] = arr;
 
   // Combinations containing first
-  for (const combo of combinationsWithReplacement<T>(n-1, rest)) {
+  for (const combo of combinationsWithReplacement<T>(n-1, arr)) {
     yield [first, ...combo];
   }
 

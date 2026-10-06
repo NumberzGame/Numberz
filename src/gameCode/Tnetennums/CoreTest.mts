@@ -1,6 +1,6 @@
 // deno run --unstable-sloppy-imports Core.test.mts
 
-import { combinations, permutations } from './Core';
+import { combinations, combinationsWithReplacement, permutations } from './Core';
 
 // console.log(Array.from(combinations(2,[0,1])));
 // console.log(Array.from(combinations(1,[0,1])));
@@ -92,6 +92,19 @@ const expectedCombs = [
   [3, 4, 6, 7],
   [3, 5, 6, 7],
   [4, 5, 6, 7],
+];
+const actualCombsWithReplacement = Array.from(combinationsWithReplacement(2, [0, 1, 2, 3]));
+const expectedCombsWithReplacement = [
+  [0,0],
+  [0,1],
+  [0,2],
+  [0,3],
+  [1,1],
+  [1,2],
+  [1,3],
+  [2,2],
+  [2,3],
+  [3,3],
 ];
 const actualPerms = Array.from(permutations(4, [0, 1, 2, 3, 4, 5, 6, 7]));
 const expectedPerms = [
@@ -1781,6 +1794,7 @@ const expectedPerms = [
 
 for (const [actual, expected] of [
   [actualCombs, expectedCombs],
+  [actualCombsWithReplacement, expectedCombsWithReplacement],
   [actualPerms, expectedPerms],
 ]) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
