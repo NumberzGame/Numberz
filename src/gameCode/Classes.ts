@@ -664,3 +664,9 @@ export class Game {
   }
 
 }
+
+export function customGamefromGoalAndSeeds(goal: number, seeds: number[]): Game {
+  const seedIndices = seeds.map((seed) => SEEDS.indexOf(seed));
+  const customGameID = new CustomGameID(goal, seedIndices);
+  return Game.fromCustomGameID(customGameID);
+}
