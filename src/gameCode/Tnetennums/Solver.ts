@@ -358,7 +358,11 @@ function* forward_and_reverse_solutions(
     // # caches[5] contains (triple op pair)s
   }
 
-  yield* reverse_solutions(seeds, goal, forward_cache, reverse_cache, max_num_seeds);
+  const revSols = Array.from(reverse_solutions(seeds, goal, forward_cache, reverse_cache, max_num_seeds));
+  console.log(`Rev sols: ${revSols}`);
+  console.log(reverse_cache["3"]["860"].get([10,86]));
+  console.log(reverse_cache["2"]["10"]);
+  yield* revSols;
 }
 
 export function* find_solutions(

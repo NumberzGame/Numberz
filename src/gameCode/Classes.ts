@@ -22,7 +22,7 @@ import { solutionExpr } from './solutionEvaluator';
 import { EXPR_PATTERN } from './solverDFS';
 import { makeCaches } from './Tnetennums/Cachebuilder';
 import { find_solutions, easiestSolution, stringifyForm  } from './Tnetennums/Solver';
-import {makeCounter} from './Tnetennums/Core';
+import {makeCounter, resultsAndGradesCaches} from './Tnetennums/Core';
 import {
   get_op_symbols_from_encodable_sol_expr,
   get_seeds_from_encodable_sol_expr,
@@ -577,6 +577,9 @@ export class Game {
 
     makeCaches(operands, [goal]);
 
+    // console.log(`Rev cache[3][860]["[10*86]"]: ${resultsAndGradesCaches.reverse["3"]["860"].get([10,86])}`); 
+    // console.log(`Rev cache[2][860]: ${resultsAndGradesCaches.reverse["2"]["860"]}`); 
+
     if (
       this.opIndices &&
       form !== null &&
@@ -592,6 +595,7 @@ export class Game {
       // for (const solution of solutions(goal, operands)) {
       // console.log('Calculating solutions expr from game');
       for (const solution of find_solutions(operands, goal, 'all')) {
+        console.log(`sol: {solution}`);
         // const grade = calcGrade(solution);
         const grade = solution.grade;
         // We could break here on finding the first valid solution,
