@@ -37,8 +37,19 @@ function investigate_0s() {
   const fwd: AllDepthsCacheT = {};
   const rev: AllDepthsCacheT = {};
   makeCaches([1,1],[2], 2, fwd, rev);
-  console.log(fwd);
 
+}
+
+function investigateReverseTripleResolveAfterHint() {
+  const fwd: AllDepthsCacheT = {};
+  const rev: AllDepthsCacheT = {};
+  makeCaches([9,9,7,7,5,4],[860], 6, fwd, rev);
+  console.log(rev[3][860]);
+  // console.log(fwd);
+  makeCaches([9,9,14,5,4],[860], 5, fwd, rev);
+  console.log(rev[2][860]);
+  // console.log(fwd);
+  console.log(fwd[2][10]);
 }
 
 function eval_encodable(
@@ -147,7 +158,8 @@ function solveAndGradePuzzleFromCommandLine(): void {
 if (argv.slice(2).length === 0) {
   // investigate_0s();
   // investigate_140_1_1_1_1_25_10();
-  testPUZZLESjson();
+  investigateReverseTripleResolveAfterHint();
+  // testPUZZLESjson();
 } else {
   solveAndGradePuzzleFromCommandLine();
 }
