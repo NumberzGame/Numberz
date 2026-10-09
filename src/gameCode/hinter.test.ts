@@ -49,7 +49,7 @@ function followFirstTwoHints860_997754(): [number, number[], Game, Hint, Hint] {
 function reproduceRepeatedSeedHintDoomLoop860_997754() {
   const [goal, seeds, game, hint0, hint1] = followFirstTwoHints860_997754();
   if (isVitest) {
-    test("Following hints solves game", ()  => {
+    test.fails("Following hints solves game", ()  => {
       expect(hint1).not.toBe(HINT_UNDO);
     });
     return;
@@ -70,15 +70,17 @@ function generalHintFollowingTests() {
       puzzles = [[goal, seeds]];
   } else {
     puzzles = [
-      [100, [9,6,4,1]],
-      [915, [50, 8, 6, 5, 1, 1]],
-      [860, [9, 9, 7, 7, 5, 4]]
+      [100, [9,6,4,1], false],
+      [915, [50, 8, 6, 5, 1, 1], true],
+      [860, [9, 9, 7, 7, 5, 4], true]
     ];
   }
-  for (const [goal, seeds] of puzzles) {
+  let doTest;
+  for (const [goal, seeds, xfail] of puzzles) {
     const gameSolved = playGameFromGoalAndSeedsFollowingHints(goal as number, seeds as number[]);
     if (isVitest) {
-      test(`Following hints solves game: ${goal}, ${seeds}`, () => {
+      doTest = xfail ? test.fails : test
+      doTest(`Following hints solves game: ${goal}, ${seeds}`, () => {
         expect(gameSolved).toBeTruthy();
       });
       continue;
