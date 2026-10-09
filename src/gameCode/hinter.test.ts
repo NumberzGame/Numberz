@@ -93,5 +93,5 @@ function generalHintFollowingTests() {
 }
 
 reproduceRepeatedSeedHintDoomLoop860_997754();
-// generalHintFollowingTests();
+generalHintFollowingTests();
 // export const [goal, seeds, game, hint0, hint1] = followFirstTwoHints860_997754();
