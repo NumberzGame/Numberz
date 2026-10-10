@@ -1,6 +1,11 @@
 // deno run --unstable-sloppy-imports Core.test.mts
 
-import { combinations, combinationsWithReplacement, permutations } from './Core';
+import { 
+  combinations,
+  combinationsWithReplacement,
+  permutations,
+  nPartitions,
+} from './Core';
 
 // console.log(Array.from(combinations(2,[0,1])));
 // console.log(Array.from(combinations(1,[0,1])));
@@ -1797,6 +1802,26 @@ for (const [actual, expected] of [
   [actualCombsWithReplacement, expectedCombsWithReplacement],
   [actualPerms, expectedPerms],
 ]) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`Actual: ${actual} !== Expected: ${expected}`);
+  }
+}
+
+
+const testPartitions = [
+  [Array.from(nPartitions(2, [1,2,3])), [
+    [[1,2], [3]],
+    [[1,3], [2]],
+    [[2,3], [1]],
+  ]] , 
+  [Array.from(nPartitions(2, [1,2,2])), [
+    [[1,2], [2]],
+    [[2,2], [1]],
+  ]] , 
+
+]
+
+for (const [actual, expected] of testPartitions) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`Actual: ${actual} !== Expected: ${expected}`);
   }

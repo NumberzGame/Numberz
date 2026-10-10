@@ -258,6 +258,7 @@ export function makeCachesExceptTripleTriples(
           }
         }
       }
+      console.log("Pairs from goalsReverseGen");
       for (const goal of goals) {
         for (const pair of Object.keys(forwardCache[2])) {
           yield [2, goal, parseInt(pair, 10)];

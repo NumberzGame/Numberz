@@ -44,12 +44,13 @@ function investigateReverseTripleResolveAfterHint() {
   const fwd: AllDepthsCacheT = {};
   const rev: AllDepthsCacheT = {};
   makeCaches([9,9,7,7,5,4],[860], 6, fwd, rev);
-  console.log(rev[3][860]);
+  // console.log(rev[3][860]);
   // console.log(fwd);
   makeCaches([9,9,14,5,4],[860], 5, fwd, rev);
-  console.log(rev[2][860]);
+  // console.log(rev[2][860]);
   // console.log(fwd);
   console.log(fwd[2][10]);
+  console.log(fwd[3][86]);
 }
 
 function eval_encodable(

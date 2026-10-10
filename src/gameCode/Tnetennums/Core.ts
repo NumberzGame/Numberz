@@ -227,3 +227,21 @@ export function* permutations<T>(n: number, arr: T[]): IterableIterator<T[]> {
     }
   }
 }
+
+export function* nPartitions<T>(n: number, arr: T[]): IterableIterator<[T[], T[]]> {
+  for (const some of combinations(n, arr)) {
+    const rest = Array.from(arr);
+    for (const x of some) {
+      const index = rest.indexOf(x);
+      if (index !== -1) {
+        rest.splice(index, 1);
+      }
+    }
+    yield [some, rest]
+  }
+}
+
+// Constrain T to number[] | String[], to avoid intermixing keys of plain object {}, so
+// order is preserved
+function* nPartitionsDeDuped<T extends number[] | String[]>(n: number, arr: T): IterableIterator<[T, T]> {
+}

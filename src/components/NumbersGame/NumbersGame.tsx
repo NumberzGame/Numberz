@@ -153,8 +153,10 @@ export function NumbersGame(props: NumbersGameProps) {
     let colour = 'blue';
 
     if (game.state.currentMove.operandIndices.includes(index)) {
+      // Already selected
       colour = 'pink';
     } else if (hint && hint !== HINT_UNDO && hint.operandIndices.includes(index)) {
+      // Suggested by current non-undo hint
       return (
         <Button variant="gradient" gradient={GOAL_GRADIENT} onClick={clickHandler} key={nanoid()}>
           {val}
@@ -162,6 +164,7 @@ export function NumbersGame(props: NumbersGameProps) {
       );
     }
 
+    // Normal operand/seed button (both unselected and unsuggested)
     return (
       <Button onClick={clickHandler} key={nanoid()} color={colour}>
         {val}
