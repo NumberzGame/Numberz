@@ -241,7 +241,13 @@ export function* nPartitions<T>(n: number, arr: T[]): IterableIterator<[T[], T[]
   }
 }
 
+function* _nPartitionsFromMultiplicityCounter(n: number, counter: Counter): 
+
 // Constrain T to number[] | String[], to avoid intermixing keys of plain object {}, so
 // order is preserved
-function* nPartitionsDeDuped<T extends number[] | String[]>(n: number, arr: T): IterableIterator<[T, T]> {
+export function* nPartitionsDeDuped<T extends number[] | String[]>(n: number, arr: T): IterableIterator<[T, T]> {
+  // if seeds or operands are more complicated than strings or numbers (or Symbols),
+  // our basic counter will not preserve the ordering in arr (in its bare object keys).
+  
+  const counter = makeCounter(arr); // type within T gets stringified
 }
