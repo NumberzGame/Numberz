@@ -60,7 +60,7 @@ export function opsCacheKey(a: OperandT, b: OperandT): OpsCacheKeyT {
   return a <= b ? [a, b] : [b, a];
 }
 
-export function makeCounter(arr: OperandT[]): Counter {
+export function makeCounter<T extends Object>(arr: T[]): Counter {
   const obj: Counter = {};
   arr.forEach((x) => {
     const s = x.toString();
@@ -179,6 +179,33 @@ export function* combinations<T>(n: number, arr: T[]): IterableIterator<T[]> {
   }
 }
 
+export function* combinationsWithReplacement<T>(n: number, arr: T[]): IterableIterator<T[]> {
+
+  if (n === 1) {
+    for (const x of arr) {
+      yield [x];
+    }
+    return;
+  }
+
+  if (arr.length === 1) {
+    // Copies of reference
+    yield Array(n).fill(arr[0]);
+    return;
+  }
+
+  const [first, ...rest] = arr;
+
+  // Combinations containing first
+  for (const combo of combinationsWithReplacement<T>(n-1, arr)) {
+    yield [first, ...combo];
+  }
+
+  // Combinations excluding first
+  yield* combinationsWithReplacement<T>(n, rest);
+
+}
+
 export function* permutations<T>(n: number, arr: T[]): IterableIterator<T[]> {
   if (n > arr.length) {
     throw new Error(`Not enough items in: ${arr} for permutations of length: ${n}.`);
@@ -199,4 +226,86 @@ export function* permutations<T>(n: number, arr: T[]): IterableIterator<T[]> {
       yield [first, ...permutation];
     }
   }
+}
+
+export function* nPartitions<T>(n: number, arr: T[]): IterableIterator<[T[], T[]]> {
+  for (const some of combinations(n, arr)) {
+    const rest = Array.from(arr);
+    for (const x of some) {
+      const index = rest.indexOf(x);
+      if (index !== -1) {
+        rest.splice(index, 1);
+      }
+    }
+    yield [some, rest]
+  }
+}
+
+export function fromRepeatCount<T>(
+  counts: [T, number][],
+): T[] {
+  return counts.flatMap(([x, i]) => Array(i).fill(x));
+}
+
+export function* nPartitionsWithMultiplicities<T>(
+  n: number,
+  counts: [T, number][],
+  repeatPairsSwapped: boolean = false,
+): IterableIterator<[T[], T[]]> {
+  const L = counts.reduce(
+    (acc, pair) =>acc+pair[1],
+    0, // acc's initial value
+  );
+  if (n === 0) {
+    yield [[], fromRepeatCount(counts)];
+    return;
+  }
+  if (n === L) {
+    yield [fromRepeatCount(counts), []];
+    return;
+  }
+  if (n > L) {
+    return;
+  }
+
+  for (let i = 0; i < counts.length; i++) {
+    const selected = counts[i];
+    const [selectedItem, selectedCount] = selected;
+    const rest = counts.slice(i);
+    const max = Math.min(selectedCount, n);
+    for (let j = 1; j <= max; j++) {
+      for (const [part, otherPart] of nPartitionsWithMultiplicities<T>(n-j, rest, repeatPairsSwapped)) {
+        const newPart = fromRepeatCount<T>([[selectedItem, j]]).concat(part);
+        const newOtherPart = fromRepeatCount<T>([[selectedItem, selectedCount-j]]).concat(otherPart);
+        yield [newPart, newOtherPart];
+      }
+    }
+  }
+}
+
+export function* nPartitionsDeDuped<T extends number | String>(
+  n: number,
+  arr: T[],
+  repeatPairsSwapped: boolean = false,
+): IterableIterator<[T[], T[]]> {
+  // if seeds or operands are more complicated than strings or numbers (or Symbols),
+  // our basic counter will not preserve the ordering in arr (in its bare object keys).
+  
+  const counter = makeCounter<number | String>(arr); // type within T gets stringified
+
+  const counts: [T, number][] = [];
+  // Callback intentionally has the side effect of mutating counter
+  arr.forEach((x) => {
+    const key = x.toString();
+    const count = counter[key];
+    if (count == 0) {
+      return;
+    }
+    // Preserve order in arr
+    counts.push([x, count])
+    counter[key] = 0
+    
+  });
+
+  yield* nPartitionsWithMultiplicities<T>(n, counts);
 }

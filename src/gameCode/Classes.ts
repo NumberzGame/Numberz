@@ -21,7 +21,12 @@ import { solutionExpr } from './solutionEvaluator';
 // import { solutions, EXPR_PATTERN } from './solverDFS';
 import { EXPR_PATTERN } from './solverDFS';
 import { makeCaches } from './Tnetennums/Cachebuilder';
-import { find_solutions } from './Tnetennums/Solver';
+import { find_solutions, easiestSolution, stringifyForm  } from './Tnetennums/Solver';
+import {makeCounter, resultsAndGradesCaches} from './Tnetennums/Core';
+import {
+  get_op_symbols_from_encodable_sol_expr,
+  get_seeds_from_encodable_sol_expr,
+} from './Tnetennums/SolutionInfo';
 
 
 
@@ -175,7 +180,8 @@ export class Move {
   }
 }
 
-export type Hints = Record<string,Move | typeof HINT_UNDO>;
+export type Hint = Move | typeof HINT_UNDO;
+export type Hints = Record<string, Hint>;
 
 export class GameState {
   [immerable] = true;
@@ -210,11 +216,11 @@ export class GameState {
       return GameState._makeHintKey(moves);
   }
 
-  _getHint(): Move | typeof HINT_UNDO {
+  _getHint(): Hint {
       return this.hints[this._hintKey()];
   }
 
-  setHint(hint: Move | typeof HINT_UNDO): void {
+  setHint(hint: Hint): void {
       this.hints[this._hintKey()] = hint;
   }
 
@@ -227,7 +233,7 @@ export class GameState {
   }
 
 
-  getHint(): Move | typeof HINT_UNDO | undefined{
+  getHint(): Hint | undefined{
       return this._getHint();
   }
 
@@ -250,6 +256,7 @@ export class GameState {
     // two new operands.
     this.currentMove = new Move();
   }
+
 }
 
 const randomlyOrderedIndices = function (num: number): number[] {
@@ -422,6 +429,77 @@ export class Game {
     this.seedsDisplayOrder = seedsDisplayOrder;
   }
 
+  static fromCustomGameID<T extends typeof Game>(
+    this: T,
+    customGameID: CustomGameID,
+  ): InstanceType<T> {
+
+          const solution = easiestSolution(
+            customGameID.seeds(),
+            customGameID.goal,
+            // Keeping the cache from previous custom games, slows
+            // down solving future games unnecessarily,
+            // as all possible operands in the caches are checked.
+            // So we provide new empty forward and reverse caches
+            // for each call:
+            {},
+            {}
+          );
+    
+    
+          let form: string | null;
+          let grade: number | null;
+          let opIndices: number[] | null;
+          let seedIndices: number[];
+          let redHerrings: number[] = [];
+    
+          if (solution === null) {
+            // Solution not found.  Proceed regardless.
+            form = null;
+            grade = null;
+            opIndices = null;
+            seedIndices = customGameID.seedIndices;
+          } else {
+            form = stringifyForm(solution.form);
+            grade = solution.grade;
+            const ops = Array.from(get_op_symbols_from_encodable_sol_expr(solution.encodable));
+            opIndices = ops.map((op) => OP_SYMBOLS.indexOf(op));
+            // solution might not have used all seeds in CustomGameID 
+            const seedsCounter = makeCounter(customGameID.seeds());
+            // TODO:  Use seedIndices from customGameID.seedIndices to preserve user's specification order
+            seedIndices = [];
+            for (const seed of get_seeds_from_encodable_sol_expr(solution.encodable)) {
+                if ((seedsCounter[seed] ?? 0) === 0) {
+                    throw new Error(
+                      `Solution: ${solution.encodable} requires too `+
+                      `many of seed: ${seed}  from available seeds: ${customGameID.seeds()}`
+                    );
+                }
+                seedsCounter[seed] -= 1
+    
+                // TODO:   Fix duplication of indices, e.g. if seeds = 1 1 10 25 50 75
+                seedIndices.push(SEEDS.indexOf(seed));
+            }
+            // Preserve any other custom seeds, not used in the easiest solution, as redHerrings
+            for (const [seed, freq] of Object.entries(seedsCounter)) {
+                for (let x = 0; x < freq; x++) {
+                    const index = SEEDS.indexOf(parseInt(seed, 10))
+                    redHerrings.push(index);
+                }
+            }
+          }
+          //Fill rest of redHerrings up to MAX_SEEDS, if less than 6 custom seeds specified.
+          for (const index of getRedHerringIndices(seedIndices.concat(redHerrings))) {
+              redHerrings.push(index);
+          }
+          // avoid triggering a re-render from having to call setter
+          const id = new CustomGameID(customGameID.goal, customGameID.seedIndices, grade, form);
+          const state = new GameState();
+          const datetime_ms = Date.now();
+          const game = new this(id, datetime_ms, seedIndices, opIndices, state, redHerrings);
+    return game as InstanceType<T>;
+  }
+
   seedsAndDecoyIndices(): number[] {
     return this.seedIndices.concat(this.redHerrings);
   }
@@ -487,7 +565,7 @@ export class Game {
     return operands.includes(this.id.goal);
   }
 
-  _newHint(): Move | typeof HINT_UNDO {
+  _newHint(): Hint {
     let easiestSolution = null;
     let easiestGrade = Infinity;
     const operands = this.currentOperandsDisplayOrder();
@@ -498,6 +576,9 @@ export class Game {
     let expr: string;
 
     makeCaches(operands, [goal]);
+
+    // console.log(`Rev cache[3][860]["[10*86]"]: ${resultsAndGradesCaches.reverse["3"]["860"].get([10,86])}`); 
+    // console.log(`Rev cache[2][860]: ${resultsAndGradesCaches.reverse["2"]["860"]}`); 
 
     if (
       this.opIndices &&
@@ -551,11 +632,13 @@ export class Game {
   }
 
   // mutates game state.  Only call from within an immer producer.
-  addHint(): void {
+  addHint(): Hint {
     if (this.state.hintAvailable()) {
-        return;
+        return this.state.getHint() as Hint;
     }
-    this.state.setHint(this._newHint());
+    const hint = this._newHint();
+    this.state.setHint(hint);
+    return hint;
     
   }
 
@@ -583,4 +666,10 @@ export class Game {
             
   }
 
+}
+
+export function customGamefromGoalAndSeeds(goal: number, seeds: number[]): Game {
+  const seedIndices = seeds.map((seed) => SEEDS.indexOf(seed));
+  const customGameID = new CustomGameID(goal, seedIndices);
+  return Game.fromCustomGameID(customGameID);
 }

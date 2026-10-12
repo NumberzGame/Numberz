@@ -2,6 +2,7 @@ import { ALL_SEEDS, HashTable } from '../Core';
 import {
   AllDepthsCacheT,
   combinations,
+  combinationsWithReplacement,
   default_max_num,
   enoughSeeds,
   GOALS,
@@ -182,9 +183,12 @@ export function makeCachesExceptTripleTriples(
         }
       }
 
-      for (const [pairItemA, pairItemB] of combinations(2, Object.entries(forwardCache[2]))) {
+      // combinationsWithReplacement is needed to handle solutions that form
+      // Square Numbers from their square roots.
+      for (const [pairItemA, pairItemB] of combinationsWithReplacement(2, Object.entries(forwardCache[2]))) {
         const [pairA, pairAMap] = pairItemA;
         const [pairB, pairBMap] = pairItemB;
+
 
         if (
           pairAMap

@@ -16,7 +16,7 @@ import {
 } from './Core';
 import { SolutionInfo } from './SolutionInfo';
 
-function* forward_solutions(
+export function* forward_solutions(
   seeds: Seed[],
   goal: Result,
   n: number,
@@ -82,15 +82,14 @@ function* forward_solutions(
     } else if (n >= 4 && n <= 5) {
       // Neither a, nor b is in seeds
 
-      // # for partition_size in range(n // 2, n - 1):
-      for (let partition_size = Math.ceil(n / 2); partition_size < n - 1; partition_size++) {
+      // # for partitionSize in range(n // 2, n - 1):
+      for (let partitionSize = Math.ceil(n / 2); partitionSize < n - 1; partitionSize++) {
         // # Split seeds into all non-singleton partitions:
         // # n = 4 -> (2,2)
         // # n = 5 -> (3,2)
         // # n = 6 -> (3,3), (4, 2)
-        // # so e.g. for len(seeds) = 5 we split into all those of sizes
-        // # 2 and 3 so don't need to consider those of sizes 3 and 2
-        for (const some_nums of combinations(partition_size, seeds)) {
+
+        for (const some_nums of combinations(partitionSize, seeds)) {
           const rest_of_nums = Array.from(seeds);
           for (const num of some_nums) {
             const index = rest_of_nums.indexOf(num);
@@ -99,23 +98,32 @@ function* forward_solutions(
             }
           }
 
-          for (const sol_a of forward_solutions(
-            some_nums,
-            a,
-            partition_size,
-            forward_cache,
-            grade_so_far,
-            strict
-          )) {
-            for (const sol_b of forward_solutions(
-              rest_of_nums,
-              b,
-              n - partition_size,
+          // console.log(`some_nums: ${some_nums}, rest_of_nums: ${rest_of_nums}`);
+          const subGoals = [[a,b]];
+          // E.g. search for both a being the triple and b being the pair, 
+          // and for a being the pair, and b the triple.
+          if (partitionSize != n-partitionSize) {
+            subGoals.push([b, a])
+          }
+          for (const [c, d] of subGoals) {
+            for (const sol_c of forward_solutions(
+              some_nums,
+              c,
+              partitionSize,
               forward_cache,
               grade_so_far,
               strict
             )) {
-              yield* sol_a.get_solutions_extended_by_sub_sol(goal, sol_b, symbols_and_grades);
+              for (const sol_d of forward_solutions(
+                rest_of_nums,
+                d,
+                n - partitionSize,
+                forward_cache,
+                grade_so_far,
+                strict
+              )) {
+                yield* sol_c.get_solutions_extended_by_sub_sol(goal, sol_d, symbols_and_grades);
+              }
             }
           }
         }
@@ -222,7 +230,7 @@ function* triple_triples_from_reverse_cache(
   }
 }
 
-function* reverse_solutions(
+export function* reverse_solutions(
   seeds: Seed[],
   goal: Result,
   forward_cache: AllDepthsCacheT = resultsAndGradesCaches.forward,
@@ -358,7 +366,8 @@ function* forward_and_reverse_solutions(
     // # caches[5] contains (triple op pair)s
   }
 
-  yield* reverse_solutions(seeds, goal, forward_cache, reverse_cache, max_num_seeds);
+  const revSols = Array.from(reverse_solutions(seeds, goal, forward_cache, reverse_cache, max_num_seeds));
+  yield* revSols;
 }
 
 export function* find_solutions(
@@ -374,6 +383,7 @@ export function* find_solutions(
   if (Object.keys(forward_cache).length === 0 || Object.keys(reverse_cache).length === 0) {
     makeCaches(nums, [goal], max_num_seeds, forward_cache, reverse_cache);
   }
+
 
   let solutions = forward_and_reverse_solutions(
     nums,
