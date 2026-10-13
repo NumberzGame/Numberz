@@ -10,7 +10,7 @@ const packageJson = JSON.parse(
 );
 
 export default defineConfig({
-  base: "/",
+  base: "/_test_numberz_uk",
   plugins: [react(), tsconfigPaths()],
   test: {
     globals: true,
