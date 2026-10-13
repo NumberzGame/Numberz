@@ -47,5 +47,10 @@ export function Layout(props: LayoutProps) {
         </Group>
         <TitleBanner/>
         {props.children}
+        <Group justify="right" align="end" pos="fixed" bottom={0} right={0}>
+          <Text component="span" c="blue" size="sm" mb={2.0}>
+            Version: {__APP_VERSION__}
+          </Text>
+        </Group>
     </>;
 }
