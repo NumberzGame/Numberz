@@ -1,6 +1,13 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+
+const packageJson = JSON.parse(
+  readFileSync(resolve(__dirname, 'package.json'), 'utf-8')
+);
 
 export default defineConfig({
   base: "/",
@@ -19,4 +26,7 @@ export default defineConfig({
     '/grade_goals_forms_solutions/*/*/*.*',
     '*.jpg',
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+  },
 });
