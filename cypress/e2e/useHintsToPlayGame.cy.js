@@ -19,47 +19,48 @@ describe('Detect button state changes', () => {
       a.color === b.color &&
       a.boxShadow === b.boxShadow
 
+    const getHintAndFollowIt = () => {
+      cy.get('button').then(($buttons) => {
+        $buttons.each((index, btn) => {
+          beforeStates.push({ index, ...readState(btn) })
+        })
+      })
+
+      cy.wait(500)
+
+      cy.contains('button', 'hint').click()
+      cy.wait(500)
+
+      cy.get('button').then(($afterButtons) => {
+        $afterButtons.each((index, btn) => {
+          const before = beforeStates[index]
+          if (!before) return
+
+          const after = readState(btn)
+          if (!sameState(before, after) && !after.text.includes("hint")) {
+            changedButtonIndices.push(index)
+          }
+        })
+
+        cy.log(`Changed buttons: ${changedButtonIndices.length}`)
+      })
+
+      cy.then(() => {
+        cy.wait(500)
+        expect(changedButtonIndices.length).to.equal(3)
+      })
+      cy.then(() => {
+        changedButtonIndices.forEach((buttonIndex) => {
+          cy.get('button').eq(buttonIndex).click()
+        })
+        
+        cy.contains('button', '=').click()
+      })
+    }
+
     cy.visit('https://numberz.uk')
 
-
-    cy.get('button').then(($buttons) => {
-      $buttons.each((index, btn) => {
-        beforeStates.push({ index, ...readState(btn) })
-      })
-    })
-
-    cy.wait(500)
-
-    cy.contains('button', 'hint').click()
-    cy.wait(500)
-
-    cy.get('button').then(($afterButtons) => {
-      $afterButtons.each((index, btn) => {
-        const before = beforeStates[index]
-        if (!before) return
-
-        const after = readState(btn)
-        if (!sameState(before, after) && !after.text.includes("hint")) {
-          changedButtonIndices.push(index)
-        }
-      })
-
-      cy.log(`Changed buttons: ${changedButtonIndices.length}`)
-    })
-
-    cy.then(() => {
-      cy.wait(500)
-      expect(changedButtonIndices.length).to.equal(3)
-    })
-    cy.then(() => {
-
-    changedButtonIndices.forEach((buttonIndex) => {
-      cy.get('button').eq(buttonIndex).click()
-    })
-    
-    cy.contains('button', '=').click()
-})
-
+    getHintAndFollowIt()
 
   })
 })
