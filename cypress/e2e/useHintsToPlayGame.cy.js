@@ -62,5 +62,9 @@ describe('Detect button state changes', () => {
 
     getHintAndFollowIt()
 
+    cy.get('img').then(($img) => {
+      expect($img.attr('src')).to.include('fireworks-city.jpg')
+    })
+
   })
 })
