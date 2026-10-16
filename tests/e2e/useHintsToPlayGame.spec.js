@@ -53,7 +53,7 @@ const getHintsAndApplyThem = async (page) => {
 
   await page.waitForTimeout(600);
   expect(changedButtonIndices.length).toBe(3);
-
+  // seelct move
   for (const buttonIndex of changedButtonIndices) {
     await page.locator('button').nth(buttonIndex).click();
   }
