@@ -32,9 +32,9 @@ const getHintsAndApplyThem = async (page) => {
   }
 
 
-  const button = await page.getByRole('button', { name: 'hint' })
+  const hintButton = await page.getByRole('button', { name: 'hint' })
   await page.waitForTimeout(100);
-  await button.click();
+  await hintButton.click();
 
   const afterButtons = page.locator('button');
   const afterCount = await afterButtons.count();
@@ -57,6 +57,8 @@ const getHintsAndApplyThem = async (page) => {
   for (const buttonIndex of changedButtonIndices) {
     await page.locator('button').nth(buttonIndex).click();
   }
+  // Hide hints manually (for now)
+  await hintButton.click();
   await page.getByRole('button', { name: '=' }).click();
 
 }
