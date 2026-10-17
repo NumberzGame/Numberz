@@ -73,7 +73,7 @@ export const chunkify = function (x: number, num_chunks: number): number[] {
 
 export const deChunkify = function (chunks: number[]): number {
   const num_chunks = chunks.length;
-  return chunks.map((x, i) => x * 2 ** (CHUNK_SIZE * (num_chunks - 1 - i))).reduce((a, c) => a + c);
+  return chunks.map((x, i) => x * 2 ** (CHUNK_SIZE * (num_chunks - 1 - i))).reduce((a, c) => a + c, 0);
 };
 
 export const stringifyCodeUnits = function (codeUnits: Iterable<number>): string {

@@ -98,7 +98,7 @@ export function randomFormAndIndex(
   // const formIndex = 7; // "6"
   // return [FORMS[formIndex], randomPositiveInteger(formsAndFreqs[formIndex][1])];
 
-  const totalSols = formsAndFreqs.map(([_form, freq]) => freq).reduce((a, c) => a + c);
+  const totalSols = formsAndFreqs.map(([_form, freq]) => freq).reduce((a, c) => a + c, 0);
 
   if (totalSols !== totalNumSolsOfGradeAndGoal) {
     throw new Error(
