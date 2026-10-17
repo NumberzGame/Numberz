@@ -72,6 +72,8 @@ jobs:
           mv *.jpg ./dist/
 
       - name: Download and unzip solutions cache
+        # This will run the local action from the repo checked out above, which could be external.
+        # Double check the action.yml file is safe if using this on untrusted repos.
         uses: ./.github/actions/download_solutions_cache
         with:
           dir: ./dist/

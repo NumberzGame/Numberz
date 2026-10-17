@@ -18,7 +18,7 @@ export const KNOWN_GRADES=Object.freeze(
 
 
 function sumValues(obj: Record<string, number>): number {
-  return Object.values(obj).reduce((x, y) => x + y);
+  return Object.values(obj).reduce((x, y) => x + y, 0);
 }
 
 
