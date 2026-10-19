@@ -23,7 +23,7 @@ const getHintsAndApplyThem = async (page) => {
   const changedButtonIndices = [];
 
   const beforeButtons = page.locator('button');
-  await page.waitForTimeout(800);
+  expect(beforeButtons).toBeVisible();
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
     const button = await beforeButtons.nth(i);
@@ -33,7 +33,6 @@ const getHintsAndApplyThem = async (page) => {
 
 
   const hintButton = await page.getByRole('button', { name: 'hint' })
-  await page.waitForTimeout(100);
   await hintButton.click();
 
   const afterButtons = page.locator('button');
@@ -42,6 +41,7 @@ const getHintsAndApplyThem = async (page) => {
     const before = beforeStates[i];
     if (!before) continue;
     const button = await afterButtons.nth(i);
+    
 
     const after = await readState(button);
     if (!sameState(before, after) && !after.text.includes('hint')) {
@@ -49,9 +49,8 @@ const getHintsAndApplyThem = async (page) => {
     }
   }
 
-  console.log(`Changed buttons: ${changedButtonIndices.length}, before: ${beforeStates.length}, afterCount: ${afterCount}`);
+  // console.log(`Changed buttons: ${changedButtonIndices.length}, before: ${beforeStates.length}, afterCount: ${afterCount}`);
 
-  await page.waitForTimeout(600);
   expect(changedButtonIndices.length).toBe(3);
   // seelct move
   for (const buttonIndex of changedButtonIndices) {
@@ -68,7 +67,6 @@ const playSingleGameFollowingHints = async (page) => {
   for (let i = 1; i <= 5; i++) {
     await getHintsAndApplyThem(page);
     dialogue = page.getByRole('dialog', { name: 'You are the winner!!' })
-    await page.waitForTimeout(1400);
     const numDialogues = await dialogue.count();
     if (numDialogues >= 1) {
       break;
@@ -80,19 +78,22 @@ const playSingleGameFollowingHints = async (page) => {
   const img = dialogue.getByRole('img').nth(1);
   await expect(img).toHaveAttribute('src', "/fireworks-city.jpg");
   await xButton.click();
-  await page.waitForTimeout(150);
 }
 
 test('captures changed buttons after an action', async ({ page }) => { 
-  await page.goto('https://numberz.uk');
-  
-  await page.waitForTimeout(600);
-  for (let gameNumber = 1; gameNumber <= 4; gameNumber++) {
+  // await page.goto('https://numberz.uk');
+  await page.goto('http://localhost:8000');
+  const N=3;
+  for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
+    
+    const badgeTexts = (await page.locator('.mantine-Badge-root .mantine-Badge-label').allTextContents());
+    const [score, grade, pointsAvailable, goal] = badgeTexts;
+    console.log(`Playing game number: ${gameNumber}/${N}. Score: ${score}, grade: ${grade}, points avail: ${pointsAvailable}, goal: ${goal}`);
     await playSingleGameFollowingHints(page);
     const slider = page.getByRole('slider');
     await slider.focus();
     await slider.press('End');
-    const newRandomGameButton = page.getByRole('button', {name: 'New random game'});
-    newRandomGameButton.click();
+    const newRandomGameButton = await page.getByRole('button', {name: 'New random game'});
+    await newRandomGameButton.click();
   }
 });

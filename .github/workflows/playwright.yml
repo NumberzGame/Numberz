@@ -9,15 +9,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+
+    - name: Build and setup the Numberz game site files, ready for being served.
+      # This will run the local action from the repo checked out above, which could be external.
+      # Double check the action.yml file is safe if using this on untrusted repos.
+      uses: ./.github/actions/pre_deploy
+
+    # npm is set up in the previous action 
     - name: Install dependencies
       run: npm ci
+
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install chromium
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.15'
+
+    # Don't use python -m http.server in prod.
+    # But for internal testing, unlike the 
+    # Vite dev server, it doesn't eagerly index 
+    # all the files, even if they may never be requested.
+    - name: Start http server
+      working-directory: ./dist
+      run: |
+        python -m http.server 8000 &
+        echo "HTTP_SERVER_PID=$!" >> $GITHUB_ENV
+        sleep 4  # give server time to start
+
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --project=chromium
+
+    - name: Stop http server
+      run: |
+        echo Killing http server process ID: ${{ env.HTTP_SERVER_PID }}
+        kill ${{ env.HTTP_SERVER_PID }}
+
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:

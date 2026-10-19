@@ -5,10 +5,6 @@ description:
 
   
 inputs:
-  repo_dir:
-    required: false
-    default: "."
-    description: 'The dir of the checked out Numberz Game repo. '
   built_dir:
     required: false
     default: "./dist"
@@ -21,7 +17,7 @@ runs:
   steps:
     # This action's parent repo is required to already be checked out 
     # (as some test workflows must have it checked out anyway)
-    # into inputs.repo_dir, e.g. from an external repo's calling workflow:
+    # into the working dir, e.g. from an external repo's calling workflow:
     #
     # steps:
     # - uses: actions/checkout@v6
@@ -30,8 +26,7 @@ runs:
     #
     # - name: Set up Numberz Game for deployment
     #   uses: ./NumberzGame_to_deploy/.github/actions/pre_deploy
-    #   with:
-    #     dir: ./NumberzGame_to_deploy
+
 
     - name: Set up Node
       uses: actions/setup-node@v4
@@ -40,11 +35,11 @@ runs:
         cache: 'npm'
 
     - name: Install dependencies
-      working-directory: ${{ inputs.repo_dir }}
+      shell: bash
       run: npm ci
 
     - name: Build
-      working-directory: ${{ inputs.repo_dir }}
+      shell: bash
       run: npm run build -- --outDir ${{ inputs.built_dir }}
       
     # This is a bit of a hack of Vite and Github pages, but if manually moving in
@@ -53,18 +48,21 @@ runs:
     # I'm not sure exactly why, but the static assets 404 if the order is otherwise.
 
     - name: Download pictures
+      shell: bash
       run: curl -L https://github.com/NumberzGame/NumberzGame.github.io/releases/download/v0.0.0/pictures.zip -o pictures.zip
 
     - name: Unzip pictures
+      shell: bash
       run: unzip pictures.zip
 
     - name: Move pictures to dist
+      shell: bash
       run: |
         mv *.jpg ${{ inputs.built_dir }}
 
     - name: Download and unzip solutions cache
       # This will run the local action from the supplied checked out repo, which could be external.
       # Double check the action.yml file within is safe, and do not use this technique on untrusted repos.
-      uses: ${{ inputs.repo_dir }}/.github/actions/download_solutions_cache
+      uses: $/.github/actions/download_solutions_cache
       with:
         dir: ${{ inputs.built_dir }}
