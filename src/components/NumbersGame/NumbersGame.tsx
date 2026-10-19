@@ -191,6 +191,8 @@ export function NumbersGame(props: NumbersGameProps) {
     setGameUsingImmerProducerAndStore((draft: Game) => {
         draft.state.submitLatestMove();
     });
+    
+    setHintsShown(false);
   };
   const undoButtonHandler = function () {
     setGameUsingImmerProducerAndStore((draft: Game) => {
