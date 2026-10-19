@@ -38,45 +38,7 @@ jobs:
       # to allow possibly including other content on this home 
       # page in future as well, we pull in Numberz
       # from NumberzGame/Numberz just as if it were an external repo.   
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: NumberzGame/Numberz
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        
-      # This is a bit of a hack of Vite and Github pages, but if manually moving in
-      # static content, the Vite build done in the previous step must be done before
-      # the steps (e.g. those below) adding anything into ./dist (or outDir).
-      # I'm not sure exactly why, but the static assets 404 if the order is otherwise.
-
-      - name: Download pictures
-        run: curl -L https://github.com/NumberzGame/NumberzGame.github.io/releases/download/v0.0.0/pictures.zip -o pictures.zip
-
-      - name: Unzip pictures
-        run: unzip pictures.zip
-
-      - name: Move pictures to dist
-        run: |
-          mkdir -p ./dist/
-          mv *.jpg ./dist/
-
-      - name: Download and unzip solutions cache
-        # This will run the local action from the repo checked out above, which could be external.
-        # Double check the action.yml file is safe if using this on untrusted repos.
-        uses: ./.github/actions/download_solutions_cache
-        with:
-          dir: ./dist/
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
