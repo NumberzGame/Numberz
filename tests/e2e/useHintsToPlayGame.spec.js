@@ -33,6 +33,8 @@ const getHintsAndApplyThem = async (page) => {
 
 
   const hintButton = await page.getByRole('button', { name: 'hint' })
+  await expect(hintButton).toBeVisible();
+
   await hintButton.click();
 
   const afterButtons = page.locator('button');
