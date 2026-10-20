@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const readState = async (btn) => {
-  return await btn.evaluate((el) => {
+const readState = async (btns, i) => {
+  const button = await btns.nth(i);
+  await expect(button).toBeVisible();
+  return await button.evaluate((el) => {
     const s = window.getComputedStyle(el);
     return {
       text: el.innerText.trim(),
@@ -25,9 +27,7 @@ const getHintsAndApplyThem = async (page) => {
   const beforeButtons = page.locator('button');
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
-    const button = await beforeButtons.nth(i);
-    expect(button).toBeVisible();
-    const state = await readState(button);
+    const state = await readState(beforeButtons, i);
     beforeStates.push({index: i, ...state});
   }
 
@@ -40,10 +40,9 @@ const getHintsAndApplyThem = async (page) => {
   for (let i = 0; i < afterCount; i++) {
     const before = beforeStates[i];
     if (!before) continue;
-    const button = await afterButtons.nth(i);
-    
 
-    const after = await readState(button);
+    const after = await readState(afterButtons, i);
+
     if (!sameState(before, after) && !after.text.includes('hint')) {
       changedButtonIndices.push(i);
     }
@@ -51,13 +50,14 @@ const getHintsAndApplyThem = async (page) => {
 
   // console.log(`Changed buttons: ${changedButtonIndices.length}, before: ${beforeStates.length}, afterCount: ${afterCount}`);
 
-  expect(changedButtonIndices.length).toBe(3);
-  // seelct move
+  await expect(changedButtonIndices.length).toBe(3);
+  // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
   for (const buttonIndex of changedButtonIndices) {
     await page.locator('button').nth(buttonIndex).click();
   }
   // Hide hints manually (for now)
   await hintButton.click();
+  // Submit move (after following the hint)
   await page.getByRole('button', { name: '=' }).click();
 
 }
@@ -72,10 +72,17 @@ const playSingleGameFollowingHints = async (page) => {
       break;
     }
   }
+  await expect(dialogue).toBeVisible();
+
   const banner = dialogue.getByRole('banner');
+  await expect(banner).toBeVisible();
+
   const xButton = banner.getByRole('button');
+  await expect(xButton).toBeVisible();
   // also picks up svg img in button (.nth(0))
   const img = dialogue.getByRole('img').nth(1);
+  await expect(img).toBeVisible();
+
   await expect(img).toHaveAttribute('src', "/fireworks-city.jpg");
   await xButton.click();
 }
