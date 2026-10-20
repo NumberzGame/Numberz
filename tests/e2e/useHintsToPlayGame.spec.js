@@ -93,9 +93,13 @@ test('captures changed buttons after an action', async ({ page }) => {
   const N=3;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
-    const badgeTexts = (await page.locator('.mantine-Badge-root .mantine-Badge-label').allTextContents());
-    const [score, grade, pointsAvailable, goal] = badgeTexts;
+    const badges = await page.locator('.mantine-Badge-root .mantine-Badge-label');
+    const score = await badges.nth(0).selectText();
+    const grade = await badges.nth(1).selectText();
+    const pointsAvailable = await badges.nth(2).selectText();
+    const goal = await badges.nth(3).selectText();
     console.log(`Playing game number: ${gameNumber}/${N}. Score: ${score}, grade: ${grade}, points avail: ${pointsAvailable}, goal: ${goal}`);
+
     await playSingleGameFollowingHints(page);
     const slider = page.getByRole('slider');
     await slider.focus();
