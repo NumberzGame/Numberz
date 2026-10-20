@@ -23,10 +23,10 @@ const getHintsAndApplyThem = async (page) => {
   const changedButtonIndices = [];
 
   const beforeButtons = page.locator('button');
-  expect(beforeButtons).toBeVisible();
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
     const button = await beforeButtons.nth(i);
+    expect(button).toBeVisible();
     const state = await readState(button);
     beforeStates.push({index: i, ...state});
   }
