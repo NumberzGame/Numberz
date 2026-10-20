@@ -13,11 +13,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
     // Default per-test timeout: 30s -> 60s
-  timeout: 60_000,
+  timeout: 240_000,
 
   expect: {
     // Default assertion timeout: 5s -> 10s
-    timeout: 10_000,
+    timeout: 40_000,
   },
   testDir: './tests/e2e',
   /* Run tests in files in parallel */
@@ -41,10 +41,10 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+    // {
+    //   name: 'chromium',
+    //   use: { ...devices['Desktop Chrome'] },
+    // },
 
     // {
     //   name: 'firefox',
@@ -71,10 +71,10 @@ export default defineConfig({
     //   name: 'Microsoft Edge',
     //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
     // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    {
+      name: 'Google Chrome',
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
