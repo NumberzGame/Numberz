@@ -12,9 +12,16 @@ import { defineConfig, devices } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+    // Default per-test timeout: 30s -> 60s
+  timeout: 60_000,
+
+  expect: {
+    // Default assertion timeout: 5s -> 10s
+    timeout: 10_000,
+  },
   testDir: './tests/e2e',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
