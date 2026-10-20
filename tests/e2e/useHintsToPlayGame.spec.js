@@ -87,12 +87,6 @@ const playSingleGameFollowingHints = async (page) => {
   await xButton.click();
 }
 
-const readBadgeText = async (badges, i) => {
-    const badge = await badges.nth(i);
-    expect(badge).toBeVisible();
-    const text = await badge.selectText();
-    return text
-}
 
 test('captures changed buttons after an action', async ({ page }) => { 
   // await page.goto('https://numberz.uk');
@@ -101,10 +95,8 @@ test('captures changed buttons after an action', async ({ page }) => {
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
     const badges = await page.locator('.mantine-Badge-root .mantine-Badge-label');
-    const score = await readBadgeText(badges, 0);
-    const grade = await readBadgeText(badges, 1);
-    const pointsAvailable = await readBadgeText(badges, 2);
-    const goal = await readBadgeText(badges, 3);
+    await expect(badges).toHaveCount(4);
+    const [score, grade, pointsAvailable, goal] = await badges.allTextContents();
     console.log(`Playing game number: ${gameNumber}/${N}. Score: ${score}, grade: ${grade}, points avail: ${pointsAvailable}, goal: ${goal}`);
 
     await playSingleGameFollowingHints(page);
