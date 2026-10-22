@@ -63,6 +63,6 @@ runs:
     - name: Download and unzip solutions cache
       # This will run the local action from the supplied checked out repo, which could be external.
       # Double check the action.yml file within is safe, and do not use this technique on untrusted repos.
-      uses: .github/actions/download_solutions_cache
+      uses: NumberzGame/Numberz/.github/actions/download_solutions_cache@main
       with:
         dir: ${{ inputs.built_dir }}
