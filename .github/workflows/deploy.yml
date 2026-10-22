@@ -39,6 +39,7 @@ jobs:
       # page in future as well, we pull in Numberz
       # from NumberzGame/Numberz just as if it were an external repo.   
 
+      - uses: $/.github/actions/pre_deploy
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
