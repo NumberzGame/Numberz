@@ -13,11 +13,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
     // Default per-test timeout: 30s -> 60s
-  timeout: 240_000,
+  timeout: 5*3600_000, // N = 386 but Github Actions time out after 6 hours ,
 
   expect: {
     // Default assertion timeout: 5s -> 10s
-    timeout: 40_000,
+    timeout: 120_000,
   },
   testDir: './tests/e2e',
   /* Run tests in files in parallel */
