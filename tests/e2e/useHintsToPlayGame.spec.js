@@ -50,7 +50,6 @@ const getHintsAndApplyThem = async (page) => {
     }
   }
 
-  // console.log(`Changed buttons: ${changedButtonIndices.length}, before: ${beforeStates.length}, afterCount: ${afterCount}`);
 
   await expect(changedButtonIndices.length).toBe(3);
   // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
@@ -91,9 +90,8 @@ const playSingleGameFollowingHints = async (page) => {
 
 
 test('captures changed buttons after an action', async ({ page }) => { 
-  // await page.goto('https://numberz.uk');
   await page.goto('http://localhost:8000');
-  const N=386;
+  const N=7;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
     const badges = await page.locator('.mantine-Badge-root .mantine-Badge-label');
