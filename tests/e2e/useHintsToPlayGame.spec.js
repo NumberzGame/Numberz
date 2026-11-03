@@ -1,48 +1,58 @@
 import { test, expect } from '@playwright/test';
 
-const readState = async (btns, i) => {
-  const button = await btns.nth(i);
-  await expect(button).toBeVisible();
-  return await button.evaluate((el) => {
-    const s = window.getComputedStyle(el);
-    return {
-      text: el.innerText.trim(),
-      backgroundImage: s.backgroundImage,
-      color: s.color,
-      boxShadow: s.boxShadow,
-    };
-  });
+
+const readButtonStates = async (buttonLocators, expectedNumButtons) => {
+  await expect(buttonLocators).toHaveCount(expectedNumButtons);
+  const states = {};
+  for (const buttonLocator of await buttonLocators.all()) {
+    await expect(buttonLocator).toBeVisible();
+    await buttonLocator.evaluate(async (el) => {
+      const text  = await buttonLocator.textContent();
+      const s = window.getComputedStyle(el);
+      states[text] = {
+        locator: buttonLocator,
+        backgroundImage: s.backgroundImage,
+        color: s.color,
+        boxShadow: s.boxShadow,
+      };
+    });
+  }
+  return states;
 };
 
 const sameState = (a, b) =>
-  a.text === b.text &&
   a.backgroundImage === b.backgroundImage &&
   a.color === b.color &&
   a.boxShadow === b.boxShadow;
 
 const getHintsAndApplyThem = async (page, moveNum) => {
-  const beforeStates = [];
-  const changedButtonIndexedStates = [];
+  const changedButtonsLabelsAndLocators = [];
 
-  const beforeButtons = await page.getByRole('button');
-  const beforeCount = await beforeButtons.count();
-  for (let i = 0; i < beforeCount; i++) {
-    const state = await readState(beforeButtons, i);
-    beforeStates.push({index: i, ...state});
-  }
+  
+  // (7 - moveNum) seeds,
+  // +, -, *, /, =,
+  // undo move,
+  // get hint,
+  // end game,
+  // light/dark mode
+  const expectedNumButtons = 16 - moveNum;
+
+  const buttonLocators = await page.getByRole('button');
+  const initialButtonsStates = readButtonStates(buttonLocators, expectedNumButtons);
 
 
-  const hintButton = await page.getByRole('button', { name: 'hint' })
+
+  const hintButtonLocator = beforeStates["hint"];
 
   try {
-    await expect(hintButton).toBeVisible({ timeout: 10_000 });
+    await expect(hintButtonLocator).toBeVisible({ timeout: 10_000 });
   } catch (error) {
     console.error('Hint button missing');
     console.error('URL:', page.url());
-    console.error('Button count:', await page.getByRole('button').count());
+    console.error('Button count:', await buttonLocators.count());
     console.error(
-      'Button labels:',
-      await page.getByRole('button').allTextContents()
+      'Button texts:',
+      await buttonLocators.allTextContents()
     );
     console.error(
       'Page title:',
@@ -57,37 +67,33 @@ const getHintsAndApplyThem = async (page, moveNum) => {
     throw error;
   }
   
-  await expect(hintButton).toBeVisible();
-  await expect(hintButton).toBeEnabled();
+  await expect(hintButtonLocator).toBeEnabled();
 
-  await hintButton.click();
+  await hintButtonLocator.click();
 
-  const afterButtons = page.getByRole('button');
-  const afterCount = await afterButtons.count();
-  for (let i = 0; i < afterCount; i++) {
-    const before = beforeStates[i];
-    if (!before) continue;
+  const buttonsStatesWithHintsShown = readButtonStates(buttonLocators, expectedNumButtons);
+  for (const [text, before] of Object.entries(initialButtonsStates)) {
 
-    const after = await readState(afterButtons, i);
+    const after = buttonsStatesWithHintsShown[text];
 
-    if (!sameState(before, after) && !after.text.includes('hint')) {
-      changedButtonIndexedStates.push([i, before]);
+    if (!sameState(before, after) && !text.includes('hint')) {
+      changedButtonsLabelsAndLocators.push([text, before.locator]);
     }
   }
 
-  console.log(`Move number: ${moveNum}, hint: ${changedButtonIndexedStates.map((x) => x[1].text)}`);
+  console.log(`Move number: ${moveNum}, hint: ${changedButtonsLabel.map((x) => x[0])}`);
 
-  await expect(changedButtonIndexedStates.length).toBe(3);
+  await expect(changedButtonsLabelsAndLocators.length).toBe(3);
   
   // Hide hints manually (for now)
-  await hintButton.click();
+  await hintButtonLocator.click();
 
   // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
-  for (const [buttonIndex, state] of changedButtonIndexedStates) {
-    await page.getByRole('button').nth(buttonIndex).click();
+  for (const [label, buttonLocator] of changedButtonsLabelsAndLocators) {
+    await buttonLocator.click();
   }
   // Submit move (after following the hint)
-  await page.getByRole('button', { name: '=' }).click();
+  await initialButtonsStates['='].locator.click();
 
 }
 
@@ -137,7 +143,7 @@ test('captures changed buttons after an action', async ({ page }) => {
   const N=7;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
-    const badges = await page.locator('.mantine-Badge-root .mantine-Badge-label');
+    const badges = await page.locator('.mantine-Badge-root .mantine-Badge-text');
     await expect(badges).toHaveCount(4);
     const [score, grade, pointsAvailable, goal] = await badges.allTextContents();
     console.log(`Playing game number: ${gameNumber}/${N}. Score: ${score}, grade: ${grade}, points avail: ${pointsAvailable}, goal: ${goal}`);
