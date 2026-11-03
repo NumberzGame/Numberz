@@ -18,7 +18,6 @@ const getButtonsInfo = async (page, expectedNumButtons) => {
         boxShadow: s.boxShadow,
       };
     });
-    console.log(buttonInfo);
     states[i] = {
       locator: buttonLocator,
       ...buttonInfo,
