@@ -1,21 +1,28 @@
 import { test, expect } from '@playwright/test';
 
 
-const readButtonStates = async (buttonLocators, expectedNumButtons) => {
+const getButtonsInfo = async (page, expectedNumButtons) => {
+  const buttonLocators = page.getByRole('button');
   await expect(buttonLocators).toHaveCount(expectedNumButtons);
   const states = {};
-  for (const buttonLocator of await buttonLocators.all()) {
+  for (let i=0; i < expectedNumButtons; i++) {
+    const buttonLocator = await buttonLocators.nth(i);
     await expect(buttonLocator).toBeVisible();
-    await buttonLocator.evaluate(async (el) => {
-      const text  = await buttonLocator.textContent();
+    const text = await buttonLocator.textContent();
+    const buttonInfo = await buttonLocator.evaluate(async (el) => {
       const s = window.getComputedStyle(el);
-      states[text] = {
-        locator: buttonLocator,
+      return {
+        label: el.innerText,
         backgroundImage: s.backgroundImage,
         color: s.color,
         boxShadow: s.boxShadow,
       };
     });
+    console.log(buttonInfo);
+    states[i] = {
+      locator: buttonLocator,
+      ...buttonInfo,
+    };
   }
   return states;
 };
@@ -26,7 +33,7 @@ const sameState = (a, b) =>
   a.boxShadow === b.boxShadow;
 
 const getHintsAndApplyThem = async (page, moveNum) => {
-  const changedButtonsLabelsAndLocators = [];
+  const changedButtonsInfo = [];
 
   
   // (7 - moveNum) seeds,
@@ -37,22 +44,21 @@ const getHintsAndApplyThem = async (page, moveNum) => {
   // light/dark mode
   const expectedNumButtons = 16 - moveNum;
 
-  const buttonLocators = await page.getByRole('button');
-  const initialButtonsStates = readButtonStates(buttonLocators, expectedNumButtons);
+  const initialButtonsInfo = await getButtonsInfo(page, expectedNumButtons);
 
 
 
-  const hintButtonLocator = beforeStates["hint"];
+  const hintButtonLocator = await page.getByRole('button', {name: 'hint',});
 
   try {
     await expect(hintButtonLocator).toBeVisible({ timeout: 10_000 });
   } catch (error) {
     console.error('Hint button missing');
     console.error('URL:', page.url());
-    console.error('Button count:', await buttonLocators.count());
+    console.error('Button count:', await page.getByRole('button').count());
     console.error(
       'Button texts:',
-      await buttonLocators.allTextContents()
+      await page.getByRole('button').allTextContents()
     );
     console.error(
       'Page title:',
@@ -71,29 +77,31 @@ const getHintsAndApplyThem = async (page, moveNum) => {
 
   await hintButtonLocator.click();
 
-  const buttonsStatesWithHintsShown = readButtonStates(buttonLocators, expectedNumButtons);
-  for (const [text, before] of Object.entries(initialButtonsStates)) {
+  const buttonsInfoWithHints = await getButtonsInfo(page, expectedNumButtons);
+  for (const [i, before] of Object.entries(initialButtonsInfo)) {
 
-    const after = buttonsStatesWithHintsShown[text];
-
-    if (!sameState(before, after) && !text.includes('hint')) {
-      changedButtonsLabelsAndLocators.push([text, before.locator]);
+    const after = buttonsInfoWithHints[i];
+    
+    if (!sameState(before, after) && !before.label.includes('hint')) {
+      changedButtonsInfo.push(before);
     }
   }
 
-  console.log(`Move number: ${moveNum}, hint: ${changedButtonsLabel.map((x) => x[0])}`);
+  console.log(`Move number: ${moveNum}, hint: ${changedButtonsInfo.map((state) => state.label)}`);
 
-  await expect(changedButtonsLabelsAndLocators.length).toBe(3);
+  await expect(changedButtonsInfo.length).toBe(3);
   
   // Hide hints manually (for now)
   await hintButtonLocator.click();
 
   // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
-  for (const [label, buttonLocator] of changedButtonsLabelsAndLocators) {
-    await buttonLocator.click();
+  for (const buttonInfo of changedButtonsInfo) {
+    await buttonInfo.locator.click();
   }
   // Submit move (after following the hint)
-  await initialButtonsStates['='].locator.click();
+  
+  const submitMoveButtonLocator = await page.getByRole('button', {name: '=',});
+  await submitMoveButtonLocator.click();
 
 }
 
@@ -143,7 +151,7 @@ test('captures changed buttons after an action', async ({ page }) => {
   const N=7;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
-    const badges = await page.locator('.mantine-Badge-root .mantine-Badge-text');
+    const badges = await page.locator('.mantine-Badge-root');
     await expect(badges).toHaveCount(4);
     const [score, grade, pointsAvailable, goal] = await badges.allTextContents();
     console.log(`Playing game number: ${gameNumber}/${N}. Score: ${score}, grade: ${grade}, points avail: ${pointsAvailable}, goal: ${goal}`);
