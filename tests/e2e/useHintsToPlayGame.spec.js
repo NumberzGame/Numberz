@@ -25,7 +25,7 @@ const getHintsAndApplyThem = async (page) => {
   const changedButtonIndices = [];
 
   const beforeButtons = page.locator('button');
-  await expect(beforeButtons).toHaveCount(16);
+  await expect(beforeButtons).toHaveCount(15); // 6 seeds, 6 ops, hint, end, & light/dark mode
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
     const state = await readState(beforeButtons, i);
