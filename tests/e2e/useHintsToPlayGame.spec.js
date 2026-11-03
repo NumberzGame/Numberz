@@ -25,7 +25,6 @@ const getHintsAndApplyThem = async (page) => {
   const changedButtonIndices = [];
 
   const beforeButtons = await page.getByRole('button');
-  await expect(beforeButtons).toHaveCount(15); // 6 seeds, 6 ops, hint, end, & light/dark mode
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
     const state = await readState(beforeButtons, i);
@@ -91,6 +90,9 @@ const getHintsAndApplyThem = async (page) => {
 
 const playSingleGameFollowingHints = async (page) => {
   let dialogue = null;
+  const buttons = await page.getByRole('button');
+  await expect(buttons).toHaveCount(15); // 6 seeds, 6 ops, hint, end, & light/dark mode
+
   for (let i = 1; i <= 5; i++) {
     await getHintsAndApplyThem(page);
     dialogue = page.getByRole('dialog', { name: 'You are the winner!!' })
