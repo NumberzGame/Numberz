@@ -24,7 +24,7 @@ const getHintsAndApplyThem = async (page) => {
   const beforeStates = [];
   const changedButtonIndices = [];
 
-  const beforeButtons = page.locator('button');
+  const beforeButtons = await page.getByRole('button');
   await expect(beforeButtons).toHaveCount(15); // 6 seeds, 6 ops, hint, end, & light/dark mode
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
@@ -40,10 +40,10 @@ const getHintsAndApplyThem = async (page) => {
   } catch (error) {
     console.error('Hint button missing');
     console.error('URL:', page.url());
-    console.error('Button count:', await page.locator('button').count());
+    console.error('Button count:', await page.getByRole('button').count());
     console.error(
       'Button labels:',
-      await page.locator('button').allTextContents()
+      await page.getByRole('button').allTextContents()
     );
     console.error(
       'Page title:',
@@ -63,7 +63,7 @@ const getHintsAndApplyThem = async (page) => {
 
   await hintButton.click();
 
-  const afterButtons = page.locator('button');
+  const afterButtons = page.getByRole('button');
   const afterCount = await afterButtons.count();
   for (let i = 0; i < afterCount; i++) {
     const before = beforeStates[i];
@@ -80,7 +80,7 @@ const getHintsAndApplyThem = async (page) => {
   await expect(changedButtonIndices.length).toBe(3);
   // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
   for (const buttonIndex of changedButtonIndices) {
-    await page.locator('button').nth(buttonIndex).click();
+    await page.getByRole('button').nth(buttonIndex).click();
   }
   // Hide hints manually (for now)
   await hintButton.click();
