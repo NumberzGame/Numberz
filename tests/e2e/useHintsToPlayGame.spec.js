@@ -20,9 +20,9 @@ const sameState = (a, b) =>
   a.color === b.color &&
   a.boxShadow === b.boxShadow;
 
-const getHintsAndApplyThem = async (page) => {
+const getHintsAndApplyThem = async (page, moveNum) => {
   const beforeStates = [];
-  const changedButtonIndices = [];
+  const changedButtonIndexedStates = [];
 
   const beforeButtons = await page.getByRole('button');
   const beforeCount = await beforeButtons.count();
@@ -71,18 +71,21 @@ const getHintsAndApplyThem = async (page) => {
     const after = await readState(afterButtons, i);
 
     if (!sameState(before, after) && !after.text.includes('hint')) {
-      changedButtonIndices.push(i);
+      changedButtonIndexedStates.push([i, before]);
     }
   }
 
+  console.log(`Move number: ${moveNum}, hint: ${changedButtonIndexedStates.map((x) => x[1].text)}`);
 
-  await expect(changedButtonIndices.length).toBe(3);
-  // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
-  for (const buttonIndex of changedButtonIndices) {
-    await page.getByRole('button').nth(buttonIndex).click();
-  }
+  await expect(changedButtonIndexedStates.length).toBe(3);
+  
   // Hide hints manually (for now)
   await hintButton.click();
+
+  // Select move.  Click all buttons highlighted by the hint (whose readState was changed)
+  for (const [buttonIndex, state] of changedButtonIndexedStates) {
+    await page.getByRole('button').nth(buttonIndex).click();
+  }
   // Submit move (after following the hint)
   await page.getByRole('button', { name: '=' }).click();
 
@@ -94,7 +97,7 @@ const playSingleGameFollowingHints = async (page) => {
   await expect(buttons).toHaveCount(15); // 6 seeds, 6 ops, hint, end, & light/dark mode
 
   for (let i = 1; i <= 5; i++) {
-    await getHintsAndApplyThem(page);
+    await getHintsAndApplyThem(page, i);
     dialogue = page.getByRole('dialog', { name: 'You are the winner!!' })
     const numDialogues = await dialogue.count();
     if (numDialogues >= 1) {
