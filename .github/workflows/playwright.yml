@@ -40,6 +40,7 @@ jobs:
     # Vite dev server, it doesn't eagerly index 
     # all the files, even if they may never be requested.
     - name: Start http server
+      shell: bash
       working-directory: ./dist
       run: |
         python -m http.server 8000 &
@@ -47,9 +48,10 @@ jobs:
         sleep 4  # give server time to start
 
     - name: Run Playwright tests
-      run: npx playwright test --project="Google Chrome"
+      run: npx playwright test -x
 
     - name: Stop http server
+      shell: bash
       run: |
         echo Killing http server process ID: ${{ env.HTTP_SERVER_PID }}
         kill ${{ env.HTTP_SERVER_PID }}
