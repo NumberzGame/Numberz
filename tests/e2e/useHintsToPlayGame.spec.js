@@ -33,7 +33,32 @@ const getHintsAndApplyThem = async (page) => {
 
 
   const hintButton = await page.getByRole('button', { name: 'hint' })
+
+  try {
+    await expect(hintButton).toBeVisible({ timeout: 10_000 });
+  } catch (error) {
+    console.error('Hint button missing');
+    console.error('URL:', page.url());
+    console.error('Button count:', await page.locator('button').count());
+    console.error(
+      'Button labels:',
+      await page.locator('button').allTextContents()
+    );
+    console.error(
+      'Page title:',
+      await page.title()
+    );
+
+    await page.screenshot({
+      path: 'playwright-report/hint-button-missing.png',
+      fullPage: true,
+    });
+
+    throw error;
+  }
+  
   await expect(hintButton).toBeVisible();
+  await expect(hintButton).toBeEnabled();
 
   await hintButton.click();
 
@@ -89,7 +114,16 @@ const playSingleGameFollowingHints = async (page) => {
 }
 
 
-test('captures changed buttons after an action', async ({ page }) => { 
+test('captures changed buttons after an action', async ({ page }) => {
+  page.on('pageerror', error => {
+    console.error('Browser page error:', error);
+  });
+
+  page.on('console', message => {
+    if (message.type() === 'error') {
+      console.error('Browser console error:', message.text());
+    }
+  });
   await page.goto('http://localhost:8000');
   const N=7;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
