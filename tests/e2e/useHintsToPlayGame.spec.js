@@ -25,6 +25,7 @@ const getHintsAndApplyThem = async (page) => {
   const changedButtonIndices = [];
 
   const beforeButtons = page.locator('button');
+  await expect(beforeButtons).toHaveCount(16);
   const beforeCount = await beforeButtons.count();
   for (let i = 0; i < beforeCount; i++) {
     const state = await readState(beforeButtons, i);
@@ -111,6 +112,9 @@ const playSingleGameFollowingHints = async (page) => {
 
   await expect(img).toHaveAttribute('src', "/fireworks-city.jpg");
   await xButton.click();
+  
+  dialogue = page.getByRole('dialog', { name: 'You are the winner!!' })
+  await expect(dialogue).toHaveCount(0);
 }
 
 
