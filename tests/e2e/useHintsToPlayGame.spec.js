@@ -168,7 +168,7 @@ const playSingleGameFollowingHints = async (page) => {
   await expect(xButton).toBeEnabled();
   await xButton.click();
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
     // Wait for the win-screen dialog to disappear.
   await expect(dialogue).toBeHidden();
