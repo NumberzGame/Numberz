@@ -192,7 +192,7 @@ test('captures changed buttons after an action', async ({ page }) => {
     }
   });
   await page.goto('http://localhost:8000');
-  const N=7;
+  const N=70;
   for (let gameNumber = 1; gameNumber <= N; gameNumber++) {
     
     const badges = await page.locator('.mantine-Badge-root');
