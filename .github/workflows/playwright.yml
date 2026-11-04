@@ -28,8 +28,7 @@ jobs:
 
     - name: Install Playwright, and its Browsers we need
       run: |
-        npx playwright install
-        npx playwright install-deps
+        npx playwright install --with-deps chromium firefox
 
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -49,7 +48,7 @@ jobs:
         sleep 4  # give server time to start
 
     - name: Run Playwright tests
-      run: npx playwright test -x
+      run: npx playwright test
 
     - name: Stop http server
       shell: bash

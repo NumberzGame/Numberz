@@ -43,8 +43,44 @@ const getHintsAndApplyThem = async (page, moveNum) => {
   // light/dark mode
   const expectedNumButtons = 16 - moveNum;
 
-  const initialButtonsInfo = await getButtonsInfo(page, expectedNumButtons);
+  let initialButtonsInfo;
 
+  try {
+    initialButtonsInfo =
+      await getButtonsInfo(page, expectedNumButtons);
+  } catch (error) {
+    console.error('FAILED TO GET INITIAL BUTTONS');
+    console.error('Move number:', moveNum);
+    console.error('URL:', page.url());
+    console.error('Title:', await page.title());
+
+    console.error(
+      'Accessible buttons:',
+      await page.getByRole('button').allTextContents()
+    );
+
+    console.error(
+      'Actual HTML buttons:',
+      await page.locator('button').count()
+    );
+
+    console.error(
+      'Elements with button role:',
+      await page.locator('[role="button"]').count()
+    );
+
+    console.error(
+      'Body text:',
+      await page.locator('body').innerText()
+    );
+
+    await page.screenshot({
+      path: `playwright-report/button-failure-move-${moveNum}.png`,
+      fullPage: true
+    });
+
+    throw error;
+  }
 
 
   const hintButtonLocator = await page.getByRole('button', {name: 'hint',});
