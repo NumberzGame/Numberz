@@ -75,7 +75,7 @@ const getHintsAndApplyThem = async (page, moveNum) => {
     );
 
     await page.screenshot({
-      path: `playwright-report/button-failure-move-${moveNum}.png`,
+      path: `playwright-screenshots/button-failure-move-${moveNum}.png`,
       fullPage: true
     });
 
@@ -101,7 +101,7 @@ const getHintsAndApplyThem = async (page, moveNum) => {
     );
 
     await page.screenshot({
-      path: 'playwright-report/hint-button-missing.png',
+      path: 'playwright-screenshots/hint-button-missing.png',
       fullPage: true,
     });
 
