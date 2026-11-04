@@ -155,20 +155,31 @@ const playSingleGameFollowingHints = async (page) => {
   }
   await expect(dialogue).toBeVisible();
 
+  const img = dialogue.getByRole('img').nth(1);
+  // also picks up svg img in button (.nth(0))
+  await expect(img).toBeVisible();
+  await expect(img).toHaveAttribute('src', "/fireworks-city.jpg");
+
   const banner = dialogue.getByRole('banner');
   await expect(banner).toBeVisible();
 
   const xButton = banner.getByRole('button');
   await expect(xButton).toBeVisible();
-  // also picks up svg img in button (.nth(0))
-  const img = dialogue.getByRole('img').nth(1);
-  await expect(img).toBeVisible();
-
-  await expect(img).toHaveAttribute('src', "/fireworks-city.jpg");
+  await expect(xButton).toBeEnabled();
   await xButton.click();
-  
-  dialogue = page.getByRole('dialog', { name: 'You are the winner!!' })
-  await expect(dialogue).toHaveCount(0);
+
+    // Wait for the win-screen dialog to disappear.
+  await expect(dialogue).toBeHidden({
+    timeout: 10_000
+  });
+
+  // Wait for the modal overlay to be removed.
+  await expect(
+    page.locator('.mantine-Modal-overlay')
+  ).toHaveCount(0, {
+    timeout: 10_000
+  });
+
 }
 
 
