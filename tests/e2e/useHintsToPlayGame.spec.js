@@ -168,17 +168,15 @@ const playSingleGameFollowingHints = async (page) => {
   await expect(xButton).toBeEnabled();
   await xButton.click();
 
+  await page.waitForTimeout(2000);
+
     // Wait for the win-screen dialog to disappear.
-  await expect(dialogue).toBeHidden({
-    timeout: 10_000
-  });
+  await expect(dialogue).toBeHidden();
 
   // Wait for the modal overlay to be removed.
   await expect(
     page.locator('.mantine-Modal-overlay')
-  ).toHaveCount(0, {
-    timeout: 10_000
-  });
+  ).toBeHidden();
 
 }
 

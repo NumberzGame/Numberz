@@ -47,7 +47,7 @@ jobs:
         echo "HTTP_SERVER_PID=$!" >> $GITHUB_ENV
         sleep 4  # give server time to start
 
-    - name: ENsure screenshots dir exists
+    - name: Ensure screenshots dir exists
       run: mkdir -p playwright-screenshots
 
     - name: Run Playwright tests
