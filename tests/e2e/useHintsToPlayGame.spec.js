@@ -202,9 +202,11 @@ test('captures changed buttons after an action', async ({ page }) => {
 
     await playSingleGameFollowingHints(page);
     const slider = page.getByRole('slider');
+    await expect(slider).toBeVisible();
     await slider.focus();
     await slider.press('End');
     const newRandomGameButton = await page.getByRole('button', {name: 'New random game'});
+    await expect(newRandomGameButton).toBeVisible();
     await newRandomGameButton.click();
   }
 });
